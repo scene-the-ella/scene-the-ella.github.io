@@ -1,68 +1,206 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8">
-  <title>Training-free Multimodal Embedding | WACV 2026</title>
+  <meta charset="utf-8">
+  <meta name="description"
+        content="Training-free Multimodal Embedder for SVG and Image Retrieval">
+  <meta name="keywords" content="mEOL, MUSE, SVG">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="stylesheet" href="css/style.css">
+  <title>Training-free Multimodal Embedder| WACV 2026 | ICCVw 2025</title>
+
+  <!-- Global site tag (gtag.js) - Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-PYVRSFMDRL"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+
+    function gtag() {
+      dataLayer.push(arguments);
+    }
+
+    gtag('js', new Date());
+
+    gtag('config', 'G-PYVRSFMDRL');
+  </script>
+
+  <link href="https://fonts.googleapis.com/css?family=Google+Sans|Noto+Sans|Castoro"
+        rel="stylesheet">
+
+  <link rel="stylesheet" href="./static/css/bulma.min.css">
+  <link rel="stylesheet" href="./static/css/bulma-carousel.min.css">
+  <link rel="stylesheet" href="./static/css/bulma-slider.min.css">
+  <link rel="stylesheet" href="./static/css/fontawesome.all.min.css">
+  <link rel="stylesheet"
+        href="https://cdn.jsdelivr.net/gh/jpswalsh/academicons@1/css/academicons.min.css">
+  <link rel="stylesheet" href="./static/css/index.css">
+  <link rel="icon" href="./static/images/favicon.svg">
+
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <script defer src="./static/js/fontawesome.all.min.js"></script>
+  <script src="./static/js/bulma-carousel.min.js"></script>
+  <script src="./static/js/bulma-slider.min.js"></script>
+  <script src="./static/js/index.js"></script>
 </head>
-
 <body>
-  <div class="container">
-    <h1>Training-free Multimodal Embedding for Structure-Aware Retrieval of Scalable Vector Graphics and Images</h1>
-    <p class="authors">
-      <strong>Kyeong Seon Kim</strong>, Lee Jung-Mok, Baek Seong-Eun, Tae-Hyun Oh<br>
-      <span class="affiliation">KAIST</span><br>
-      <span class="venue">WACV 2026 (to appear)</span>
-    </p>
 
-    <div class="links">
-      <a href="https://arxiv.org/abs/2501.01234" target="_blank">📄 Paper</a>
-      <a href="https://github.com/kyeongseon/mEOL" target="_blank">💻 Code</a>
-      <a href="#video">🎬 Video</a>
-      <a href="#bibtex">📚 BibTeX</a>
+<nav class="navbar" role="navigation" aria-label="main navigation">
+  <div class="navbar-brand">
+    <a role="button" class="navbar-burger" aria-label="menu" aria-expanded="false">
+      <span aria-hidden="true"></span>
+      <span aria-hidden="true"></span>
+      <span aria-hidden="true"></span>
+    </a>
+  </div>
+  <div class="navbar-menu">
+    <div class="navbar-start" style="flex-grow: 1; justify-content: center;">
+      <a class="navbar-item" href="https://keunhong.com">
+      <span class="icon">
+          <i class="fas fa-home"></i>
+      </span>
+      </a>
+
+      <div class="navbar-item has-dropdown is-hoverable">
+        <a class="navbar-link">
+          More Research
+        </a>
+        <div class="navbar-dropdown">
+          <a class="navbar-item" href="https://www.linkedin.com/in/ks-kim/">
+            LinkedIn 
+          </a>
+        </div>
+      </div>
     </div>
 
-    <div class="teaser">
-      <img src="img/teaser.png" alt="Teaser figure">
-      <p class="caption">Overview of our training-free multimodal embedding framework.</p>
+  </div>
+</nav>
+
+
+<section class="hero">
+  <div class="hero-body">
+    <div class="container is-max-desktop">
+      <div class="columns is-centered">
+        <div class="column has-text-centered">
+          <h1 class="title is-1 publication-title">Training-free Multimodal Embedding for Structure-Aware Retrieval of Scalable Vector Graphics and Images</h1>
+          <div class="is-size-5 publication-authors">
+            <span class="author-block">
+              <a href="https://scene-the-ella.github.io/">Kyeong Seon Kim</a><sup>1</sup>,</span>
+            <span class="author-block">
+              <a href="https://www.linkedin.com/in/seong-eun-baek-64b473276/">Baek Seong-Eun</a><sup>2</sup>,</span>
+            <span class="author-block">
+              <a href="https://mok0102.github.io/">Lee Jung-Mok</a><sup>2</sup>,
+            </span>
+            <span class="author-block">
+              <a href="https://ami.kaist.ac.kr/members/tae-hyun-oh">Tae-Hyun Oh</a><sup>1</sup>,
+            </span>
+          </div>
+
+          <div class="is-size-5 publication-authors">
+            <span class="author-block"><sup>1</sup>KAIST</span>
+            <span class="author-block"><sup>2</sup>POSTECH</span>
+          </div>
+
+          <div class="column has-text-centered">
+            <div class="publication-links">
+              <!-- PDF Link. -->
+              <span class="link-block">
+                <a href="https:// "
+                   class="external-link button is-normal is-rounded is-dark">
+                  <span class="icon">
+                      <i class="fas fa-file-pdf"></i>
+                  </span>
+                  <span>Paper</span>
+                </a>
+              </span>
+              <!-- Code Link. -->
+              <span class="link-block">
+                <a href=""
+                   class="external-link button is-normal is-rounded is-dark">
+                  <span class="icon">
+                      <i class="fab fa-github"></i>
+                  </span>
+                  <span>Code (TBU)</span>
+                  </a>
+              </span>
+            </div>
+
+          </div>
+        </div>
+      </div>
     </div>
+  </div>
+</section>
 
-    <h2>Abstract</h2>
-    <p>
-      We present a training-free multimodal embedding framework that enables structure-aware retrieval across
-      scalable vector graphics (SVGs) and raster images. Our approach leverages pretrained vision-language
-      models to align the two modalities without finetuning, capturing both semantic and geometric structures.
-    </p>
+<section class="section">
+  <div class="container is-max-desktop">
+    <!-- Paper poster -->
+    <div class="columns is-centered has-text-centered">
+      <div class="column is-four-fifths">
+        <h2 class="title is-3">ICCVw Poster</h2>
 
-    <h2 id="video">Video</h2>
-    <div class="video-container">
-      <iframe width="560" height="315"
-              src="https://www.youtube.com/embed/VIDEO_ID"
-              title="Project Video"
-              frameborder="0"
-              allowfullscreen>
-      </iframe>
+        <a href="./static/images/iccv25_poster.png" target="_blank">
+        <img src="./static/images/iccv25_poster.png" 
+         alt="ICCV Workshop Poster"
+         style="width: 100%; max-width: 900px; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); transition: transform 0.2s;">
+        </a>
+        <p class="is-size-6 has-text-grey mt-3">Click to view full size</p>
+      </div>
     </div>
+    <!--/ Paper poster -->
+  </div>
+  
+    <!-- Abstract. -->
+    <div class="columns is-centered has-text-centered">
+      <div class="column is-four-fifths">
+        <h2 class="title is-3">Abstract</h2>
+        <div class="content has-text-justified">
+          <p>
+            While Scalable Vector Graphic (SVG) codes appear as either plain text or visually as images, they are structured representations that encode geometric and layout information. However, existing methods typically convert SVGs into raster image, discarding their structural details. Similarly, previous sentence embedding methods generate high-quality text embeddings but do not extend to structured or visual modalities such as SVGs. To address these challenges, we propose the first training-free multimodal embedding method that uses a Multimodal Large Language Model (MLLM) to project text, images, and SVG code into an aligned space. Our method consists of two main components: (1) multimodal Explicit One-word Limitation (mEOL), which produces compact, semantically grounded embeddings across modalities without training; and (2) a semantic SVG module that rewrites SVG code by generating missing or non-descriptive components through visual reasoning. This lets the model embed structural signals overlooked in prior work. Our approach not only introduces the first SVG retrieval setting but also achieves strong empirical performance, surpassing prior methods including training-based models by up to +20.5% Recall@1 on a repurposed VGBench dataset. These results demonstrate that structural cues can significantly enhance semantic alignment in multimodal embeddings, enabling effective retrieval without any fine-tuning.
+          </p>
+        </div>
+      </div>
+    </div>
+    <!--/ Abstract. -->
+</section>
 
-    <h2>Results</h2>
-    <img src="img/results.png" alt="Results">
-
-    <h2 id="bibtex">BibTeX</h2>
-<pre>
-@inproceedings{kim2026meol,
+<section class="section" id="BibTeX">
+  <div class="container is-max-desktop content">
+    <h2 class="title">BibTeX</h2>
+    <pre><code>@inproceedings{kim2026meol,
   title={Training-free Multimodal Embedding for Structure-Aware Retrieval of Scalable Vector Graphics and Images},
-  author={Kim, Kyeong Seon and Lee, Jung-Mok and Baek, Seong-Eun and Oh, Tae-Hyun},
+  author={Kyeong Seon Kim and Baek, Seong-Eun and Lee, Jung-Mok and Oh, Tae-Hyun},
   booktitle = {Proceedings of the Winter Conference on Applications of Computer Vision (WACV)},
   year={2026}
 }
-</pre>
-
-    <footer>
-      <p>© 2025 Kyeongseon Ella Kim | Built from the <a href="https://nerfies.github.io/">Nerfies template</a></p>
-    </footer>
+}</code></pre>
   </div>
+</section>
 
-  <script src="js/script.js"></script>
+
+<footer class="footer">
+  <div class="container">
+    <div class="content has-text-centered">
+      <a class="icon-link"
+         href="./static/videos/meol_paper.pdf">
+        <i class="fas fa-file-pdf"></i>
+      </a>
+      <a class="icon-link" href="https://github.com/scene-the-ella" class="external-link" disabled>
+        <i class="fab fa-github"></i>
+      </a>
+    </div>
+    <div class="columns is-centered">
+      <div class="column is-8">
+        <div class="content">
+          <p>
+            This website is licensed under a <a rel="license"
+                                                href="http://creativecommons.org/licenses/by-sa/4.0/">Creative
+            Commons Attribution-ShareAlike 4.0 International License</a>.
+          </p>
+          <p>© 2025 Kyeongseon Ella Kim | Built from the <a href="https://nerfies.github.io/">Nerfies template</a></p>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</footer>
+
 </body>
 </html>
