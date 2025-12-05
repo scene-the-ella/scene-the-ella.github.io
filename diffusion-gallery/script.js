@@ -47,39 +47,42 @@ function renderGallery() {
 
     galleryGrid.innerHTML = galleryData.map(item => `
         <div class="gallery-item">
-            <div class="input-section">
-                <div class="input-image-container">
-                    <img src="${item.inputImage}" alt="${item.title}" loading="lazy">
-                </div>
-                <div class="input-info">
-                    <h3>${item.title}</h3>
-                    ${item.prompt ? `<p class="prompt-text">${item.prompt}</p>` : ''}
-                    <p>${item.description}</p>
-                </div>
+            <div class="gallery-header">
+                <h3>${item.title}</h3>
             </div>
-            <div class="videos-section">
-                <h4>생성된 애니메이션 (${item.videos.length})</h4>
-                <div class="videos-grid">
-                    ${item.videos.map((video, index) => {
-                        // GIF 파일인 경우 img 태그 사용, MP4인 경우 video 태그 사용
-                        const isGif = video.src.endsWith('.gif');
-                        // GIF는 자동 재생을 위해 타임스탬프 추가 (캐시 방지)
-                        const gifSrc = isGif ? `${video.src}?t=${Date.now()}` : video.src;
-                        return `
-                        <div class="video-item ${isGif ? 'gif-item' : ''}" data-video-src="${video.src}" data-item-id="${item.id}" data-video-index="${index}">
-                            ${isGif ? 
-                                `<img src="${gifSrc}" alt="${item.title} animation ${index + 1}" loading="lazy" class="gif-image">` :
-                                `<video 
-                                    src="${video.src}" 
-                                    poster="${video.thumbnail}"
-                                    preload="metadata"
-                                    muted
-                                    loop
-                                ></video>`
-                            }
-                        </div>
-                    `;
-                    }).join('')}
+            <div class="process-flow">
+                <div class="input-section">
+                    <div class="step-label">Input</div>
+                    <div class="input-image-container">
+                        <img src="${item.inputImage}" alt="${item.title}" loading="lazy">
+                    </div>
+                    <p class="step-description">Static SVG image</p>
+                </div>
+                
+                <div class="process-arrow">
+                    <svg width="60" height="60" viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M20 30 L40 30 M35 25 L40 30 L35 35" stroke="rgba(102, 126, 234, 0.6)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    <span class="arrow-label">Animate</span>
+                    ${item.prompt ? `<p class="prompt-text">${item.prompt}</p>` : ''}
+                </div>
+                
+                <div class="output-section">
+                    <div class="step-label">Output</div>
+                    <div class="videos-grid">
+                        ${item.videos
+                            .filter(video => video.src.endsWith('.gif'))
+                            .map((video, index) => {
+                                // GIF는 자동 재생을 위해 타임스탬프 추가 (캐시 방지)
+                                const gifSrc = `${video.src}?t=${Date.now()}`;
+                                return `
+                                <div class="video-item gif-item" data-video-src="${video.src}" data-item-id="${item.id}" data-video-index="${index}">
+                                    <img src="${gifSrc}" alt="${item.title} animation ${index + 1}" loading="lazy" class="gif-image">
+                                </div>
+                            `;
+                            }).join('')}
+                    </div>
+                    <p class="step-description">Animated GIF result</p>
                 </div>
             </div>
         </div>
@@ -110,42 +113,18 @@ function renderGallery() {
     });
 }
 
-// 비디오 인터랙션 설정
+// 비디오 인터랙션 설정 (GIF만 처리)
 function setupVideoInteractions() {
     const videoItems = document.querySelectorAll('.video-item');
     
     videoItems.forEach(item => {
-        const video = item.querySelector('video');
         const img = item.querySelector('img');
         const videoSrc = item.getAttribute('data-video-src');
         
-        // GIF 이미지인 경우
+        // GIF 이미지 클릭 시 모달로 확대
         if (img) {
-            // 클릭 시 모달로 확대
             item.addEventListener('click', () => {
                 showVideoModal(videoSrc, 'gif');
-            });
-            return;
-        }
-        
-        // 비디오인 경우
-        if (video) {
-            // 호버 시 재생
-            item.addEventListener('mouseenter', () => {
-                video.play().catch(e => console.log('비디오 재생 실패:', e));
-                item.classList.add('playing');
-            });
-            
-            // 마우스가 벗어나면 일시정지
-            item.addEventListener('mouseleave', () => {
-                video.pause();
-                video.currentTime = 0;
-                item.classList.remove('playing');
-            });
-            
-            // 클릭 시 모달로 확대
-            item.addEventListener('click', () => {
-                showVideoModal(video.src, 'video');
             });
         }
     });
