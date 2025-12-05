@@ -77,12 +77,12 @@ function renderGallery() {
                                 const gifSrc = video.src;
                                 return `
                                 <div class="video-item gif-item" data-video-src="${video.src}" data-item-id="${item.id}" data-video-index="${index}">
-                                    <img src="${gifSrc}" alt="${item.title} animation ${index + 1}" loading="lazy" class="gif-image">
+                                    <img src="${gifSrc}" alt="${item.title} animation ${index + 1}" loading="eager" class="gif-image" decoding="async">
                                 </div>
                             `;
                             }).join('')}
                     </div>
-                    <p class="step-description">Animated GIF result</p>
+                    <p class="step-description">Animated result</p>
                 </div>
             </div>
         </div>
@@ -200,9 +200,10 @@ document.addEventListener('DOMContentLoaded', () => {
     renderGallery();
 });
 
-// 이미지 로드 에러 처리
+// 이미지 로드 에러 처리 (GIF는 제외)
 document.addEventListener('error', (e) => {
-    if (e.target.tagName === 'IMG') {
+    if (e.target.tagName === 'IMG' && !e.target.classList.contains('gif-image')) {
+        // GIF가 아닌 이미지만 placeholder로 교체
         e.target.src = 'https://via.placeholder.com/400x400/667eea/ffffff?text=Image+Not+Found';
     }
 }, true);
