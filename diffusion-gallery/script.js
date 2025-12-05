@@ -93,35 +93,53 @@ function renderGallery() {
     
     // GIF 이미지가 계속 재생되도록 보장
     const gifImages = document.querySelectorAll('.gif-image');
-    gifImages.forEach(img => {
-        // 이미지가 로드된 후 GIF가 계속 재생되도록 보장
-        const ensureContinuousPlay = () => {
-            const src = img.src;
-            if (src && !src.includes('data:') && !src.includes('?')) {
-                // GIF가 계속 재생되도록 주기적으로 확인
-                const checkAndReload = () => {
-                    // 이미지가 보이는지 확인
-                    const rect = img.getBoundingClientRect();
-                    const isVisible = rect.top < window.innerHeight && rect.bottom > 0;
-                    
-                    if (isVisible) {
-                        // 이미지가 보일 때, 재생이 멈췄다면 다시 로드
-                        const baseSrc = src.split('?')[0];
-                        // 현재 이미지가 정지된 것처럼 보이면 다시 로드
-                        img.src = baseSrc + '?t=' + Date.now();
-                    }
-                };
-                
-                // 주기적으로 확인 (5초마다)
-                setInterval(checkAndReload, 5000);
-            }
-        };
+    gifImages.forEach((img, index) => {
+        const baseSrc = img.src.split('?')[0];
         
-        if (img.complete) {
-            ensureContinuousPlay();
-        } else {
-            img.addEventListener('load', ensureContinuousPlay);
+        // 이미지가 보일 때마다 재생되도록 IntersectionObserver 사용
+        if ('IntersectionObserver' in window) {
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        // 이미지가 보일 때 GIF 재생 보장
+                        const currentSrc = entry.target.src;
+                        const cleanSrc = currentSrc.split('?')[0];
+                        
+                        // 소스를 다시 설정하여 GIF 재생 재시작
+                        if (entry.target.complete) {
+                            entry.target.src = '';
+                            // 다음 프레임에서 다시 설정
+                            requestAnimationFrame(() => {
+                                entry.target.src = cleanSrc;
+                            });
+                        }
+                    }
+                });
+            }, { 
+                threshold: 0.1,
+                rootMargin: '50px'
+            });
+            
+            observer.observe(img);
         }
+        
+        // 주기적으로 GIF 재생 상태 확인 및 재시작 (10초마다)
+        const intervalId = setInterval(() => {
+            const rect = img.getBoundingClientRect();
+            const isVisible = rect.top < window.innerHeight + 100 && rect.bottom > -100;
+            
+            if (isVisible && img.complete) {
+                // 이미지가 보이고 로드되었으면, 소스를 다시 설정하여 재생 재시작
+                const currentSrc = img.src.split('?')[0];
+                img.src = '';
+                setTimeout(() => {
+                    img.src = currentSrc;
+                }, 100);
+            }
+        }, 10000); // 10초마다
+        
+        // 이미지가 제거될 때 interval 정리
+        img.dataset.intervalId = intervalId;
         
         // 로드 에러 처리
         img.addEventListener('error', () => {
