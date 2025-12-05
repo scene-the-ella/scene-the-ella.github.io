@@ -61,7 +61,7 @@ function renderGallery() {
                 
                 <div class="process-arrow">
                     <svg width="60" height="60" viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M20 30 L40 30 M35 25 L40 30 L35 35" stroke="rgba(102, 126, 234, 0.6)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M20 30 L40 30 M35 25 L40 30 L35 35" stroke="rgba(0, 212, 255, 0.7)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                     </svg>
                     <span class="arrow-label">Animate</span>
                     ${item.prompt ? `<p class="prompt-text">${item.prompt}</p>` : ''}
