@@ -1,3 +1,10 @@
+@font-face {
+    font-family: 'Ink Free';
+    src: local('Ink Free'), local('InkFree');
+    font-weight: normal;
+    font-style: normal;
+}
+
 * {
     margin: 0;
     padding: 0;
@@ -108,6 +115,16 @@ header h1 {
     line-height: 1.6;
 }
 
+.prompt-text {
+    font-family: 'Ink Free', 'Comic Sans MS', 'Marker Felt', 'Bradley Hand', cursive, sans-serif;
+    font-size: 1.1rem !important;
+    color: #ffffff !important;
+    font-weight: normal;
+    margin: 12px 0 8px 0 !important;
+    line-height: 1.5;
+    font-style: italic;
+}
+
 .videos-section {
     margin-top: 10px;
 }
@@ -145,6 +162,15 @@ header h1 {
     height: 100%;
     object-fit: cover;
     display: block;
+}
+
+.video-item.gif-item::after {
+    display: none; /* GIF는 재생 버튼 표시 안 함 */
+}
+
+.gif-image {
+    animation: none; /* GIF 자체 애니메이션 사용 */
+    image-rendering: auto;
 }
 
 .video-item::after {

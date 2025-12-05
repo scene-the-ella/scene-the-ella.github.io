@@ -7,6 +7,7 @@ const galleryData = [
         id: 1,
         inputImage: 'svg_input/volcano.svg',
         title: 'Volcano',
+        prompt: 'A volcano is erupting, and lava is flowing out.',
         description: '화산 이미지를 입력으로 사용한 애니메이션 생성 결과입니다.',
         videos: [
             {
@@ -23,6 +24,7 @@ const galleryData = [
         id: 2,
         inputImage: 'svg_input/hamburger.svg',
         title: 'Hamburger',
+        prompt: 'A hamburger shaking wildly from multiple angles.',
         description: '햄버거 이미지를 입력으로 사용한 애니메이션 생성 결과입니다.',
         videos: [
             {
@@ -51,6 +53,7 @@ function renderGallery() {
                 </div>
                 <div class="input-info">
                     <h3>${item.title}</h3>
+                    ${item.prompt ? `<p class="prompt-text">${item.prompt}</p>` : ''}
                     <p>${item.description}</p>
                 </div>
             </div>
@@ -60,10 +63,12 @@ function renderGallery() {
                     ${item.videos.map((video, index) => {
                         // GIF 파일인 경우 img 태그 사용, MP4인 경우 video 태그 사용
                         const isGif = video.src.endsWith('.gif');
+                        // GIF는 자동 재생을 위해 타임스탬프 추가 (캐시 방지)
+                        const gifSrc = isGif ? `${video.src}?t=${Date.now()}` : video.src;
                         return `
-                        <div class="video-item" data-video-src="${video.src}" data-item-id="${item.id}" data-video-index="${index}">
+                        <div class="video-item ${isGif ? 'gif-item' : ''}" data-video-src="${video.src}" data-item-id="${item.id}" data-video-index="${index}">
                             ${isGif ? 
-                                `<img src="${video.src}" alt="${item.title} animation ${index + 1}" loading="lazy">` :
+                                `<img src="${gifSrc}" alt="${item.title} animation ${index + 1}" loading="lazy" class="gif-image">` :
                                 `<video 
                                     src="${video.src}" 
                                     poster="${video.thumbnail}"
@@ -82,6 +87,27 @@ function renderGallery() {
 
     // 비디오 호버 이벤트 추가
     setupVideoInteractions();
+    
+    // GIF 이미지 강제 재생 (로드 후 소스 재설정)
+    const gifImages = document.querySelectorAll('.gif-image');
+    gifImages.forEach(img => {
+        img.addEventListener('load', () => {
+            // GIF가 제대로 재생되도록 소스 재설정
+            const src = img.src.split('?')[0];
+            img.src = '';
+            setTimeout(() => {
+                img.src = src;
+            }, 10);
+        });
+        // 이미 로드된 경우에도 재생 확인
+        if (img.complete) {
+            const src = img.src.split('?')[0];
+            img.src = '';
+            setTimeout(() => {
+                img.src = src;
+            }, 10);
+        }
+    });
 }
 
 // 비디오 인터랙션 설정
