@@ -73,8 +73,8 @@ function renderGallery() {
                         ${item.videos
                             .filter(video => video.src.endsWith('.gif'))
                             .map((video, index) => {
-                                // GIF는 자동 재생을 위해 타임스탬프 추가 (캐시 방지)
-                                const gifSrc = `${video.src}?t=${Date.now()}`;
+                                // GIF는 캐시 방지를 위해 타임스탬프 추가 (한 번만)
+                                const gifSrc = video.src;
                                 return `
                                 <div class="video-item gif-item" data-video-src="${video.src}" data-item-id="${item.id}" data-video-index="${index}">
                                     <img src="${gifSrc}" alt="${item.title} animation ${index + 1}" loading="lazy" class="gif-image">
@@ -91,25 +91,18 @@ function renderGallery() {
     // 비디오 호버 이벤트 추가
     setupVideoInteractions();
     
-    // GIF 이미지 강제 재생 (로드 후 소스 재설정)
+    // GIF 이미지가 제대로 로드되었는지 확인 (깜빡임 방지)
     const gifImages = document.querySelectorAll('.gif-image');
     gifImages.forEach(img => {
-        img.addEventListener('load', () => {
-            // GIF가 제대로 재생되도록 소스 재설정
-            const src = img.src.split('?')[0];
-            img.src = '';
-            setTimeout(() => {
-                img.src = src;
-            }, 10);
-        });
-        // 이미 로드된 경우에도 재생 확인
-        if (img.complete) {
-            const src = img.src.split('?')[0];
-            img.src = '';
-            setTimeout(() => {
-                img.src = src;
-            }, 10);
+        // 이미 로드된 경우
+        if (img.complete && img.naturalWidth > 0) {
+            // GIF가 정상적으로 로드되었음
+            return;
         }
+        // 로드 에러 처리
+        img.addEventListener('error', () => {
+            console.warn('GIF 이미지 로드 실패:', img.src);
+        });
     });
 }
 
