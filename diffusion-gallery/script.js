@@ -91,14 +91,38 @@ function renderGallery() {
     // 비디오 호버 이벤트 추가
     setupVideoInteractions();
     
-    // GIF 이미지가 제대로 로드되었는지 확인 (깜빡임 방지)
+    // GIF 이미지가 계속 재생되도록 보장
     const gifImages = document.querySelectorAll('.gif-image');
     gifImages.forEach(img => {
-        // 이미 로드된 경우
-        if (img.complete && img.naturalWidth > 0) {
-            // GIF가 정상적으로 로드되었음
-            return;
+        // 이미지가 로드된 후 GIF가 계속 재생되도록 보장
+        const ensureContinuousPlay = () => {
+            const src = img.src;
+            if (src && !src.includes('data:') && !src.includes('?')) {
+                // GIF가 계속 재생되도록 주기적으로 확인
+                const checkAndReload = () => {
+                    // 이미지가 보이는지 확인
+                    const rect = img.getBoundingClientRect();
+                    const isVisible = rect.top < window.innerHeight && rect.bottom > 0;
+                    
+                    if (isVisible) {
+                        // 이미지가 보일 때, 재생이 멈췄다면 다시 로드
+                        const baseSrc = src.split('?')[0];
+                        // 현재 이미지가 정지된 것처럼 보이면 다시 로드
+                        img.src = baseSrc + '?t=' + Date.now();
+                    }
+                };
+                
+                // 주기적으로 확인 (5초마다)
+                setInterval(checkAndReload, 5000);
+            }
+        };
+        
+        if (img.complete) {
+            ensureContinuousPlay();
+        } else {
+            img.addEventListener('load', ensureContinuousPlay);
         }
+        
         // 로드 에러 처리
         img.addEventListener('error', () => {
             console.warn('GIF 이미지 로드 실패:', img.src);

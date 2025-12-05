@@ -271,16 +271,13 @@ header h1 {
 }
 
 .gif-image {
-    animation: none; /* GIF 자체 애니메이션 사용 */
-    image-rendering: auto;
     display: block;
     width: 100%;
     height: 100%;
     object-fit: cover;
-    /* 깜빡임 방지 */
-    will-change: auto;
-    backface-visibility: hidden;
-    -webkit-backface-visibility: hidden;
+    image-rendering: auto;
+    /* GIF 애니메이션이 정상적으로 재생되도록 */
+    pointer-events: auto;
 }
 
 .video-item::after {
