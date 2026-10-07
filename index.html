@@ -1,10 +1,464 @@
 <!DOCTYPE html>
-<html lang="ko">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Kyeongseon Ella Kim</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Kyeongseon (Ella) Kim</title>
+  <meta name="description" content="Kyeongseon (Ella) Kim — Ph.D. student at KAIST School of Computing, working on multimodal LLMs and agents over abstract visual representations.">
+  <meta property="og:title" content="Kyeongseon (Ella) Kim">
+  <meta property="og:description" content="Ph.D. student at KAIST School of Computing (Advisor: Prof. Tae-Hyun Oh).">
+  <meta property="og:url" content="https://scene-the-ella.github.io/">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%231e3c6e'/%3E%3Ctext x='16' y='22.5' font-family='Arial,sans-serif' font-size='18' font-weight='700' fill='white' text-anchor='middle'%3EK%3C/text%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #15181f;
+      --navy: #1e3c6e;
+      --navy-tint: #eaf0f8;
+      --line: #d6deeb;
+      --red: #b3261e;
+      --bg: #ffffff;
+      --display: "Nunito", "Apple SD Gothic Neo", system-ui, sans-serif;
+      --text: "Apple SD Gothic Neo", "Nunito", system-ui, sans-serif;
+    }
+    * { box-sizing: border-box; }
+    html { -webkit-text-size-adjust: 100%; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: var(--text);
+      font-size: 16px;
+      line-height: 1.62;
+      -webkit-font-smoothing: antialiased;
+    }
+    a { color: var(--navy); text-decoration: none; }
+    a:hover { text-decoration: underline; text-underline-offset: 3px; }
+    .wrap { max-width: 980px; margin: 0 auto; padding: 72px 32px 56px; }
+
+    /* ---------- header ---------- */
+    header { padding-bottom: 36px; border-bottom: 2px solid var(--ink); }
+    h1 {
+      font-family: var(--display);
+      font-weight: 800;
+      font-size: 44px;
+      line-height: 1.1;
+      letter-spacing: -0.01em;
+      margin: 0;
+    }
+    h1 .ko {
+      font-family: "Apple SD Gothic Neo", system-ui, sans-serif;
+      font-weight: 600;
+      font-size: 24px;
+      color: var(--navy);
+      margin-left: 12px;
+      letter-spacing: 0;
+      white-space: nowrap;
+    }
+    .role {
+      font-family: var(--display);
+      font-weight: 700;
+      font-size: 19px;
+      margin: 12px 0 0;
+    }
+    .links { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 22px; }
+    .links a {
+      font-family: var(--display);
+      font-weight: 700;
+      font-size: 14.5px;
+      padding: 6px 14px;
+      border: 1.5px solid var(--navy);
+      border-radius: 999px;
+    }
+    .links a:hover { background: var(--navy); color: #fff; text-decoration: none; }
+
+    /* ---------- sections ---------- */
+    section {
+      display: grid;
+      grid-template-columns: 180px 1fr;
+      gap: 0 36px;
+      padding: 40px 0;
+      border-bottom: 1px solid var(--line);
+    }
+    section:last-of-type { border-bottom: 0; }
+    h2 {
+      font-family: var(--display);
+      font-weight: 800;
+      font-size: 17px;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: var(--navy);
+      margin: 2px 0 16px;
+      position: sticky;
+      top: 24px;
+      align-self: start;
+    }
+    h2 .legend {
+      display: block;
+      font-family: var(--text);
+      font-weight: 500;
+      font-size: 13.5px;
+      letter-spacing: 0;
+      text-transform: none;
+      color: var(--ink);
+      margin-top: 6px;
+    }
+    p { margin: 0 0 14px; }
+    p:last-child { margin-bottom: 0; }
+    strong { font-weight: 700; }
+
+    /* ---------- publications ---------- */
+    .year {
+      font-family: var(--display);
+      font-weight: 800;
+      font-size: 22px;
+      color: var(--navy);
+      margin: 28px 0 10px;
+    }
+    .year:first-child { margin-top: 0; }
+    .pub { padding: 14px 0; }
+    .pub + .pub { border-top: 1px dashed var(--line); }
+    .venue {
+      display: inline-block;
+      font-family: var(--display);
+      font-weight: 800;
+      font-size: 13px;
+      letter-spacing: 0.02em;
+      color: var(--navy);
+      background: var(--navy-tint);
+      border-radius: 6px;
+      padding: 2px 9px;
+      margin-bottom: 7px;
+    }
+    .pub .title { font-weight: 700; font-size: 17px; line-height: 1.42; }
+    .pub .authors { margin-top: 3px; }
+    .me { font-weight: 700; text-decoration: underline; text-underline-offset: 3px; text-decoration-thickness: 1.5px; }
+    .pub .venue-full { font-style: italic; }
+    .honor { color: var(--red); font-weight: 600; margin-top: 4px; }
+    .also { margin-top: 2px; font-size: 15px; }
+    .plinks { margin-top: 8px; display: flex; flex-wrap: wrap; gap: 6px; }
+    .plinks a {
+      font-family: var(--display);
+      font-weight: 700;
+      font-size: 13px;
+      padding: 2px 10px;
+      border: 1.5px solid var(--navy);
+      border-radius: 999px;
+    }
+    .plinks a:hover { background: var(--navy); color: #fff; text-decoration: none; }
+
+    /* ---------- rows (education, experience, community, ...) ---------- */
+    .row {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 0 24px;
+      padding: 9px 0;
+    }
+    .row + .row { border-top: 1px dashed var(--line); }
+    .row .what { font-weight: 700; }
+    .row .when {
+      font-family: var(--display);
+      font-weight: 700;
+      font-size: 15px;
+      color: var(--navy);
+      white-space: nowrap;
+      text-align: right;
+    }
+    .row ul { margin: 6px 0 0; padding-left: 20px; }
+    .row li { margin: 2px 0; }
+
+    footer {
+      font-family: var(--display);
+      font-weight: 700;
+      font-size: 14px;
+      padding-top: 28px;
+      border-top: 2px solid var(--ink);
+    }
+
+    @media (max-width: 760px) {
+      .wrap { padding: 44px 16px 40px; }
+      h1 { font-size: 29px; }
+      h1 .ko { display: block; margin: 8px 0 0; font-size: 20px; }
+      section { grid-template-columns: 1fr; padding: 30px 0; }
+      h2 { position: static; }
+      h2 .legend { display: inline; margin-left: 8px; }
+      .row { grid-template-columns: 1fr; }
+      .row .when { text-align: left; }
+    }
+  </style>
 </head>
 <body>
-  <h1>Welcome to My Homepage!</h1>
+<div class="wrap">
+
+  <header>
+    <h1>Kyeongseon (Ella) Kim<span class="ko">김경선</span></h1>
+    <p class="role">Ph.D. Student, School of Computing, KAIST</p>
+    <nav class="links" aria-label="Profiles">
+      <a href="mailto:ellakim@kaist.ac.kr">Email</a>
+      <a href="https://scholar.google.com/citations?user=m2zXV5EAAAAJ&amp;hl=en">Google Scholar</a>
+      <a href="https://github.com/scene-the-ella">GitHub</a>
+      <a href="https://www.linkedin.com/in/ks-kim/">LinkedIn</a>
+      <a href="cv.pdf">CV</a>
+    </nav>
+  </header>
+
+  <main>
+
+    <section id="about">
+      <h2>About</h2>
+      <div>
+        <p>I am a Ph.D. student in the School of Computing at KAIST, advised by
+          <a href="https://ami.kaist.ac.kr/members/tae-hyun-oh">Prof. Tae-Hyun Oh</a>
+          (<a href="https://ami.kaist.ac.kr">AMI Lab</a>).
+          I study how multimodal LLMs and agents encode and reason over
+          <strong>abstract visual representations</strong> &mdash; vector graphics, GUIs, and symbols such as emoji and gestures &mdash; beyond natural images.
+          My recent work covers interactive GUI grounding (EMNLP&nbsp;2026), speech&ndash;vision hallucination (CVPR&nbsp;2026), training-free SVG&ndash;image retrieval (WACV&nbsp;2026), and cultural preference in LLM/VLM agents.</p>
+        <p>Before my Ph.D., I was an AI Research Scientist at POSTECH, an AI Research Engineer at the LG Electronics CTO AI Lab, and an AI education manager at Upstage.
+          I also co-organize <strong>AGI Korea</strong> (formerly TensorFlow Korea), an AI community of 66K+ members.</p>
+      </div>
+    </section>
+
+    <section id="publications">
+      <h2>Publications<span class="legend">* equal contribution</span></h2>
+      <div>
+
+        <div class="year">2026</div>
+
+        <article class="pub">
+          <span class="venue">EMNLP 2026 &middot; Main</span>
+          <div class="title">IGG: A Benchmark for Interactive GUI Grounding under Visibility Constraints</div>
+          <div class="authors"><span class="me">K. S. Kim</span>*, J. Son*, T.-H. Oh</div>
+          <div class="venue-full">Conference on Empirical Methods in Natural Language Processing</div>
+          <div class="also">Also presented at ICML 2026 Workshop on Compositional Learning: Safety, Interpretability, and Agents</div>
+        </article>
+
+        <article class="pub">
+          <span class="venue">CVPR 2026</span>
+          <div class="title">SVHalluc: Benchmarking Speech&ndash;Vision Hallucination in Audio-Visual Large Language Models</div>
+          <div class="authors">C. Zhang, <span class="me">K. S. Kim</span>, C. Liu, T.-H. Oh</div>
+          <div class="venue-full">IEEE/CVF Conference on Computer Vision and Pattern Recognition</div>
+          <div class="plinks">
+            <a href="https://arxiv.org/abs/2606.02642">arXiv</a>
+            <a href="https://chenshuang-zhang.github.io/projects/svhalluc/">Project</a>
+          </div>
+        </article>
+
+        <article class="pub">
+          <span class="venue">WACV 2026</span>
+          <div class="title">mEOL: Training-Free Instruction-Guided Multimodal Embedder for Vector Graphics and Image Retrieval</div>
+          <div class="authors"><span class="me">K. S. Kim</span>, S.-E. Baek, J.-M. Lee, T.-H. Oh</div>
+          <div class="venue-full">IEEE/CVF Winter Conference on Applications of Computer Vision</div>
+          <div class="honor">Round 1 paper (6.4% acceptance rate) &middot; Best Student Presentation Award, IPIU 2025</div>
+          <div class="also">Also presented at ICCV 2025 Workshop on Graphic Design Understanding and Generation (GDUG)</div>
+          <div class="plinks">
+            <a href="https://arxiv.org/abs/2604.17054">arXiv</a>
+            <a href="meol/">Project</a>
+            <a href="meol/static/pdfs/wacv25_poster.pdf">Poster</a>
+          </div>
+        </article>
+
+        <article class="pub">
+          <span class="venue">ICML 2026 Workshop</span>
+          <div class="title">CuPS: Measuring Cultural Preference Signatures in LLM/VLM Agents and Their Steering by Profile Memories</div>
+          <div class="authors"><span class="me">K. S. Kim</span>, G. Kim, J. Chang, H. Kim, T.-H. Oh</div>
+          <div class="venue-full">Workshop on Culture &times; AI: Evaluating AI as a Cultural Technology</div>
+        </article>
+
+        <div class="year">2025</div>
+
+        <article class="pub">
+          <span class="venue">AAAI 2025</span>
+          <div class="title">Zero-shot Depth Completion via Test-time Alignment with Affine-invariant Depth Prior</div>
+          <div class="authors">H. Lee, <span class="me">K. S. Kim</span>, B.-K. Kwon, T.-H. Oh</div>
+          <div class="venue-full">AAAI Conference on Artificial Intelligence</div>
+          <div class="honor">Qualcomm Innovation Fellowship 2025 winning paper</div>
+          <div class="plinks">
+            <a href="https://ojs.aaai.org/index.php/AAAI/article/view/32405">Paper</a>
+            <a href="https://arxiv.org/abs/2502.06338">arXiv</a>
+            <a href="https://hyoseok1223.github.io/zero-shot-depth-completion/">Project</a>
+          </div>
+        </article>
+
+        <div class="year">2019</div>
+
+        <article class="pub">
+          <span class="venue">Applied Sciences 2019</span>
+          <div class="title">Personalized Online Live Video Streaming Using Softmax-Based Multinomial Classification</div>
+          <div class="authors"><span class="me">K. S. Kim</span>, D. Kwon, J. Kim, A. Mohaisen</div>
+          <div class="venue-full">Applied Sciences, Vol. 9, No. 11, Article 2297</div>
+          <div class="plinks">
+            <a href="https://doi.org/10.3390/app9112297">Paper</a>
+          </div>
+        </article>
+
+        <article class="pub">
+          <span class="venue">ICAIIC 2019</span>
+          <div class="title">Hardness on Style Transfer Deep Learning for Rococo Painting Masterpieces</div>
+          <div class="authors"><span class="me">K. S. Kim</span>, D. Kim, J. Kim</div>
+          <div class="venue-full">International Conference on Artificial Intelligence in Information and Communication</div>
+        </article>
+
+        <div class="year">2018</div>
+
+        <article class="pub">
+          <span class="venue">ICUFN 2018</span>
+          <div class="title">Detecting Selfish Backoff Attack in IEEE 802.15.4 CSMA/CA Using Logistic Classification</div>
+          <div class="authors">J. Kim, <span class="me">K. S. Kim</span></div>
+          <div class="venue-full">International Conference on Ubiquitous and Future Networks</div>
+        </article>
+
+        <article class="pub">
+          <span class="venue">IEEE SECON 2018</span>
+          <div class="title">Recipient-oriented Transaction for Preventing Double Spending Attacks in Private Blockchain</div>
+          <div class="authors">H. Lee, M. Shin, <span class="me">K. S. Kim</span>, Y. Kang, J. Kim</div>
+          <div class="venue-full">IEEE International Conference on Sensing, Communication, and Networking</div>
+        </article>
+
+        <article class="pub">
+          <span class="venue">IEEE ICASSP 2018</span>
+          <div class="title">Self-Adaptive Machine Learning Operating Systems for Security Applications</div>
+          <div class="authors"><span class="me">K. S. Kim</span>, D. Kwon, Y. Kim, J. Kim, J. Kim</div>
+          <div class="venue-full">IEEE International Conference on Acoustics, Speech and Signal Processing</div>
+        </article>
+
+      </div>
+    </section>
+
+    <section id="education">
+      <h2>Education</h2>
+      <div>
+        <div class="row">
+          <div><span class="what">KAIST</span> &mdash; Ph.D. Student, School of Computing<br>Advisor: Prof. Tae-Hyun Oh &middot; Korean Government Scholarship (state-funded)</div>
+          <div class="when">2024 &ndash; Present</div>
+        </div>
+        <div class="row">
+          <div><span class="what">Chung-Ang University</span> &mdash; M.S. in Computer Science<br>Advisor: Prof. Joongheon Kim (now at Korea University)</div>
+          <div class="when">2017 &ndash; 2019</div>
+        </div>
+        <div class="row">
+          <div><span class="what">Chung-Ang University</span> &mdash; B.S. in Computer Science and Engineering</div>
+          <div class="when">2013 &ndash; 2017</div>
+        </div>
+      </div>
+    </section>
+
+    <section id="experience">
+      <h2>Experience</h2>
+      <div>
+        <div class="row">
+          <div><span class="what">POSTECH</span> &mdash; AI Research Scientist, lab of Prof. Tae-Hyun Oh</div>
+          <div class="when">2023 &ndash; 2024</div>
+        </div>
+        <div class="row">
+          <div><span class="what">Upstage</span> &mdash; AI Contents &amp; Education Manager; Project Manager, AI Pack User Guide</div>
+          <div class="when">2022</div>
+        </div>
+        <div class="row">
+          <div><span class="what">LG Electronics, CTO Office AI Lab</span> &mdash; AI Research Engineer (team led by Prof. Joseph Lim, USC)
+            <ul>
+              <li>Scene graph generation for computer vision</li>
+              <li>Floor plan generation for object placement, with LG Toronto AI Lab</li>
+              <li>Driver action recognition system design (Hyundai, Daimler)</li>
+            </ul>
+          </div>
+          <div class="when">2020 &ndash; 2022</div>
+        </div>
+        <div class="row">
+          <div><span class="what">EASYWUM</span> &mdash; Tech Lead, smart IoT indoor-garden startup</div>
+          <div class="when">2016 &ndash; 2017</div>
+        </div>
+      </div>
+    </section>
+
+    <section id="community">
+      <h2>Community</h2>
+      <div>
+        <div class="row">
+          <div><span class="what">AGI Korea</span> (formerly TensorFlow Korea) &mdash; Co-organizer / Board Member, 66K+ members</div>
+          <div class="when">2020 &ndash; Present</div>
+        </div>
+        <div class="row">
+          <div><span class="what">Google TensorFlow User Group (TFUG)</span> &mdash; Organizer (Global)</div>
+          <div class="when">2020 &ndash; Present</div>
+        </div>
+        <div class="row">
+          <div><span class="what">TensorFlow Everywhere</span> &mdash; General Organizer (Global)</div>
+          <div class="when">2021</div>
+        </div>
+        <div class="row">
+          <div><span class="what">Upstage &times; Naver Boostcamp AI Tech</span> &mdash; Organizer &amp; Mentor</div>
+          <div class="when">2021 &ndash; 2022</div>
+        </div>
+        <div class="row">
+          <div><span class="what">Software Maestro</span> (Ministry of Science and ICT, Korea) &mdash; Mentor</div>
+          <div class="when">2022 &ndash; 2024</div>
+        </div>
+        <div class="row">
+          <div><span class="what">AI Weekly arXiv (Korea)</span> &mdash; Moderator</div>
+          <div class="when">2022 &ndash; 2025</div>
+        </div>
+        <div class="row">
+          <div><span class="what">PR12 Paper Reading Group</span></div>
+          <div class="when">2019 &ndash; Present</div>
+        </div>
+      </div>
+    </section>
+
+    <section id="awards">
+      <h2>Awards</h2>
+      <div>
+        <div class="row">
+          <div><span class="what">Korean Government Scholarship</span> &mdash; State-funded Ph.D. student, KAIST</div>
+          <div class="when">2024 &ndash; Present</div>
+        </div>
+        <div class="row">
+          <div><span class="what">Best Student Presentation Award</span> &mdash; IPIU, for mEOL (WACV 2026)</div>
+          <div class="when">2025</div>
+        </div>
+      </div>
+    </section>
+
+    <section id="talks">
+      <h2>Talks</h2>
+      <div>
+        <div class="row"><div><span class="what">AI Talk for High School Sophomores and Juniors</span> &mdash; Jeonbuk Science High School</div><div class="when">2023</div></div>
+        <div class="row"><div><span class="what">AI Community Organizing</span> &mdash; MODUCON, Yonsei University / Lab for Everyone</div><div class="when">2022</div></div>
+        <div class="row"><div><span class="what">What&rsquo;s New in TF 2.4</span> &mdash; Keynote, TensorFlow Everywhere Korea (Google)</div><div class="when">2021</div></div>
+        <div class="row"><div><span class="what">Entrance Ceremony Speech</span> &mdash; Seoul High School</div><div class="when">2021</div></div>
+        <div class="row"><div><span class="what">AI Talk for High School Sophomores and Juniors</span> &mdash; Hanseong Science High School</div><div class="when">2021</div></div>
+        <div class="row"><div><span class="what">TF-based Deep Learning Programming</span> &mdash; 1st KICS Lecture, KICS</div><div class="when">2018</div></div>
+        <div class="row"><div><span class="what">Deep Learning: Algorithms, Software, and Systems</span> &mdash; POSCO ICT</div><div class="when">2017</div></div>
+        <div class="row"><div><span class="what">AI Fundamentals</span> &mdash; KT Education Center</div><div class="when">2017</div></div>
+      </div>
+    </section>
+
+    <section id="teaching">
+      <h2>Teaching</h2>
+      <div>
+        <div class="row"><div><span class="what">Deep Learning Project Management Process</span> &mdash; Lecturer, Naver Boostcamp AI Tech</div><div class="when">2022</div></div>
+        <div class="row"><div><span class="what">SW Health Contents Development</span> &mdash; Lecturer, College of Nursing, Chung-Ang University</div><div class="when">2018</div></div>
+        <div class="row"><div><span class="what">Mobile Application Development</span> &mdash; TA &amp; Lecturer</div><div class="when">2017, 2018</div></div>
+        <div class="row"><div><span class="what">Programming Language</span> &mdash; TA</div><div class="when">2017</div></div>
+      </div>
+    </section>
+
+    <section id="patents">
+      <h2>Patents</h2>
+      <div>
+        <div class="row"><div><span class="what">Method and Apparatus for Guiding a Recommended Parking Location</span><br>KR 10-1894314 &middot; Granted &middot; Technology transferred, Nov. 2024</div></div>
+        <div class="row"><div><span class="what">Method and System for Video Streaming Service</span><br>KR 10-2019-0005307</div></div>
+        <div class="row"><div><span class="what">Recipient-oriented Transaction Verification Method and Apparatus for Preventing Double Spending</span><br>KR 10-2018-0089040</div></div>
+        <div class="row"><div><span class="what">Proof-of-Probability (PoP) based Blockchain Compensation Method and Apparatus</span><br>KR 10-2018-0089039</div></div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer>Last updated October 2026</footer>
+
+</div>
 </body>
 </html>
