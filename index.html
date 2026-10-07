@@ -188,6 +188,18 @@
     .pub .venue-full { font-style: italic; }
     .honor { color: var(--red); font-weight: 800; margin-top: 4px; }
     .also { margin-top: 2px; font-size: 15px; }
+    .pub.has-fig { display: grid; grid-template-columns: 1fr 260px; gap: 0 28px; align-items: start; }
+    .pub-fig {
+      display: block;
+      margin-top: 4px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      overflow: hidden;
+      background: #fff;
+      transition: border-color .15s;
+    }
+    .pub-fig:hover { border-color: var(--navy); }
+    .pub-fig img { display: block; width: 100%; height: auto; }
     .plinks { margin-top: 8px; display: flex; flex-wrap: wrap; gap: 6px; }
     .plinks a {
       font-family: var(--display);
@@ -237,6 +249,8 @@
       h2 { position: static; }
       h2 .legend { display: inline; margin-left: 8px; }
       .row { grid-template-columns: 1fr; }
+      .pub.has-fig { grid-template-columns: 1fr; }
+      .pub-fig { order: -1; margin: 0 0 12px; }
       .row .when { text-align: left; }
       .map .map-h { display: none; }
       .map .map-v { display: block; max-width: 400px; }
@@ -368,41 +382,50 @@
 
         <div class="year">2026</div>
 
-        <article class="pub" id="pub-igg">
-          <span class="venue">EMNLP 2026 Main</span>
-          <div class="title">IGG: A Benchmark for Interactive GUI Grounding under Visibility Constraints</div>
-          <div class="authors"><span class="me">K. S. Kim</span>*, J. Son*, T.-H. Oh</div>
-          <div class="venue-full">Conference on Empirical Methods in Natural Language Processing</div>
-          <div class="also">Also presented at ICML 2026 Workshop on Compositional Learning: Safety, Interpretability, and Agents</div>
-          <div class="plinks">
-            <a href="https://igg-bench.github.io/">Project</a>
+        <article class="pub has-fig" id="pub-igg">
+          <div class="pub-text">
+            <span class="venue">EMNLP 2026 Main</span>
+            <div class="title">IGG: A Benchmark for Interactive GUI Grounding under Visibility Constraints</div>
+            <div class="authors"><span class="me">K. S. Kim</span>*, J. Son*, T.-H. Oh</div>
+            <div class="venue-full">Conference on Empirical Methods in Natural Language Processing</div>
+            <div class="also">Also presented at ICML 2026 Workshop on Compositional Learning: Safety, Interpretability, and Agents</div>
+            <div class="plinks">
+              <a href="https://igg-bench.github.io/">Project</a>
+            </div>
           </div>
+          <a class="pub-fig" href="https://igg-bench.github.io/"><img src="images/pubs/igg.jpg" alt="IGG overview: screenshot-only target revelation and three visibility constraint types" loading="lazy"></a>
         </article>
 
-        <article class="pub" id="pub-svhalluc">
-          <span class="venue">CVPR 2026</span>
-          <div class="title">SVHalluc: Benchmarking Speech&ndash;Vision Hallucination in Audio-Visual Large Language Models</div>
-          <div class="authors">C. Zhang, <span class="me">K. S. Kim</span>, C. Liu, T.-H. Oh</div>
-          <div class="venue-full">IEEE/CVF Conference on Computer Vision and Pattern Recognition</div>
-          <div class="plinks">
-            <a href="https://arxiv.org/abs/2606.02642">arXiv</a>
-            <a href="https://chenshuang-zhang.github.io/projects/svhalluc/">Project</a>
+        <article class="pub has-fig" id="pub-svhalluc">
+          <div class="pub-text">
+            <span class="venue">CVPR 2026</span>
+            <div class="title">SVHalluc: Benchmarking Speech&ndash;Vision Hallucination in Audio-Visual Large Language Models</div>
+            <div class="authors">C. Zhang, <span class="me">K. S. Kim</span>, C. Liu, T.-H. Oh</div>
+            <div class="venue-full">IEEE/CVF Conference on Computer Vision and Pattern Recognition</div>
+            <div class="plinks">
+              <a href="https://arxiv.org/abs/2606.02642">arXiv</a>
+              <a href="https://chenshuang-zhang.github.io/projects/svhalluc/">Project</a>
+            </div>
           </div>
+          <a class="pub-fig" href="https://chenshuang-zhang.github.io/projects/svhalluc/"><img src="images/pubs/svhalluc.jpg" alt="SVHalluc teaser: ambient sound benchmarks versus speech-induced hallucination" loading="lazy"></a>
         </article>
 
-        <article class="pub" id="pub-meol">
-          <span class="venue">WACV 2026</span>
-          <div class="title">mEOL: Training-Free Instruction-Guided Multimodal Embedder for Vector Graphics and Image Retrieval</div>
-          <div class="authors"><span class="me">K. S. Kim</span>, S.-E. Baek, J.-M. Lee, T.-H. Oh</div>
-          <div class="venue-full">IEEE/CVF Winter Conference on Applications of Computer Vision</div>
-          <div class="honor">Round 1 paper (6.4% acceptance rate)</div>
-          <div class="honor">Best Student Presentation Award, IPIU 2025</div>
-          <div class="also">Also presented at ICCV 2025 Workshop on Graphic Design Understanding and Generation (GDUG)</div>
-          <div class="plinks">
-            <a href="https://arxiv.org/abs/2604.17054">arXiv</a>
-            <a href="meol/">Project</a>
-            <a href="meol/static/pdfs/wacv25_poster.pdf">Poster</a>
+        <article class="pub has-fig" id="pub-meol">
+          <div class="pub-text">
+            <span class="venue">WACV 2026</span>
+            <div class="title">mEOL: Training-Free Instruction-Guided Multimodal Embedder for Vector Graphics and Image Retrieval</div>
+            <div class="authors"><span class="me">K. S. Kim</span>, S.-E. Baek, J.-M. Lee, T.-H. Oh</div>
+            <div class="venue-full">IEEE/CVF Winter Conference on Applications of Computer Vision</div>
+            <div class="honor">Round 1 paper (6.4% acceptance rate)</div>
+            <div class="honor">Best Student Presentation Award, IPIU 2025</div>
+            <div class="also">Also presented at ICCV 2025 Workshop on Graphic Design Understanding and Generation (GDUG)</div>
+            <div class="plinks">
+              <a href="https://arxiv.org/abs/2604.17054">arXiv</a>
+              <a href="meol/">Project</a>
+              <a href="meol/static/pdfs/wacv25_poster.pdf">Poster</a>
+            </div>
           </div>
+          <a class="pub-fig" href="meol/"><img src="images/pubs/meol.jpg" alt="mEOL overview: semantic SVG module, zero-shot multimodal embedding, and text-to-image or SVG retrieval" loading="lazy"></a>
         </article>
 
         <article class="pub" id="pub-cups">
@@ -414,17 +437,20 @@
 
         <div class="year">2025</div>
 
-        <article class="pub" id="pub-depth">
-          <span class="venue">AAAI 2025</span>
-          <div class="title">Zero-shot Depth Completion via Test-time Alignment with Affine-invariant Depth Prior</div>
-          <div class="authors">H. Lee, <span class="me">K. S. Kim</span>, B.-K. Kwon, T.-H. Oh</div>
-          <div class="venue-full">AAAI Conference on Artificial Intelligence</div>
-          <div class="honor">Qualcomm Innovation Fellowship 2025 winning paper</div>
-          <div class="plinks">
-            <a href="https://ojs.aaai.org/index.php/AAAI/article/view/32405">Paper</a>
-            <a href="https://arxiv.org/abs/2502.06338">arXiv</a>
-            <a href="https://hyoseok1223.github.io/zero-shot-depth-completion/">Project</a>
+        <article class="pub has-fig" id="pub-depth">
+          <div class="pub-text">
+            <span class="venue">AAAI 2025</span>
+            <div class="title">Zero-shot Depth Completion via Test-time Alignment with Affine-invariant Depth Prior</div>
+            <div class="authors">H. Lee, <span class="me">K. S. Kim</span>, B.-K. Kwon, T.-H. Oh</div>
+            <div class="venue-full">AAAI Conference on Artificial Intelligence</div>
+            <div class="honor">Qualcomm Innovation Fellowship 2025 winning paper</div>
+            <div class="plinks">
+              <a href="https://ojs.aaai.org/index.php/AAAI/article/view/32405">Paper</a>
+              <a href="https://arxiv.org/abs/2502.06338">arXiv</a>
+              <a href="https://hyoseok1223.github.io/zero-shot-depth-completion/">Project</a>
+            </div>
           </div>
+          <a class="pub-fig" href="https://hyoseok1223.github.io/zero-shot-depth-completion/"><img src="images/pubs/depth.jpg" alt="Test-time alignment of sparse depth with an affine-invariant depth prior" loading="lazy"></a>
         </article>
 
         <div class="year">2019</div>
