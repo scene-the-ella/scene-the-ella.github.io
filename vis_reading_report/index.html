@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Propagation Views Demo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* One quiet panel: short intro, the visualization, then the trial. */
+:root {
+  --paper: #ffffff; --surface: #ffffff; --ink: #18202b; --muted: #5f6977; --rule: #dde2e8;
+  --accent: #1f4e8c; --hl: #d9480f; --zero: #ffffff; --chip: #f1f3f6;
+  --font-ui: "IBM Plex Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) { --paper: #15191f; --surface: #15191f; --ink: #e5e9ef; --muted: #9ba5b3; --rule: #2d3541; --accent: #8db6ff; --hl: #ff8b42; --zero: #262e39; --chip: #222a35; color-scheme: dark; }
+}
+:root[data-theme="dark"] { --paper: #15191f; --surface: #15191f; --ink: #e5e9ef; --muted: #9ba5b3; --rule: #2d3541; --accent: #8db6ff; --hl: #ff8b42; --zero: #262e39; --chip: #222a35; color-scheme: dark; }
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body { background: var(--paper); color: var(--ink); font-family: var(--font-ui); font-size: 14px; line-height: 1.5; }
+main { max-width: 760px; margin: 0 auto; padding: 24px 16px 40px; }
+h1 { font-size: 20px; font-weight: 600; margin: 0 0 6px; }
+.intro { margin: 0 0 16px; color: var(--ink); max-width: 64ch; }
+.row { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-bottom: 8px; }
+.row .lbl { color: var(--muted); font-size: 12.5px; min-width: 70px; }
+button { font-family: var(--font-ui); font-size: 13px; color: var(--ink); background: var(--chip); border: 1px solid var(--rule); border-radius: 6px; padding: 5px 10px; cursor: pointer; }
+button:hover { border-color: var(--accent); }
+button.on { background: var(--accent); color: var(--surface); border-color: var(--accent); }
+button.on .tag-ext { color: var(--surface); }
+button:disabled { opacity: .45; cursor: not-allowed; }
+button:focus-visible, input:focus-visible, select:focus-visible { outline: 2px solid var(--hl); outline-offset: 2px; }
+button.primary { border-color: var(--accent); color: var(--accent); background: transparent; font-weight: 500; }
+.tag-ext { font-size: 11px; color: var(--hl); }
+.canvas-wrap { position: relative; width: 100%; border: 1px solid var(--rule); border-radius: 8px; overflow: hidden; background: var(--surface); margin-top: 4px; }
+canvas { display: block; touch-action: none; }
+.tip { position: absolute; pointer-events: none; background: var(--ink); color: var(--surface); font-size: 12px; padding: 5px 8px; border-radius: 4px; white-space: nowrap; display: none; z-index: 3; font-variant-numeric: tabular-nums; }
+.sub { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: center; margin-top: 8px; font-size: 12.5px; color: var(--muted); }
+.sub select { font-family: var(--font-ui); font-size: 12.5px; background: var(--chip); color: var(--ink); border: 1px solid var(--rule); border-radius: 5px; padding: 3px 6px; }
+.ctl { display: flex; align-items: center; gap: 8px; font-size: 12.5px; color: var(--muted); }
+.ctl input[type=range] { flex: 1; accent-color: var(--accent); min-width: 80px; }
+.ctl output { min-width: 30px; text-align: right; font-variant-numeric: tabular-nums; color: var(--ink); }
+.legend { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; font-size: 12px; color: var(--muted); margin-top: 8px; }
+.sw { display: inline-flex; gap: 2px; }
+.sw span { width: 16px; height: 11px; display: inline-block; border-radius: 2px; }
+.sw span.zero { border: 1px solid var(--rule); }
+.quiz { margin-top: 16px; border-top: 1px solid var(--rule); padding-top: 12px; }
+.top { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 10px; }
+.top h1 { margin: 0 6px 0 0; }
+.lead { margin: 0 0 10px; max-width: 66ch; }
+.techrow { position: relative; }
+.toast { position: absolute; left: 76px; bottom: calc(100% + 2px); background: var(--ink); color: var(--surface); font-size: 12.5px; padding: 6px 10px; border-radius: 6px; z-index: 5; box-shadow: 0 4px 14px rgba(0,0,0,.18); }
+.toast::after { content: ""; position: absolute; left: 22px; top: 100%; border: 6px solid transparent; border-top-color: var(--ink); }
+#f3-techrow.pulse button:not(.on) { animation: pulse 1.2s ease-in-out 2; }
+@keyframes pulse { 50% { border-color: var(--hl); box-shadow: 0 0 0 2px color-mix(in srgb, var(--hl) 30%, transparent); } }
+@media (prefers-reduced-motion: reduce) { #f3-techrow.pulse button { animation: none; } }
+.quiz-q { margin: 0 0 8px; }
+.result { margin: 0 0 8px; }
+.result:empty { display: none; }
+table.log { border-collapse: collapse; font-size: 12.5px; margin-top: 6px; font-variant-numeric: tabular-nums; }
+table.log th, table.log td { border-bottom: 1px solid var(--rule); padding: 3px 14px 3px 0; text-align: left; }
+table.log th { color: var(--muted); font-weight: 500; }
+.after { margin-top: 14px; color: var(--ink); max-width: 64ch; }
+</style>
+</head>
+<body>
+<main>
+<div class="top">
+  <h1>Try it!</h1>
+</div>
+<p class="lead">Explore the views, then press Start and guess whether a hidden spread hops.</p>
+<div class="row"><button class="primary" id="f3-start">Start</button><span id="f3-timer" style="font-variant-numeric:tabular-nums;color:var(--muted)"></span></div>
+<p class="quiz-q" id="f3-q" hidden>Does this spread hop? <button id="f3-yes">Yes</button> <button id="f3-no">No</button></p>
+<p class="result" id="f3-res" aria-live="polite"></p>
+<div class="row" role="group" aria-label="Scenario"><span class="lbl">Scenario</span><span id="f3-scen"></span></div>
+<div class="techrow"><div class="row" role="group" aria-label="Technique" id="f3-techrow"><span class="lbl">Technique</span><span id="f3-tech"></span></div><div class="toast" id="f3-toast" role="status" hidden>Switch techniques as often as you like while you decide.</div></div>
+<div class="canvas-wrap"><canvas id="f3-cv" aria-label="Propagation visualization"></canvas><canvas id="f3-cv3" aria-label="Tilted stack of time layers" style="display:none"></canvas><div class="tip" id="f3-tip"></div></div>
+<div class="sub" id="f3-ctl"></div>
+<div class="legend" id="f3-legend"></div>
+<div class="quiz" id="f3-logwrap" hidden>
+  <table class="log" id="f3-log"><thead><tr><th>Trial</th><th>Result</th><th>Time</th><th>Techniques you used</th></tr></thead><tbody></tbody></table>
+  <p class="after" id="f3-after">Did tilting or listening help you spot the jump? Which technique did you end up relying on?</p>
+</div>
+</main>
+<script>
+// Synthetic propagation data shared by all figures.
+const COLS = 8, ROWS = 6, T = 12;
+const PROF = [0.4, 0.75, 1, 0.85, 0.62, 0.42, 0.26, 0.14, 0.06];
+const LETTERS = 'ABCDEFGH';
+const rname = (c, r) => LETTERS[c] + (r + 1);
+function hash(a, b, s) {
+  let h = Math.imul(a + 1, 374761393) ^ Math.imul(b + 7, 668265263) ^ Math.imul(s + 3, 2246822519 | 0);
+  h = Math.imul(h ^ (h >>> 13), 1274126177);
+  h ^= h >>> 16;
+  return (h >>> 0) / 4294967296;
+}
+const SCEN = {
+  direction: { seed: 11, label: 'Direction (west to east)', arr: (c, r) => c * 1.3 + hash(c, r, 1) * 1.1 },
+  hops: { seed: 12, label: 'Hops (spatial jump)', arr: (c, r) => {
+    const l = (c + Math.abs(r - 4)) * 1.5 + hash(c, r, 2) * 0.8;
+    const d2 = Math.abs(c - 6) + Math.abs(r - 1);
+    const j = d2 <= 2 ? 4 + d2 * 1.6 + hash(c, r, 3) * 0.6 : Infinity;
+    return Math.min(l, j);
+  } },
+  local: { seed: 13, label: 'Scope (local)', arr: (c, r) => {
+    const d = Math.abs(c - 2) + Math.abs(r - 3);
+    return d <= 2 ? d * 1.7 + hash(c, r, 4) * 0.8 : Infinity;
+  } },
+  global: { seed: 14, label: 'Scope (global)', arr: (c, r) => Math.hypot(c - 4, (r - 2.5) * 1.15) * 1.2 + hash(c, r, 5) * 0.9 }
+};
+function makeData(key, fx, fy) {
+  const src = (c, r) => [fx ? COLS - 1 - c : c, fy ? ROWS - 1 - r : r];
+  const arr = [], val = [], lvl = [];
+  for (let r = 0; r < ROWS; r++) {
+    arr.push([]);
+    for (let c = 0; c < COLS; c++) {
+      const [sc, sr] = src(c, r);
+      const a = SCEN[key].arr(sc, sr);
+      arr[r].push(isFinite(a) && Math.round(a) < T ? Math.round(a) : -1);
+    }
+  }
+  let peak = { v: -1 };
+  const totals = [], cent = [];
+  for (let t = 0; t < T; t++) {
+    val.push([]); lvl.push([]);
+    let tot = 0, wx = 0;
+    for (let r = 0; r < ROWS; r++) {
+      val[t].push([]); lvl[t].push([]);
+      for (let c = 0; c < COLS; c++) {
+        const a = arr[r][c];
+        let v = 0;
+        if (a >= 0) {
+          const i = t - a;
+          if (i >= 0 && i < PROF.length) {
+            const [sc, sr] = src(c, r);
+            v = (2.6 + 2.4 * hash(sc, sr, SCEN[key].seed)) * PROF[i];
+          }
+        }
+        v = Math.round(v * 100) / 100;
+        val[t][r].push(v);
+        const L = v <= 0.05 ? 0 : Math.min(5, Math.ceil(v));
+        lvl[t][r].push(L);
+        tot += v; wx += v * c;
+        if (v > peak.v) peak = { v, t, c, r };
+      }
+    }
+    totals.push(tot); cent.push(tot ? wx / tot : (COLS - 1) / 2);
+  }
+  // A hop: a newly reached region with no region within two steps reached earlier.
+  const reached = arr.flat().filter(a => a >= 0);
+  const first = Math.min(...reached);
+  let hop = null;
+  for (let t = first + 2; t < T && !hop; t++) {
+    const cells = [];
+    for (let r = 0; r < ROWS; r++) for (let c = 0; c < COLS; c++) {
+      if (arr[r][c] !== t) continue;
+      let near = false;
+      for (let rr = r - 2; rr <= r + 2; rr++) for (let cc = c - 2; cc <= c + 2; cc++) {
+        if (rr < 0 || cc < 0 || rr >= ROWS || cc >= COLS) continue;
+        if (Math.abs(rr - r) + Math.abs(cc - c) > 2 || (rr === r && cc === c)) continue;
+        const a2 = arr[rr][cc];
+        if (a2 >= 0 && a2 < t) near = true;
+      }
+      if (!near) cells.push([c, r]);
+    }
+    if (cells.length) hop = { t, cells };
+  }
+  // Busiest step: most newly reached regions (used when there is no hop).
+  let busiest = { t: first, n: 0 };
+  for (let t = 0; t < T; t++) {
+    const n = arr.flat().filter(a => a === t).length;
+    if (n > busiest.n) busiest = { t, n };
+  }
+  // Latest-reached region: the default region of interest for Arrival.
+  let late = null;
+  for (let r = 0; r < ROWS; r++) for (let c = 0; c < COLS; c++) {
+    const a = arr[r][c];
+    if (a >= 0 && (!late || a > late.a)) late = { c, r, a };
+  }
+  return { key, arr, val, lvl, peak, hop, totals, cent, first, busiest, late, reachedCount: reached.length };
+}
+if (typeof module !== 'undefined') module.exports = { makeData, SCEN, COLS, ROWS, T, rname };
+
+</script>
+<script>
+window.__redraw = [];
+(function () {
+'use strict';
+const BLUES = ['#c6dbef', '#9ecae1', '#6baed6', '#3182bd', '#08306b'];
+const PURP = ['#26215C', '#3C3489', '#534AB7', '#7F77DD', '#AFA9EC', '#CECBF6', '#EEEDFE'];
+const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+const $ = id => document.getElementById(id);
+const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const theme = () => ({ bg: css('--surface'), ink: css('--ink'), muted: css('--muted'), rule: css('--rule'), hl: css('--hl'), zero: css('--zero'), accent: css('--accent') });
+const blue = L => BLUES[L - 1];
+const purp = a => PURP[Math.min(6, Math.floor(a * 7 / T))];
+const ease = x => x < .5 ? 2 * x * x : 1 - Math.pow(-2 * x + 2, 2) / 2;
+const lerp = (a, b, f) => a + (b - a) * f;
+const clamp = (x, a, b) => Math.max(a, Math.min(b, x));
+const SCEN_KEYS = ['direction', 'hops', 'local', 'global'];
+const SCEN_SHORT = { direction: 'Direction', hops: 'Hops', local: 'Scope (local)', global: 'Scope (global)' };
+
+function setupCanvas(cv, h) {
+  const w = Math.max(240, cv.parentElement.clientWidth);
+  const dpr = window.devicePixelRatio || 1;
+  cv.width = Math.round(w * dpr); cv.height = Math.round(h * dpr);
+  cv.style.width = w + 'px'; cv.style.height = h + 'px';
+  const ctx = cv.getContext('2d');
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  return { ctx, w, h };
+}
+function chips(host, items, onPick, initial) {
+  host.innerHTML = '';
+  const btns = {};
+  items.forEach(([key, label]) => {
+    const b = document.createElement('button');
+    b.type = 'button'; b.textContent = label; b.dataset.key = key;
+    b.setAttribute('aria-pressed', 'false');
+    b.addEventListener('click', () => onPick(key));
+    host.appendChild(b); btns[key] = b;
+    host.appendChild(document.createTextNode(' '));
+  });
+  const set = key => Object.entries(btns).forEach(([k, b]) => { b.classList.toggle('on', k === key); b.setAttribute('aria-pressed', k === key ? 'true' : 'false'); });
+  if (initial) set(initial);
+  return { set, btns };
+}
+function showTip(tip, wrap, x, y, html) {
+  tip.innerHTML = html; tip.style.display = 'block';
+  const W = wrap.clientWidth, tw = tip.offsetWidth;
+  tip.style.left = clamp(x + 12, 4, W - tw - 4) + 'px';
+  tip.style.top = Math.max(4, y - 34) + 'px';
+}
+function hideTip(tip) { tip.style.display = 'none'; }
+function pointIn(pts, x, y) {
+  let ins = false;
+  for (let i = 0, j = pts.length - 1; i < pts.length; j = i++) {
+    const [xi, yi] = pts[i], [xj, yj] = pts[j];
+    if ((yi > y) !== (yj > y) && x < (xj - xi) * (y - yi) / (yj - yi) + xi) ins = !ins;
+  }
+  return ins;
+}
+function legendCases(host) {
+  host.innerHTML = '<span>Cases</span><span class="sw"><span class="zero" style="background:var(--zero)"></span>' + BLUES.map(c => `<span style="background:${c}"></span>`).join('') + '</span><span>none → high</span>';
+}
+
+/* ---------- 3D space-time stack ---------- */
+class Cube {
+  constructor(cv, height, tip) {
+    this.cv = cv; this.height = height; this.tip = tip;
+    this.cfg = { tilt: 0, az: 0, el: 90, focus: 0, opac: .45, cue: 0, persp: 0, collapse: 0, enc: 0, ghost: 0, fo: 1, roi: [] };
+    this.data = null; this.hits = []; this.anim = null;
+    cv.addEventListener('pointermove', e => this.hover(e));
+    cv.addEventListener('pointerleave', () => hideTip(this.tip));
+  }
+  setData(d) { this.data = d; this.draw(); }
+  tween(target, dur) {
+    return new Promise(resolve => {
+      if (this.anim) cancelAnimationFrame(this.anim.raf);
+      const from = Object.assign({}, this.cfg);
+      ['focus', 'roi'].forEach(k => { if (k in target) this.cfg[k] = target[k]; });
+      const d = reduceMotion ? 0 : (dur == null ? 900 : dur);
+      const t0 = performance.now();
+      const step = now => {
+        const f = d ? ease(clamp((now - t0) / d, 0, 1)) : 1;
+        for (const k in target) if (typeof target[k] === 'number' && k !== 'focus') this.cfg[k] = lerp(from[k], target[k], f);
+        this.draw();
+        if (f < 1) this.anim = { raf: requestAnimationFrame(step) };
+        else { this.anim = null; resolve(); }
+      };
+      this.anim = { raf: requestAnimationFrame(step) };
+    });
+  }
+  draw() {
+    if (!this.data) return;
+    const { ctx, w, h } = setupCanvas(this.cv, this.height);
+    const th = theme(), c = this.cfg, d = this.data;
+    ctx.fillStyle = th.bg; ctx.fillRect(0, 0, w, h);
+    const A = c.az * Math.PI / 180, E = c.el * Math.PI / 180;
+    const ca = Math.cos(A), sa = Math.sin(A), ce = Math.cos(E), se = Math.sin(E);
+    const H = .62, k = c.collapse;
+    const proj = (x, y, z) => {
+      const x1 = x * ca - y * sa, y1 = x * sa + y * ca;
+      const D = y1 * ce + z * se;
+      const f = 1 / (1 - D * .065 * c.persp);
+      return [x1 * f, (y1 * se - z * ce) * f, D];
+    };
+    const hx = COLS / 2, hy = ROWS / 2 * (1 - k), hz = (T - 1) / 2 * H * c.tilt + H * .45 * k;
+    const box = [];
+    for (const x of [-hx, hx]) for (const y of [-hy, hy]) for (const z of [-hz, hz]) box.push(proj(x, y, z));
+    const minX = Math.min(...box.map(p => p[0])), maxX = Math.max(...box.map(p => p[0]));
+    const minY = Math.min(...box.map(p => p[1])), maxY = Math.max(...box.map(p => p[1]));
+    const minD = Math.min(...box.map(p => p[2])), maxD = Math.max(...box.map(p => p[2]));
+    const sc = Math.min((w - 70) / (maxX - minX || 1), (h - 50) / (maxY - minY || 1), 44);
+    const ox = w / 2 - (minX + maxX) / 2 * sc, oy = h / 2 - (minY + maxY) / 2 * sc;
+    const S = p => [ox + p[0] * sc, oy + p[1] * sc];
+    const quad = (x0, y0, z0, sx, sy, sz) => [proj(x0 - sx, y0 - sy, z0 - sz), proj(x0 + sx, y0 - sy, z0 - sz), proj(x0 + sx, y0 + sy, z0 + sz), proj(x0 - sx, y0 + sy, z0 + sz)];
+    const zOf = t => (t - (T - 1) / 2) * H * c.tilt;
+    const xOf = cc => cc - (COLS - 1) / 2, yOf = r => (r - (ROWS - 1) / 2) * (1 - k);
+    const sx = .44, sy = .44 * (1 - k), sz = .44 * H * k;
+    const items = [];
+    const cueA = D => 1 - c.cue * (1 - (D - minD) / ((maxD - minD) || 1)) * .72;
+    const encA = 1 - c.enc;
+    if (encA > .01) {
+      for (let t = 0; t < T; t++) {
+        const isF = t === c.focus;
+        const la = isF ? 1 : c.opac * clamp(c.tilt * 1.4, 0, 1);
+        if (la < .01) continue;
+        for (let cc = 0; cc < COLS; cc++) {
+          let rows = [...Array(ROWS).keys()];
+          if (k >= .5) { let best = 0; rows.forEach(r => { if (d.val[t][r][cc] > d.val[t][best][cc]) best = r; }); rows = [best]; }
+          for (const r of rows) {
+            const L = d.lvl[t][r][cc];
+            const showZero = isF && c.fo > .5 && k < .5;
+            if (!L && !showZero) continue;
+            const pts = quad(xOf(cc), yOf(r), zOf(t), sx, sy, sz);
+            const D = (pts[0][2] + pts[2][2]) / 2;
+            items.push({ pts, D, fill: L ? blue(L) : th.zero, stroke: L ? null : th.rule, a: la * encA * cueA(D), meta: { cc, r, t, v: d.val[t][r][cc], k } });
+          }
+        }
+      }
+    }
+    if (c.enc > .01) {
+      for (let r = 0; r < ROWS; r++) for (let cc = 0; cc < COLS; cc++) {
+        const a = d.arr[r][cc];
+        const pts = quad(xOf(cc), yOf(r), 0, sx, sy, 0);
+        items.push({ pts, D: 99, fill: a >= 0 ? purp(a) : th.zero, stroke: a >= 0 ? null : th.rule, a: c.enc, meta: { cc, r, arr: a }, label: a >= 0 ? 't' + (a + 1) : '', lc: a >= 0 && Math.floor(a * 7 / T) >= 4 ? '#26215C' : '#EEEDFE' });
+      }
+    }
+    items.sort((p, q) => p.D - q.D);
+    this.hits = [];
+    for (const it of items) {
+      const P = it.pts.map(S);
+      ctx.globalAlpha = clamp(it.a, 0, 1);
+      ctx.beginPath(); P.forEach((p, i) => i ? ctx.lineTo(p[0], p[1]) : ctx.moveTo(p[0], p[1])); ctx.closePath();
+      ctx.fillStyle = it.fill; ctx.fill();
+      if (it.stroke) { ctx.strokeStyle = it.stroke; ctx.lineWidth = 1; ctx.stroke(); }
+      if (it.label && c.enc > .6 && sc > 26) {
+        ctx.fillStyle = it.lc; ctx.font = '500 11px "IBM Plex Sans", sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+        const cx = P.reduce((s, p) => s + p[0], 0) / 4, cy = P.reduce((s, p) => s + p[1], 0) / 4;
+        ctx.fillText(it.label, cx, cy);
+      }
+      if (it.a > .2) this.hits.push({ P, meta: it.meta });
+    }
+    ctx.globalAlpha = 1;
+    const fz = c.enc > .5 ? 0 : zOf(c.focus);
+    // previous-step outline (onion skin)
+    if (c.ghost > .02 && c.focus > 0) {
+      ctx.save(); ctx.globalAlpha = c.ghost; ctx.setLineDash([3, 3]); ctx.strokeStyle = th.ink; ctx.lineWidth = 1.2;
+      for (let r = 0; r < ROWS; r++) for (let cc = 0; cc < COLS; cc++) if (d.lvl[c.focus - 1][r][cc]) {
+        const P = quad(xOf(cc), yOf(r), fz, sx * .78, sy * .78, sz * .78).map(S);
+        ctx.beginPath(); P.forEach((p, i) => i ? ctx.lineTo(p[0], p[1]) : ctx.moveTo(p[0], p[1])); ctx.closePath(); ctx.stroke();
+      }
+      ctx.restore();
+    }
+    // focus layer outline
+    const fa = c.fo * clamp(c.tilt * 3, 0, 1) * (1 - c.enc);
+    if (fa > .02) {
+      const P = quad(0, 0, fz, hx + .1, hy + .1 * (1 - k), (H * .45 + .05) * k).map(S);
+      ctx.save(); ctx.globalAlpha = fa; ctx.strokeStyle = th.hl; ctx.lineWidth = 2;
+      ctx.beginPath(); P.forEach((p, i) => i ? ctx.lineTo(p[0], p[1]) : ctx.moveTo(p[0], p[1])); ctx.closePath(); ctx.stroke();
+      ctx.fillStyle = th.hl; ctx.font = '600 12px "IBM Plex Sans", sans-serif'; ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
+      const R = P.reduce((m, p) => p[0] > m[0] ? p : m, P[0]);
+      ctx.fillText('t' + (c.focus + 1), R[0] + 6, R[1]);
+      ctx.restore();
+    }
+    // regions of interest
+    for (const [cc, r] of c.roi) {
+      const P = quad(xOf(cc), yOf(r), fz, sx + .06, sy + .06 * (1 - k), sz).map(S);
+      ctx.save(); ctx.strokeStyle = th.hl; ctx.lineWidth = 2.6;
+      ctx.beginPath(); P.forEach((p, i) => i ? ctx.lineTo(p[0], p[1]) : ctx.moveTo(p[0], p[1])); ctx.closePath(); ctx.stroke();
+      ctx.fillStyle = th.hl; ctx.font = '600 12px "IBM Plex Sans", sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'bottom';
+      const top = P.reduce((m, p) => p[1] < m[1] ? p : m, P[0]);
+      ctx.fillText(rname(cc, r), (P[0][0] + P[1][0] + P[2][0] + P[3][0]) / 4, top[1] - 3);
+      ctx.restore();
+    }
+    // axis labels
+    ctx.fillStyle = th.muted; ctx.font = '12px "IBM Plex Sans", sans-serif'; ctx.textBaseline = 'middle';
+    if (k > .5 && c.enc < .5) {
+      const b0 = S(proj(-hx, 0, -hz)), b1 = S(proj(hx, 0, -hz)), t1 = S(proj(-hx, 0, hz));
+      ctx.textAlign = 'left'; ctx.fillText('west', b0[0], b0[1] + 14); ctx.textAlign = 'right'; ctx.fillText('east', b1[0], b1[1] + 14);
+      ctx.textAlign = 'right'; ctx.fillText('t1', b0[0] - 6, b0[1] - 8); ctx.fillText('t12', t1[0] - 6, t1[1] + 8);
+      ctx.save(); ctx.translate(b0[0] - 30, (b0[1] + t1[1]) / 2); ctx.rotate(-Math.PI / 2); ctx.textAlign = 'center'; ctx.fillText('time', 0, 0); ctx.restore();
+    } else if (c.tilt > .3 && c.enc < .5) {
+      const leftmost = z => [[-hx, -hy], [hx, -hy], [hx, hy], [-hx, hy]].map(([x, y]) => S(proj(x, y, z))).reduce((m, p) => p[0] < m[0] ? p : m);
+      const p0 = leftmost(zOf(0)), p1 = leftmost(zOf(T - 1));
+      ctx.textAlign = 'right'; ctx.fillText('t1', p0[0] - 8, p0[1]); ctx.fillText('t12', p1[0] - 8, p1[1]);
+    } else {
+      const n = S(proj(-hx, -hy, 0));
+      ctx.textAlign = 'right'; ctx.fillText('N ↑', n[0] - 8, n[1] + 6);
+      if (c.enc < .5) { ctx.textAlign = 'left'; ctx.fillText('t' + (c.focus + 1), 8, 14); }
+    }
+  }
+  hover(e) {
+    const rect = this.cv.getBoundingClientRect(), x = e.clientX - rect.left, y = e.clientY - rect.top;
+    for (let i = this.hits.length - 1; i >= 0; i--) {
+      if (pointIn(this.hits[i].P, x, y)) {
+        const m = this.hits[i].meta;
+        let html;
+        if ('arr' in m) html = `<b>${rname(m.cc, m.r)}</b> · first reached ${m.arr >= 0 ? 't' + (m.arr + 1) : 'never'}`;
+        else if (m.k >= .5) html = `Column ${'ABCDEFGH'[m.cc]}, t${m.t + 1} · max over rows ${m.v.toFixed(1)}`;
+        else html = `<b>${rname(m.cc, m.r)}</b> · t${m.t + 1} · cases ${m.v.toFixed(1)}`;
+        showTip(this.tip, this.cv.parentElement, x, y, html);
+        return;
+      }
+    }
+    hideTip(this.tip);
+  }
+}
+
+/* ---------- 2D map helpers ---------- */
+function mapRect(x, y, w, h, pad) {
+  const s = Math.min((w - pad * 2) / COLS, (h - pad * 2) / ROWS);
+  return { s, x0: x + (w - s * COLS) / 2, y0: y + (h - s * ROWS) / 2 };
+}
+function glyphCells(ctx, d, cc, r, x, y, s, th, hlT) {
+  const g = Math.max(.6, s * .04), pad = s * .1;
+  const cw = (s - pad * 2 - g * 3) / 4, chh = (s - pad * 2 - g * 2) / 3;
+  for (let t = 0; t < T; t++) {
+    const gx = x + pad + (t % 4) * (cw + g), gy = y + pad + Math.floor(t / 4) * (chh + g);
+    const L = d.lvl[t][r][cc];
+    ctx.fillStyle = L ? blue(L) : th.zero; ctx.fillRect(gx, gy, cw, chh);
+    if (!L) { ctx.strokeStyle = th.rule; ctx.lineWidth = .6; ctx.strokeRect(gx + .3, gy + .3, cw - .6, chh - .6); }
+    if (hlT === t) { ctx.strokeStyle = th.hl; ctx.lineWidth = 1.6; ctx.strokeRect(gx - .8, gy - .8, cw + 1.6, chh + 1.6); }
+  }
+}
+
+/* ---------- Figure 3: six techniques ---------- */
+(function fig3() {
+  const cv = $('f3-cv'), cv3 = $('f3-cv3'), tip = $('f3-tip'), H = 360;
+  const TECH = [['anim', 'Animated map'], ['sm', 'Small multiples'], ['glyph', 'Glyph map'], ['tilt', 'Tilt (2D ↔ 3D)'], ['sound', 'Sound + animation']];
+  const NEW = { tilt: 1, sound: 1 };
+  let tech = 'anim', scen = 'direction', data = makeData(scen), t = 0, timer = null, fps = 4, hover = null, pinned = null, gt = 0, tiltU = 1;
+  let audio = null, trial = null;
+  const log = {};
+  const cube = new Cube(cv3, H, tip);
+  let layout = null;
+
+  function stop() { if (timer) { clearInterval(timer); timer = null; } const b = $('f3-play'); if (b) b.textContent = tech === 'sound' ? '▶ Play with sound' : '▶ Play'; }
+  function tone() {
+    if (!audio || tech !== 'sound') return;
+    const tot = data.totals[t]; if (tot < .05) return;
+    const pan = clamp((data.cent[t] - (COLS - 1) / 2) / ((COLS - 1) / 2), -1, 1);
+    const o = audio.createOscillator(), g = audio.createGain(), now = audio.currentTime;
+    o.type = 'triangle'; o.frequency.value = 180 + tot * 6;
+    g.gain.setValueAtTime(0, now); g.gain.linearRampToValueAtTime(.16, now + .02); g.gain.exponentialRampToValueAtTime(.001, now + Math.min(.5, 0.9 / fps));
+    let node = g;
+    if (audio.createStereoPanner) { const p = audio.createStereoPanner(); p.pan.value = pan; g.connect(p); node = p; }
+    o.connect(g); node.connect(audio.destination); o.start(now); o.stop(now + .55);
+  }
+  function play() {
+    if (timer) { stop(); return; }
+    if (tech === 'sound') {
+      try { if (!audio) audio = new (window.AudioContext || window.webkitAudioContext)(); if (audio.state === 'suspended') audio.resume(); }
+      catch (e) { audio = null; $('f3-snote').textContent = 'This browser blocked audio, so only the picture will play.'; }
+    }
+    if (t >= T - 1) t = 0;
+    $('f3-play').textContent = '■ Stop';
+    draw(); tone();
+    timer = setInterval(() => { if (t >= T - 1) { stop(); return; } t++; draw(); tone(); }, 1000 / fps);
+  }
+  function buildControls() {
+    const host = $('f3-ctl'); host.innerHTML = '';
+    if (tech === 'anim' || tech === 'sound') {
+      host.innerHTML = `<button id="f3-play">${tech === 'sound' ? '▶ Play with sound' : '▶ Play'}</button>
+        <div class="ctl" style="flex:1;min-width:200px"><label for="f3-t" style="min-width:auto">Time step</label><input type="range" id="f3-t" min="0" max="${T - 1}" step="1" value="${t}"><output id="f3-t-o">t${t + 1}</output></div>
+        <label for="f3-fps">Speed <select id="f3-fps"><option value="2">slow</option><option value="4">medium</option><option value="10">fast</option></select></label>` +
+        (tech === 'sound' ? '<span>Pitch = total cases · left/right = east–west</span><span id="f3-snote"></span>' : '');
+      $('f3-play').addEventListener('click', play);
+      $('f3-fps').value = String(fps);
+      $('f3-fps').addEventListener('change', e => { fps = +e.target.value; if (timer) { stop(); play(); } });
+      $('f3-t').addEventListener('input', e => { stop(); t = +e.target.value; draw(); });
+    } else if (tech === 'glyph') {
+      host.innerHTML = `<div class="ctl" style="flex:1;min-width:200px"><label for="f3-gt" style="min-width:auto">Highlight time step</label><input type="range" id="f3-gt" min="0" max="${T - 1}" step="1" value="${gt}"><output id="f3-gt-o">t${gt + 1}</output></div>`;
+      $('f3-gt').addEventListener('input', e => { gt = +e.target.value; $('f3-gt-o').textContent = 't' + (gt + 1); draw(); });
+    } else if (tech === 'tilt') {
+      host.innerHTML = `<div class="ctl" style="flex:1;min-width:200px"><label for="f3-tu" style="min-width:auto">Tilt</label><input type="range" id="f3-tu" min="0" max="1" step="0.01" value="${tiltU}"><output id="f3-tu-o"></output></div>
+        <div class="ctl" style="flex:1;min-width:200px"><label for="f3-tt" style="min-width:auto">Time step in focus</label><input type="range" id="f3-tt" min="0" max="${T - 1}" step="1" value="${t}"><output id="f3-tt-o">t${t + 1}</output></div>`;
+      $('f3-tu').addEventListener('input', e => { tiltU = +e.target.value; draw(); });
+      $('f3-tt').addEventListener('input', e => { t = +e.target.value; draw(); });
+    } else if (tech === 'sm') {
+      host.innerHTML = '<span>Hover a region to highlight it on every map.</span>';
+    }
+  }
+  function draw() {
+    const is3 = tech === 'tilt';
+    cv.style.display = is3 ? 'none' : 'block'; cv3.style.display = is3 ? 'block' : 'none';
+    legendCases($('f3-legend'));
+    if (is3) {
+      Object.assign(cube.cfg, { tilt: tiltU, el: 90 - 58 * tiltU, az: -35 * tiltU, focus: t, opac: .5, cue: 1, persp: tiltU, collapse: 0, enc: 0, ghost: 0, fo: 1, roi: [] });
+      cube.data = data; cube.draw();
+      const o = $('f3-tu-o'); if (o) o.textContent = tiltU < .05 ? '2D' : tiltU > .95 ? '3D' : tiltU.toFixed(2);
+      const o2 = $('f3-tt-o'); if (o2) o2.textContent = 't' + (t + 1);
+      return;
+    }
+    const { ctx, w, h } = setupCanvas(cv, H);
+    const th = theme();
+    ctx.fillStyle = th.bg; ctx.fillRect(0, 0, w, h);
+    const sel = pinned || hover;
+    layout = [];
+    const drawMap = (x, y, mw, mh, tt, pad, label) => {
+      const m = mapRect(x, y + (label ? 16 : 0), mw, mh - (label ? 16 : 0), pad);
+      for (let r = 0; r < ROWS; r++) for (let cc = 0; cc < COLS; cc++) {
+        const X = m.x0 + cc * m.s, Y = m.y0 + r * m.s;
+        const L = data.lvl[tt][r][cc];
+        ctx.fillStyle = L ? blue(L) : th.zero; ctx.fillRect(X, Y, m.s, m.s);
+        ctx.strokeStyle = th.rule; ctx.lineWidth = .8; ctx.strokeRect(X + .4, Y + .4, m.s - .8, m.s - .8);
+        layout.push({ x: X, y: Y, s: m.s, cc, r, t: tt });
+      }
+      if (sel) { ctx.strokeStyle = th.hl; ctx.lineWidth = 2.2; ctx.strokeRect(m.x0 + sel[0] * m.s + 1, m.y0 + sel[1] * m.s + 1, m.s - 2, m.s - 2); }
+      if (label) { ctx.fillStyle = th.muted; ctx.font = '500 12px "IBM Plex Sans", sans-serif'; ctx.textAlign = 'left'; ctx.textBaseline = 'top'; ctx.fillText(label, m.x0, y); }
+      return m;
+    };
+    if (tech === 'anim' || tech === 'sound') {
+      const barH = tech === 'sound' ? 34 : 0;
+      drawMap(0, 0, w, h - barH, t, 14, null);
+      ctx.fillStyle = th.ink; ctx.font = '600 14px "IBM Plex Sans", sans-serif'; ctx.textAlign = 'left'; ctx.textBaseline = 'top'; ctx.fillText('t' + (t + 1), 10, 8);
+      if (tech === 'sound') {
+        const y = h - 20, x0 = w * .2, x1 = w * .8;
+        ctx.strokeStyle = th.rule; ctx.lineWidth = 4; ctx.lineCap = 'round'; ctx.beginPath(); ctx.moveTo(x0, y); ctx.lineTo(x1, y); ctx.stroke();
+        const pan = clamp((data.cent[t] - (COLS - 1) / 2) / ((COLS - 1) / 2), -1, 1);
+        const has = data.totals[t] > .05;
+        ctx.fillStyle = has ? th.accent : th.rule; ctx.beginPath(); ctx.arc(lerp(x0, x1, (pan + 1) / 2), y, 4 + Math.min(10, data.totals[t] / 8), 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = th.muted; ctx.font = '12px "IBM Plex Sans", sans-serif'; ctx.textBaseline = 'middle';
+        ctx.textAlign = 'right'; ctx.fillText('left (west)', x0 - 10, y); ctx.textAlign = 'left'; ctx.fillText('right (east)', x1 + 10, y);
+      }
+      const o = $('f3-t-o'); if (o) o.textContent = 't' + (t + 1); const s = $('f3-t'); if (s) s.value = t;
+    } else if (tech === 'sm') {
+      const colsN = w < 520 ? 3 : 4, rowsN = Math.ceil(T / colsN);
+      const cw = w / colsN, chh = h / rowsN;
+      for (let i = 0; i < T; i++) drawMap((i % colsN) * cw, Math.floor(i / colsN) * chh + 2, cw, chh - 2, i, 6, 't' + (i + 1));
+    } else if (tech === 'glyph') {
+      const m = mapRect(0, 0, w, h, 12);
+      for (let r = 0; r < ROWS; r++) for (let cc = 0; cc < COLS; cc++) {
+        const X = m.x0 + cc * m.s, Y = m.y0 + r * m.s;
+        ctx.fillStyle = th.zero; ctx.fillRect(X + 1, Y + 1, m.s - 2, m.s - 2);
+        ctx.strokeStyle = th.rule; ctx.lineWidth = 1; ctx.strokeRect(X + .5, Y + .5, m.s - 1, m.s - 1);
+        glyphCells(ctx, data, cc, r, X + 1, Y + 1, m.s - 2, th, gt);
+        layout.push({ x: X, y: Y, s: m.s, cc, r, glyph: true });
+      }
+      if (sel) { ctx.strokeStyle = th.hl; ctx.lineWidth = 2.2; ctx.strokeRect(m.x0 + sel[0] * m.s + 1, m.y0 + sel[1] * m.s + 1, m.s - 2, m.s - 2); }
+    }
+  }
+  function pick(e) {
+    const rect = cv.getBoundingClientRect(), x = e.clientX - rect.left, y = e.clientY - rect.top;
+    const hit = layout && layout.find(q => x >= q.x && x < q.x + q.s && y >= q.y && y < q.y + q.s);
+    return { hit, x, y };
+  }
+  cv.addEventListener('pointermove', e => {
+    const { hit, x, y } = pick(e);
+    if (!hit) { if (hover) { hover = null; draw(); } hideTip(tip); return; }
+    const key = [hit.cc, hit.r];
+    if (!hover || hover[0] !== key[0] || hover[1] !== key[1]) { hover = key; if (tech === 'sm') draw(); }
+    let html = `<b>${rname(hit.cc, hit.r)}</b>`;
+    if (hit.glyph) {
+      const m = hit.s - 2, pad = m * .1, g = Math.max(.6, m * .04), cw = (m - pad * 2 - g * 3) / 4, chh = (m - pad * 2 - g * 2) / 3;
+      const col = Math.floor((x - hit.x - 1 - pad) / (cw + g)), row = Math.floor((y - hit.y - 1 - pad) / (chh + g));
+      if (col >= 0 && col < 4 && row >= 0 && row < 3) { const tt = row * 4 + col; html += ` · t${tt + 1} · cases ${data.val[tt][hit.r][hit.cc].toFixed(1)}`; }
+    } else html += ` · t${hit.t + 1} · cases ${data.val[hit.t][hit.r][hit.cc].toFixed(1)}`;
+    showTip(tip, cv.parentElement, x, y, html);
+  });
+  cv.addEventListener('pointerleave', () => { hover = null; hideTip(tip); if (tech === 'sm') draw(); });
+  cv.addEventListener('click', e => {
+    const { hit } = pick(e);
+    if (tech === 'glyph' && hit && hit.glyph) {
+      const rect = cv.getBoundingClientRect(), x = e.clientX - rect.left, y = e.clientY - rect.top;
+      const m = hit.s - 2, pad = m * .1, g = Math.max(.6, m * .04), cw = (m - pad * 2 - g * 3) / 4, chh = (m - pad * 2 - g * 2) / 3;
+      const col = Math.floor((x - hit.x - 1 - pad) / (cw + g)), row = Math.floor((y - hit.y - 1 - pad) / (chh + g));
+      if (col >= 0 && col < 4 && row >= 0 && row < 3) { gt = row * 4 + col; const s = $('f3-gt'); if (s) { s.value = gt; $('f3-gt-o').textContent = 't' + (gt + 1); } }
+    }
+    pinned = hit && !(pinned && pinned[0] === hit.cc && pinned[1] === hit.r) ? [hit.cc, hit.r] : null;
+    draw();
+  });
+
+  const sc = chips($('f3-scen'), SCEN_KEYS.map(k => [k, SCEN_SHORT[k]]), k => { if (trial) return; stop(); scen = k; sc.set(k); data = makeData(k); t = 0; pinned = null; draw(); }, scen);
+  const tc = chips($('f3-tech'), TECH.map(([k, l]) => [k, l]), k => { if (trial) { trial.used.add(k); $('f3-toast').hidden = true; $('f3-techrow').classList.remove('pulse'); } stop(); tech = k; tc.set(k); hover = null; pinned = null; buildControls(); draw(); }, tech);
+  Object.entries(tc.btns).forEach(([k, b]) => { if (NEW[k]) b.innerHTML = b.textContent + ' <span class="tag-ext">new</span>'; });
+
+  const trials = [];
+  function renderLog() {
+    const name = Object.fromEntries(TECH);
+    $('f3-logwrap').hidden = !trials.length;
+    $('f3-log').querySelector('tbody').innerHTML = trials.map((r, i) => `<tr><td>${i + 1}</td><td>${r.ok ? 'Correct' : 'Incorrect'}</td><td>${r.secs.toFixed(1)} s</td><td>${r.used.map(k => name[k]).join(', ')}</td></tr>`).join('');
+  }
+  let tick = null;
+  $('f3-start').addEventListener('click', () => {
+    if (trial) return;
+    stop();
+    const pool = Math.random() < .5 ? ['hops'] : ['direction', 'global', 'local'];
+    const key = pool[Math.floor(Math.random() * pool.length)];
+    data = makeData(key, Math.random() < .5, Math.random() < .5);
+    t = 0; gt = 0; pinned = null; sc.set(null);
+    Object.values(sc.btns).forEach(b => b.disabled = true);
+    $('f3-start').disabled = true;
+    trial = { key, start: performance.now(), used: new Set([tech]) };
+    $('f3-toast').hidden = false; $('f3-techrow').classList.add('pulse');
+    clearTimeout(window.__toastT); window.__toastT = setTimeout(() => { $('f3-toast').hidden = true; $('f3-techrow').classList.remove('pulse'); }, 5000);
+    $('f3-q').hidden = false; $('f3-res').textContent = '';
+    buildControls(); draw();
+    tick = setInterval(() => { $('f3-timer').textContent = ((performance.now() - trial.start) / 1000).toFixed(1) + ' s'; }, 100);
+  });
+  function answer(saysJump) {
+    if (!trial) return;
+    clearInterval(tick); stop();
+    const secs = (performance.now() - trial.start) / 1000;
+    const truth = !!data.hop, ok = saysJump === truth;
+    trials.push({ ok, secs, used: TECH.map(([k]) => k).filter(k => trial.used.has(k)) });
+    $('f3-res').innerHTML = `<b style="color:${ok ? 'var(--accent)' : 'var(--hl)'}">${ok ? 'Correct' : 'Incorrect'}</b> · ${secs.toFixed(1)} s · the scenario was ${SCEN_SHORT[trial.key]}${truth ? `, with a jump at t${data.hop.t + 1} (${data.hop.cells.map(p => rname(...p)).join(', ')})` : ''}.`;
+    $('f3-timer').textContent = '';
+    $('f3-toast').hidden = true; $('f3-techrow').classList.remove('pulse');
+    $('f3-q').hidden = true;
+    scen = trial.key; sc.set(scen);
+    trial = null;
+    Object.values(sc.btns).forEach(b => b.disabled = false);
+    $('f3-start').disabled = false; $('f3-start').textContent = 'Try another';
+    renderLog(); draw();
+  }
+  $('f3-yes').addEventListener('click', () => answer(true));
+  $('f3-no').addEventListener('click', () => answer(false));
+  renderLog(); buildControls(); draw();
+  window.__redraw.push(draw);
+})();
+
+let rt = null;
+window.addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(() => window.__redraw.forEach(f => f()), 120); });
+window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => window.__redraw.forEach(f => f()));
+new MutationObserver(() => window.__redraw.forEach(f => f())).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => window.__redraw.forEach(f => f()));
+})();
+</script>
+</body>
+</html>
