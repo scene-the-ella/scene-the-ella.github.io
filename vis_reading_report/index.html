@@ -468,7 +468,7 @@ function glyphCells(ctx, d, cc, r, x, y, s, th, hlT) {
   });
   cv3.addEventListener('pointermove', e => {
     if (!drag) return;
-    rot.az = drag.az + (e.clientX - drag.x) * .4;
+    rot.az = drag.az - (e.clientX - drag.x) * .4; // drag right → the near side of the stack follows the pointer right
     rot.el = clamp(drag.el + (e.clientY - drag.y) * .3, 8, 80);
     draw(); hideTip(tip);
   });
