@@ -57,6 +57,8 @@ canvas { display: block; touch-action: none; }
 .techrow { position: relative; }
 .toast { position: absolute; left: 76px; bottom: calc(100% + 2px); background: var(--ink); color: var(--surface); font-size: 12.5px; padding: 6px 10px; border-radius: 6px; z-index: 5; box-shadow: 0 4px 14px rgba(0,0,0,.18); }
 .toast::after { content: ""; position: absolute; left: 22px; top: 100%; border: 6px solid transparent; border-top-color: var(--ink); }
+.ctoast { left: 50%; top: 10px; bottom: auto; transform: translateX(-50%); pointer-events: none; white-space: nowrap; }
+.ctoast::after { left: calc(50% - 6px); }
 #f3-techrow.pulse button:not(.on) { animation: pulse 1.2s ease-in-out 2; }
 @keyframes pulse { 50% { border-color: var(--hl); box-shadow: 0 0 0 2px color-mix(in srgb, var(--hl) 30%, transparent); } }
 @media (prefers-reduced-motion: reduce) { #f3-techrow.pulse button { animation: none; } }
@@ -80,7 +82,7 @@ table.log th { color: var(--muted); font-weight: 500; }
 <p class="result" id="f3-res" aria-live="polite"></p>
 <div class="row" role="group" aria-label="Scenario"><span class="lbl">Scenario</span><span id="f3-scen"></span></div>
 <div class="techrow"><div class="row" role="group" aria-label="Technique" id="f3-techrow"><span class="lbl">Technique</span><span id="f3-tech"></span></div><div class="toast" id="f3-toast" role="status" hidden>Switch techniques as often as you like while you decide.</div></div>
-<div class="canvas-wrap"><canvas id="f3-cv" aria-label="Propagation visualization"></canvas><canvas id="f3-cv3" aria-label="Tilted stack of time layers" style="display:none"></canvas><div class="tip" id="f3-tip"></div></div>
+<div class="canvas-wrap"><canvas id="f3-cv" aria-label="Propagation visualization"></canvas><canvas id="f3-cv3" aria-label="Tilted stack of time layers" style="display:none"></canvas><div class="tip" id="f3-tip"></div><div class="toast ctoast" id="f3-ttoast" role="status" hidden>Click and drag to rotate the stack</div></div>
 <div class="sub" id="f3-ctl"></div>
 <div class="legend" id="f3-legend"></div>
 <div class="quiz" id="f3-logwrap" hidden>
@@ -459,6 +461,7 @@ function glyphCells(ctx, d, cc, r, x, y, s, th, hlT) {
   // drag the stack to orbit it; double-click to reset the view
   cv3.addEventListener('pointerdown', e => {
     if (tiltU < .05) return;
+    tiltTried = true; hideTiltHint();
     drag = { x: e.clientX, y: e.clientY, az: rot.az, el: rot.el };
     try { cv3.setPointerCapture(e.pointerId); } catch (_) {}
     cv3.classList.add('dragging'); hideTip(tip);
@@ -472,6 +475,33 @@ function glyphCells(ctx, d, cc, r, x, y, s, th, hlT) {
   const endDrag = () => { drag = null; cv3.classList.remove('dragging'); };
   cv3.addEventListener('pointerup', endDrag); cv3.addEventListener('pointercancel', endDrag);
   cv3.addEventListener('dblclick', () => { rot = Object.assign({}, ROT0); draw(); });
+  // Until the person has dragged once, entering Tilt shows a toast and gently swings the stack to show it can turn.
+  let tiltTried = false, wiggle = null, wiggleBase = 0;
+  function hideTiltHint() {
+    $('f3-ttoast').hidden = true;
+    if (wiggle) { cancelAnimationFrame(wiggle); wiggle = null; rot.az = wiggleBase; }
+  }
+  function tiltHint() {
+    if (tiltTried) return;
+    hideTiltHint();
+    $('f3-ttoast').hidden = false;
+    clearTimeout(window.__ttoastT); window.__ttoastT = setTimeout(hideTiltHint, 6000);
+    if (reduceMotion || tiltU < .05) return;
+    wiggleBase = rot.az;
+    const t0 = performance.now();
+    const step = now => {
+      const f = Math.min(1, (now - t0) / 1800);
+      rot.az = wiggleBase + 24 * Math.sin(f * Math.PI * 2);
+      draw();
+      wiggle = f < 1 ? requestAnimationFrame(step) : null;
+    };
+    wiggle = requestAnimationFrame(step);
+  }
+  // Animated techniques play as soon as they are shown (technique, scenario or Start click).
+  function autoplay() {
+    if (tech !== 'anim' && tech !== 'sound') return;
+    stop(); t = 0; play();
+  }
   let layout = null;
 
   function stop() { if (timer) { clearInterval(timer); timer = null; } const b = $('f3-play'); if (b) b.textContent = tech === 'sound' ? '▶ Play with sound' : '▶ Play'; }
@@ -515,7 +545,7 @@ function glyphCells(ctx, d, cc, r, x, y, s, th, hlT) {
       host.innerHTML = `<div class="ctl" style="flex:1;min-width:200px"><label for="f3-tu" style="min-width:auto">Tilt</label><input type="range" id="f3-tu" min="0" max="1" step="0.01" value="${tiltU}"><output id="f3-tu-o"></output></div>
         <div class="ctl" style="flex:1;min-width:200px"><label for="f3-tt" style="min-width:auto">Time step in focus</label><input type="range" id="f3-tt" min="0" max="${T - 1}" step="1" value="${t}"><output id="f3-tt-o">t${t + 1}</output></div>
         <div class="ctl" style="flex:1;min-width:200px"><label for="f3-gap" style="min-width:auto">Layer spacing</label><input type="range" id="f3-gap" min="0.3" max="1.8" step="0.05" value="${gap}"><output id="f3-gap-o">${gap.toFixed(1)}×</output></div>
-        <span>Drag the stack to rotate · double-click to reset</span>`;
+        <span>Click and drag the stack to rotate · double-click to reset</span>`;
       $('f3-tu').addEventListener('input', e => { tiltU = +e.target.value; draw(); });
       $('f3-gap').addEventListener('input', e => { gap = +e.target.value; $('f3-gap-o').textContent = gap.toFixed(1) + '×'; draw(); });
       $('f3-tt').addEventListener('input', e => { t = +e.target.value; draw(); });
@@ -614,8 +644,8 @@ function glyphCells(ctx, d, cc, r, x, y, s, th, hlT) {
     draw();
   });
 
-  const sc = chips($('f3-scen'), SCEN_KEYS.map(k => [k, SCEN_SHORT[k]]), k => { if (trial) return; stop(); scen = k; sc.set(k); data = makeData(k); t = 0; pinned = null; draw(); }, scen);
-  const tc = chips($('f3-tech'), TECH.map(([k, l]) => [k, l]), k => { if (trial) { trial.used.add(k); $('f3-toast').hidden = true; $('f3-techrow').classList.remove('pulse'); } stop(); tech = k; tc.set(k); hover = null; pinned = null; buildControls(); draw(); }, tech);
+  const sc = chips($('f3-scen'), SCEN_KEYS.map(k => [k, SCEN_SHORT[k]]), k => { if (trial) return; stop(); scen = k; sc.set(k); data = makeData(k); t = 0; pinned = null; draw(); autoplay(); }, scen);
+  const tc = chips($('f3-tech'), TECH.map(([k, l]) => [k, l]), k => { if (trial) { trial.used.add(k); $('f3-toast').hidden = true; $('f3-techrow').classList.remove('pulse'); } stop(); hideTiltHint(); tech = k; tc.set(k); hover = null; pinned = null; buildControls(); draw(); autoplay(); if (k === 'tilt') tiltHint(); }, tech);
   Object.entries(tc.btns).forEach(([k, b]) => { if (NEW[k]) b.innerHTML = b.textContent + ' <span class="tag-ext">new</span>'; });
 
   const trials = [];
@@ -640,7 +670,7 @@ function glyphCells(ctx, d, cc, r, x, y, s, th, hlT) {
     $('f3-q').hidden = false; $('f3-res').textContent = '';
     buildControls(); draw();
     // animated techniques start playing right away; Start is a user click, so sound is allowed too
-    if (tech === 'anim' || tech === 'sound') play();
+    autoplay();
     tick = setInterval(() => { $('f3-timer').textContent = ((performance.now() - trial.start) / 1000).toFixed(1) + ' s'; }, 100);
   });
   function answer(saysJump) {
@@ -662,6 +692,7 @@ function glyphCells(ctx, d, cc, r, x, y, s, th, hlT) {
   $('f3-yes').addEventListener('click', () => answer(true));
   $('f3-no').addEventListener('click', () => answer(false));
   renderLog(); buildControls(); draw();
+  if (!reduceMotion) autoplay(); // the page opens on Animated map, so start it playing too
   window.__redraw.push(draw);
 })();
 
