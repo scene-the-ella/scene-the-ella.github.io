@@ -564,6 +564,7 @@ function glyphCells(ctx, d, cc, r, x, y, s, th, hlT) {
       cube.data = data; cube.draw();
       const o = $('f3-tu-o'); if (o) o.textContent = tiltU < .05 ? '2D' : tiltU > .95 ? '3D' : tiltU.toFixed(2);
       const o2 = $('f3-tt-o'); if (o2) o2.textContent = 't' + (t + 1);
+      const s2 = $('f3-tt'); if (s2) s2.value = t; // keep the slider in sync when t is reset (e.g. scenario change)
       return;
     }
     const { ctx, w, h } = setupCanvas(cv, H);
