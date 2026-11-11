@@ -545,8 +545,7 @@ function glyphCells(ctx, d, cc, r, x, y, s, th, hlT) {
     } else if (tech === 'tilt') {
       host.innerHTML = `<div class="ctl" style="flex:1;min-width:200px"><label for="f3-tu" style="min-width:auto">Tilt</label><input type="range" id="f3-tu" min="0" max="1" step="0.01" value="${tiltU}"><output id="f3-tu-o"></output></div>
         <div class="ctl" style="flex:1;min-width:200px"><label for="f3-tt" style="min-width:auto">Time step in focus</label><input type="range" id="f3-tt" min="0" max="${T - 1}" step="1" value="${t}"><output id="f3-tt-o">t${t + 1}</output></div>
-        <div class="ctl" style="flex:1;min-width:200px"><label for="f3-gap" style="min-width:auto">Layer spacing</label><input type="range" id="f3-gap" min="0.3" max="1.8" step="0.05" value="${gap}"><output id="f3-gap-o">${gap.toFixed(1)}×</output></div>
-        <span>Click and drag the stack to rotate · double-click to reset</span>`;
+        <div class="ctl" style="flex:1;min-width:200px"><label for="f3-gap" style="min-width:auto">Layer spacing</label><input type="range" id="f3-gap" min="0.3" max="1.8" step="0.05" value="${gap}"><output id="f3-gap-o">${gap.toFixed(1)}×</output></div>`;
       $('f3-tu').addEventListener('input', e => { tiltU = +e.target.value; draw(); });
       $('f3-gap').addEventListener('input', e => { gap = +e.target.value; $('f3-gap-o').textContent = gap.toFixed(1) + '×'; draw(); });
       $('f3-tt').addEventListener('input', e => { t = +e.target.value; draw(); });
