@@ -328,7 +328,8 @@ class Cube {
             const pts = quad(xOf(cc), yOf(r), zOf(t), sx, sy, sz);
             const D = (pts[0][2] + pts[2][2]) / 2;
             // empty cells are filled only in flat 2D; once tilted they become outlines so they don't hide lower layers
-            items.push({ pts, D, ly: t, fill: L ? blue(L) : th.zero, fa: L ? 1 : flat, stroke: L ? null : th.rule, a: la * encA * cueA(D), meta: { cc, r, t, v: d.val[t][r][cc], k } });
+            // the focused layer is painted after all others so the faded context layers never cover it
+            items.push({ pts, D, ly: isF ? T : t, fill: L ? blue(L) : th.zero, fa: L ? 1 : flat, stroke: L ? null : th.rule, a: la * encA * cueA(D), meta: { cc, r, t, v: d.val[t][r][cc], k } });
           }
         }
       }
@@ -559,7 +560,7 @@ function glyphCells(ctx, d, cc, r, x, y, s, th, hlT) {
     legendCases($('f3-legend'));
     if (is3) {
       cube.height = Math.round(clamp(cv3.parentElement.clientWidth * .74, 380, 540));
-      Object.assign(cube.cfg, { tilt: tiltU, el: 90 - (90 - rot.el) * tiltU, az: rot.az * tiltU, focus: t, opac: .85, cue: .45, persp: .3 * tiltU, gap, cell: .4, frames: .45, collapse: 0, enc: 0, ghost: 0, fo: 1, roi: [] });
+      Object.assign(cube.cfg, { tilt: tiltU, el: 90 - (90 - rot.el) * tiltU, az: rot.az * tiltU, focus: t, opac: .4, cue: .3, persp: .3 * tiltU, gap, cell: .4, frames: .45, collapse: 0, enc: 0, ghost: 0, fo: 1, roi: [] });
       cube.data = data; cube.draw();
       const o = $('f3-tu-o'); if (o) o.textContent = tiltU < .05 ? '2D' : tiltU > .95 ? '3D' : tiltU.toFixed(2);
       const o2 = $('f3-tt-o'); if (o2) o2.textContent = 't' + (t + 1);
