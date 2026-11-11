@@ -37,11 +37,14 @@ button.primary { border-color: var(--accent); color: var(--accent); background: 
 .tag-ext { font-size: 11px; color: var(--hl); }
 .canvas-wrap { position: relative; width: 100%; border: 1px solid var(--rule); border-radius: 8px; overflow: hidden; background: var(--surface); margin-top: 4px; }
 canvas { display: block; touch-action: none; }
+#f3-cv3 { cursor: grab; }
+#f3-cv3.dragging { cursor: grabbing; }
 .tip { position: absolute; pointer-events: none; background: var(--ink); color: var(--surface); font-size: 12px; padding: 5px 8px; border-radius: 4px; white-space: nowrap; display: none; z-index: 3; font-variant-numeric: tabular-nums; }
 .sub { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: center; margin-top: 8px; font-size: 12.5px; color: var(--muted); }
 .sub select { font-family: var(--font-ui); font-size: 12.5px; background: var(--chip); color: var(--ink); border: 1px solid var(--rule); border-radius: 5px; padding: 3px 6px; }
 .ctl { display: flex; align-items: center; gap: 8px; font-size: 12.5px; color: var(--muted); }
 .ctl input[type=range] { flex: 1; accent-color: var(--accent); min-width: 80px; }
+.ctl label { white-space: nowrap; }
 .ctl output { min-width: 30px; text-align: right; font-variant-numeric: tabular-nums; color: var(--ink); }
 .legend { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; font-size: 12px; color: var(--muted); margin-top: 8px; }
 .sw { display: inline-flex; gap: 2px; }
@@ -71,9 +74,9 @@ table.log th { color: var(--muted); font-weight: 500; }
 <div class="top">
   <h1>Try it!</h1>
 </div>
-<p class="lead">Explore the views, then press Start and guess whether a hidden spread hops.</p>
+<p class="lead">Explore the views, then press Start and guess whether a hidden spread has <b>hops</b>.</p>
 <div class="row"><button class="primary" id="f3-start">Start</button><span id="f3-timer" style="font-variant-numeric:tabular-nums;color:var(--muted)"></span></div>
-<p class="quiz-q" id="f3-q" hidden>Does this spread hop? <button id="f3-yes">Yes</button> <button id="f3-no">No</button></p>
+<p class="quiz-q" id="f3-q" hidden><b>Hops?</b> Does the disease jump to a region that isn't next to any infected region? <button id="f3-yes">Yes</button> <button id="f3-no">No</button></p>
 <p class="result" id="f3-res" aria-live="polite"></p>
 <div class="row" role="group" aria-label="Scenario"><span class="lbl">Scenario</span><span id="f3-scen"></span></div>
 <div class="techrow"><div class="row" role="group" aria-label="Technique" id="f3-techrow"><span class="lbl">Technique</span><span id="f3-tech"></span></div><div class="toast" id="f3-toast" role="status" hidden>Switch techniques as often as you like while you decide.</div></div>
@@ -280,7 +283,7 @@ class Cube {
     ctx.fillStyle = th.bg; ctx.fillRect(0, 0, w, h);
     const A = c.az * Math.PI / 180, E = c.el * Math.PI / 180;
     const ca = Math.cos(A), sa = Math.sin(A), ce = Math.cos(E), se = Math.sin(E);
-    const H = .62, k = c.collapse;
+    const H = c.gap || .62, k = c.collapse;
     const proj = (x, y, z) => {
       const x1 = x * ca - y * sa, y1 = x * sa + y * ca;
       const D = y1 * ce + z * se;
@@ -299,15 +302,20 @@ class Cube {
     const quad = (x0, y0, z0, sx, sy, sz) => [proj(x0 - sx, y0 - sy, z0 - sz), proj(x0 + sx, y0 - sy, z0 - sz), proj(x0 + sx, y0 + sy, z0 + sz), proj(x0 - sx, y0 + sy, z0 + sz)];
     const zOf = t => (t - (T - 1) / 2) * H * c.tilt;
     const xOf = cc => cc - (COLS - 1) / 2, yOf = r => (r - (ROWS - 1) / 2) * (1 - k);
-    const sx = .44, sy = .44 * (1 - k), sz = .44 * H * k;
+    const cs = c.cell || .44, sx = cs, sy = cs * (1 - k), sz = cs * H * k;
     const items = [];
     const cueA = D => 1 - c.cue * (1 - (D - minD) / ((maxD - minD) || 1)) * .72;
     const encA = 1 - c.enc;
+    const flat = 1 - clamp(c.tilt * 2, 0, 1); // 1 in 2D, 0 once tilted
     if (encA > .01) {
       for (let t = 0; t < T; t++) {
         const isF = t === c.focus;
         const la = isF ? 1 : c.opac * clamp(c.tilt * 1.4, 0, 1);
         if (la < .01) continue;
+        // faint outline of each time layer so the sheets read as separate planes
+        if (k < .5 && c.frames && c.tilt > .05 && !isF) {
+          items.push({ pts: quad(0, 0, zOf(t), hx - .02, hy - .02, 0), D: -1e9, ly: t, fill: null, stroke: th.muted, a: c.frames * clamp(c.tilt * 2, 0, 1) * encA });
+        }
         for (let cc = 0; cc < COLS; cc++) {
           let rows = [...Array(ROWS).keys()];
           if (k >= .5) { let best = 0; rows.forEach(r => { if (d.val[t][r][cc] > d.val[t][best][cc]) best = r; }); rows = [best]; }
@@ -317,7 +325,8 @@ class Cube {
             if (!L && !showZero) continue;
             const pts = quad(xOf(cc), yOf(r), zOf(t), sx, sy, sz);
             const D = (pts[0][2] + pts[2][2]) / 2;
-            items.push({ pts, D, fill: L ? blue(L) : th.zero, stroke: L ? null : th.rule, a: la * encA * cueA(D), meta: { cc, r, t, v: d.val[t][r][cc], k } });
+            // empty cells are filled only in flat 2D; once tilted they become outlines so they don't hide lower layers
+            items.push({ pts, D, ly: t, fill: L ? blue(L) : th.zero, fa: L ? 1 : flat, stroke: L ? null : th.rule, a: la * encA * cueA(D), meta: { cc, r, t, v: d.val[t][r][cc], k } });
           }
         }
       }
@@ -329,20 +338,22 @@ class Cube {
         items.push({ pts, D: 99, fill: a >= 0 ? purp(a) : th.zero, stroke: a >= 0 ? null : th.rule, a: c.enc, meta: { cc, r, arr: a }, label: a >= 0 ? 't' + (a + 1) : '', lc: a >= 0 && Math.floor(a * 7 / T) >= 4 ? '#26215C' : '#EEEDFE' });
       }
     }
-    items.sort((p, q) => p.D - q.D);
+    // Seen from above, a higher time layer always sits in front of a lower one, so paint layer by layer.
+    const lyOf = it => it.ly == null ? 1e9 : it.ly;
+    items.sort((p, q) => k < .5 ? (lyOf(p) - lyOf(q)) || (p.D - q.D) : p.D - q.D);
     this.hits = [];
     for (const it of items) {
       const P = it.pts.map(S);
-      ctx.globalAlpha = clamp(it.a, 0, 1);
       ctx.beginPath(); P.forEach((p, i) => i ? ctx.lineTo(p[0], p[1]) : ctx.moveTo(p[0], p[1])); ctx.closePath();
-      ctx.fillStyle = it.fill; ctx.fill();
+      if (it.fill) { ctx.globalAlpha = clamp(it.a * (it.fa == null ? 1 : it.fa), 0, 1); ctx.fillStyle = it.fill; ctx.fill(); }
+      ctx.globalAlpha = clamp(it.a, 0, 1);
       if (it.stroke) { ctx.strokeStyle = it.stroke; ctx.lineWidth = 1; ctx.stroke(); }
       if (it.label && c.enc > .6 && sc > 26) {
         ctx.fillStyle = it.lc; ctx.font = '500 11px "IBM Plex Sans", sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
         const cx = P.reduce((s, p) => s + p[0], 0) / 4, cy = P.reduce((s, p) => s + p[1], 0) / 4;
         ctx.fillText(it.label, cx, cy);
       }
-      if (it.a > .2) this.hits.push({ P, meta: it.meta });
+      if (it.meta && it.a > .2) this.hits.push({ P, meta: it.meta });
     }
     ctx.globalAlpha = 1;
     const fz = c.enc > .5 ? 0 : zOf(c.focus);
@@ -385,8 +396,15 @@ class Cube {
       ctx.save(); ctx.translate(b0[0] - 30, (b0[1] + t1[1]) / 2); ctx.rotate(-Math.PI / 2); ctx.textAlign = 'center'; ctx.fillText('time', 0, 0); ctx.restore();
     } else if (c.tilt > .3 && c.enc < .5) {
       const leftmost = z => [[-hx, -hy], [hx, -hy], [hx, hy], [-hx, hy]].map(([x, y]) => S(proj(x, y, z))).reduce((m, p) => p[0] < m[0] ? p : m);
-      const p0 = leftmost(zOf(0)), p1 = leftmost(zOf(T - 1));
-      ctx.textAlign = 'right'; ctx.fillText('t1', p0[0] - 8, p0[1]); ctx.fillText('t12', p1[0] - 8, p1[1]);
+      // label every layer when they are far enough apart, otherwise just the ends
+      const every = Math.abs(leftmost(zOf(1))[1] - leftmost(zOf(0))[1]) >= 14;
+      ctx.textAlign = 'right';
+      for (let tt = 0; tt < T; tt++) {
+        if (!every && tt && tt !== T - 1) continue;
+        const p = leftmost(zOf(tt)), isF = tt === c.focus && every;
+        ctx.fillStyle = isF ? th.hl : th.muted; ctx.font = (isF ? '600 ' : '') + '12px "IBM Plex Sans", sans-serif';
+        ctx.fillText('t' + (tt + 1), p[0] - 8, p[1]);
+      }
     } else {
       const n = S(proj(-hx, -hy, 0));
       ctx.textAlign = 'right'; ctx.fillText('N ↑', n[0] - 8, n[1] + 6);
@@ -433,9 +451,27 @@ function glyphCells(ctx, d, cc, r, x, y, s, th, hlT) {
   const TECH = [['anim', 'Animated map'], ['sm', 'Small multiples'], ['glyph', 'Glyph map'], ['tilt', 'Tilt (2D ↔ 3D)'], ['sound', 'Sound + animation']];
   const NEW = { tilt: 1, sound: 1 };
   let tech = 'anim', scen = 'direction', data = makeData(scen), t = 0, timer = null, fps = 4, hover = null, pinned = null, gt = 0, tiltU = 1;
+  const ROT0 = { az: -35, el: 28 };
+  let gap = 1.3, rot = Object.assign({}, ROT0), drag = null;
   let audio = null, trial = null;
   const log = {};
   const cube = new Cube(cv3, H, tip);
+  // drag the stack to orbit it; double-click to reset the view
+  cv3.addEventListener('pointerdown', e => {
+    if (tiltU < .05) return;
+    drag = { x: e.clientX, y: e.clientY, az: rot.az, el: rot.el };
+    try { cv3.setPointerCapture(e.pointerId); } catch (_) {}
+    cv3.classList.add('dragging'); hideTip(tip);
+  });
+  cv3.addEventListener('pointermove', e => {
+    if (!drag) return;
+    rot.az = drag.az + (e.clientX - drag.x) * .4;
+    rot.el = clamp(drag.el + (e.clientY - drag.y) * .3, 8, 80);
+    draw(); hideTip(tip);
+  });
+  const endDrag = () => { drag = null; cv3.classList.remove('dragging'); };
+  cv3.addEventListener('pointerup', endDrag); cv3.addEventListener('pointercancel', endDrag);
+  cv3.addEventListener('dblclick', () => { rot = Object.assign({}, ROT0); draw(); });
   let layout = null;
 
   function stop() { if (timer) { clearInterval(timer); timer = null; } const b = $('f3-play'); if (b) b.textContent = tech === 'sound' ? '▶ Play with sound' : '▶ Play'; }
@@ -477,8 +513,11 @@ function glyphCells(ctx, d, cc, r, x, y, s, th, hlT) {
       $('f3-gt').addEventListener('input', e => { gt = +e.target.value; $('f3-gt-o').textContent = 't' + (gt + 1); draw(); });
     } else if (tech === 'tilt') {
       host.innerHTML = `<div class="ctl" style="flex:1;min-width:200px"><label for="f3-tu" style="min-width:auto">Tilt</label><input type="range" id="f3-tu" min="0" max="1" step="0.01" value="${tiltU}"><output id="f3-tu-o"></output></div>
-        <div class="ctl" style="flex:1;min-width:200px"><label for="f3-tt" style="min-width:auto">Time step in focus</label><input type="range" id="f3-tt" min="0" max="${T - 1}" step="1" value="${t}"><output id="f3-tt-o">t${t + 1}</output></div>`;
+        <div class="ctl" style="flex:1;min-width:200px"><label for="f3-tt" style="min-width:auto">Time step in focus</label><input type="range" id="f3-tt" min="0" max="${T - 1}" step="1" value="${t}"><output id="f3-tt-o">t${t + 1}</output></div>
+        <div class="ctl" style="flex:1;min-width:200px"><label for="f3-gap" style="min-width:auto">Layer spacing</label><input type="range" id="f3-gap" min="0.3" max="1.8" step="0.05" value="${gap}"><output id="f3-gap-o">${gap.toFixed(1)}×</output></div>
+        <span>Drag the stack to rotate · double-click to reset</span>`;
       $('f3-tu').addEventListener('input', e => { tiltU = +e.target.value; draw(); });
+      $('f3-gap').addEventListener('input', e => { gap = +e.target.value; $('f3-gap-o').textContent = gap.toFixed(1) + '×'; draw(); });
       $('f3-tt').addEventListener('input', e => { t = +e.target.value; draw(); });
     } else if (tech === 'sm') {
       host.innerHTML = '<span>Hover a region to highlight it on every map.</span>';
@@ -489,7 +528,8 @@ function glyphCells(ctx, d, cc, r, x, y, s, th, hlT) {
     cv.style.display = is3 ? 'none' : 'block'; cv3.style.display = is3 ? 'block' : 'none';
     legendCases($('f3-legend'));
     if (is3) {
-      Object.assign(cube.cfg, { tilt: tiltU, el: 90 - 58 * tiltU, az: -35 * tiltU, focus: t, opac: .5, cue: 1, persp: tiltU, collapse: 0, enc: 0, ghost: 0, fo: 1, roi: [] });
+      cube.height = Math.round(clamp(cv3.parentElement.clientWidth * .74, 380, 540));
+      Object.assign(cube.cfg, { tilt: tiltU, el: 90 - (90 - rot.el) * tiltU, az: rot.az * tiltU, focus: t, opac: .85, cue: .45, persp: .3 * tiltU, gap, cell: .4, frames: .45, collapse: 0, enc: 0, ghost: 0, fo: 1, roi: [] });
       cube.data = data; cube.draw();
       const o = $('f3-tu-o'); if (o) o.textContent = tiltU < .05 ? '2D' : tiltU > .95 ? '3D' : tiltU.toFixed(2);
       const o2 = $('f3-tt-o'); if (o2) o2.textContent = 't' + (t + 1);
@@ -599,6 +639,8 @@ function glyphCells(ctx, d, cc, r, x, y, s, th, hlT) {
     clearTimeout(window.__toastT); window.__toastT = setTimeout(() => { $('f3-toast').hidden = true; $('f3-techrow').classList.remove('pulse'); }, 5000);
     $('f3-q').hidden = false; $('f3-res').textContent = '';
     buildControls(); draw();
+    // animated techniques start playing right away; Start is a user click, so sound is allowed too
+    if (tech === 'anim' || tech === 'sound') play();
     tick = setInterval(() => { $('f3-timer').textContent = ((performance.now() - trial.start) / 1000).toFixed(1) + ' s'; }, 100);
   });
   function answer(saysJump) {
