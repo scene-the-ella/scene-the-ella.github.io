@@ -32,3 +32,6 @@
 .nyt.wide .g-text p { font-size: 15px; }
 .nyt .g-text p:last-child { margin-bottom: 0; }
 .nyt .g-loading { padding: 80px 0; text-align: center; font: 400 16px 'Libre Franklin', Arial, sans-serif; }
+.nyt .g-marker { position: absolute; width: 16px; height: 16px; margin: -8px 0 0 -8px; border-radius: 50%; background: #fefad1; border: 2px solid #121212; z-index: 3; pointer-events: none; }
+.nyt canvas.lit { outline: 3px solid #121212; outline-offset: -3px; }
+.nyt.nopanel .g-slide { display: none; }

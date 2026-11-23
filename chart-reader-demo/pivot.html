@@ -4,120 +4,107 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Pivot · NYT Yield Curve</title>
+<link rel="icon" href="data:,">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@300;400;600;700;800&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="assets/css/site.css">
+<link rel="stylesheet" href="assets/css/nytcurve.css">
 <style>
-  .readout {
-    display: grid; grid-template-columns: auto auto auto 1fr; gap: 0;
-    border-top: 1px solid var(--ink); border-bottom: 1px solid var(--ink); margin: 4px 0 20px;
-  }
-  .readout > div { padding: 12px 22px 12px 0; margin-right: 22px; border-right: 1px solid var(--rule); }
-  .readout > div:last-child { border-right: 0; margin-right: 0; }
-  .readout .k { font-size: 15px; font-weight: 700; }
-  .readout .v { font-size: clamp(22px, 2.9vw, 36px); font-weight: 800; line-height: 1.1; white-space: nowrap; }
-  @media (max-width: 640px) { .readout { grid-template-columns: 1fr 1fr; } .readout > div { border-right: 0; } }
-  .readout .dir .v { color: var(--blue-7); }
-  .views { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; }
-  .view { position: relative; }
-  .view h2 { font-size: 19px; margin: 0 0 4px; display: flex; gap: 10px; align-items: baseline; }
-  .view h2 .now { font-family: var(--mono); font-size: 14px; font-weight: 600; background: var(--mark); border: 1px solid var(--ink); padding: 0 6px; border-radius: var(--r); visibility: hidden; }
-  .view.active h2 .now { visibility: visible; }
-  .view svg { width: 100%; height: auto; display: block; }
-  .view:not(.active) svg .hero { opacity: .55; }
-  .pad { display: grid; grid-template-columns: repeat(6, auto); gap: 8px; justify-content: start; margin: 22px 0 6px; }
-  .pad .btn { font-size: 17px; padding: 12px 16px; }
-  .jump { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; font-size: 16px; font-weight: 600; }
-  .jump select { font: inherit; font-size: 16px; padding: 7px 8px; border: 1px solid var(--ink); border-radius: var(--r); background: #fff; }
-  .said { font-size: 19px; font-weight: 600; min-height: 2.6em; margin: 8px 0 0; }
-  .lower { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 36px; margin-top: 30px; }
-  #stage:focus-visible { outline: 3px solid var(--blue-5); outline-offset: 6px; }
-  @media (max-width: 900px) {
-    .views, .lower { grid-template-columns: 1fr; }
-    .pad { grid-template-columns: repeat(3, 1fr); }
-  }
+  .wrap.full { max-width: none; padding-left: 24px; padding-right: 24px; }
+  .wrap.full .mast2, .bar, .lower { max-width: 1280px; margin-left: auto; margin-right: auto; }
+  .bar { display: grid; grid-template-columns: auto auto auto 1fr auto; align-items: stretch; border-top: 1px solid var(--ink); border-bottom: 1px solid var(--ink); margin-bottom: 10px; }
+  .bar > div { padding: 8px 20px 8px 0; margin-right: 20px; border-right: 1px solid var(--rule); }
+  .bar .k { font-size: 14px; font-weight: 700; }
+  .bar .v { font-size: clamp(20px, 2.4vw, 30px); font-weight: 800; line-height: 1.1; white-space: nowrap; }
+  .bar .dir .v { color: var(--blue-7); }
+  .bar .pad { border-right: 0; margin-right: 0; display: flex; gap: 6px; align-items: center; flex-wrap: wrap; justify-content: flex-end; }
+  .pad .btn { padding: 8px 12px; font-size: 15px; }
+  #stage:focus-visible { outline: 3px solid var(--blue-5); outline-offset: 4px; }
+  .said { max-width: 1280px; margin: 8px auto 0; font-size: 18px; font-weight: 600; min-height: 1.6em; }
+  .lower { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-top: 10px; }
+  .lower h2 { font-size: 17px; margin: 0 0 4px; }
+  .keys td { font-size: 14px; padding: 4px 10px 4px 0; }
+  .jump { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; font-size: 15px; font-weight: 600; margin-top: 8px; }
+  .jump select { font: inherit; font-size: 15px; padding: 5px; border: 1px solid var(--ink); border-radius: var(--r); background: #fff; }
 </style>
 </head>
 <body>
-<div class="wrap">
+<div class="wrap full">
   <header id="mast" data-page="pivot" data-screen="yes" data-voice="yes"></header>
-  <p class="msg" id="nodata" hidden>Germany and Japan are not in this demo. It uses U.S. Treasury data only.</p>
-
-  <div id="stage" tabindex="0" role="application" aria-roledescription="yield surface" aria-label="Yield surface. Left and right arrows move. P pivots. Space plays. Enter reads the value.">
-    <div class="readout" aria-hidden="true">
-      <div><div class="k">Month</div><div class="v" id="rMonth">—</div></div>
+  <div id="stage" tabindex="0" role="application" aria-roledescription="yield surface" aria-label="Yield surface. Left and right arrows move. P pivots between front and side views. Space plays. Enter reads the value.">
+    <div class="bar" aria-hidden="true">
+      <div><div class="k">Date</div><div class="v" id="rMonth">—</div></div>
       <div><div class="k">Maturity</div><div class="v" id="rMat">—</div></div>
       <div><div class="k">Yield</div><div class="v" id="rVal">—</div></div>
-      <div class="dir"><div class="k">Direction</div><div class="v" id="rDir">—</div></div>
-    </div>
-
-    <div class="views" aria-hidden="true">
-      <div class="view" id="vCurve">
-        <h2><span>Front view · <span id="tCurve">—</span></span><span class="now">active</span></h2>
-        <svg id="svgCurve" viewBox="0 0 520 330"></svg>
-      </div>
-      <div class="view" id="vTime">
-        <h2><span>Side view · <span id="tTime">—</span></span><span class="now">active</span></h2>
-        <svg id="svgTime" viewBox="0 0 520 330"></svg>
+      <div class="dir"><div class="k">View</div><div class="v" id="rDir">—</div></div>
+      <div class="pad" role="group" aria-label="Controls">
+        <button class="btn" id="bPrev">◀</button><button class="btn" id="bNext">▶</button>
+        <button class="btn main" id="bTurn">Pivot</button><button class="btn" id="bPlay">Play</button><button class="btn" id="bValue">Value</button>
       </div>
     </div>
-  </div>
-
-  <div class="pad" role="group" aria-label="Controls">
-    <button class="btn" id="bPrev">◀ <span id="lPrev">Earlier</span></button>
-    <button class="btn" id="bNext"><span id="lNext">Later</span> ▶</button>
-    <button class="btn main" id="bTurn">Pivot</button>
-    <button class="btn" id="bPlay">Play</button>
-    <button class="btn" id="bValue">Value</button>
-    <button class="btn" id="bOver">Overview</button>
+    <div id="nyt"></div>
   </div>
   <p class="said" id="said" aria-live="polite"></p>
-
   <div class="lower">
     <div>
       <h2>Keys</h2>
       <table class="keys">
-        <tr><td><kbd>←</kbd> <kbd>→</kbd></td><td>Move along the active view</td></tr>
-        <tr><td><kbd>Shift</kbd> <kbd>←</kbd> <kbd>→</kbd></td><td>Move one year (side view)</td></tr>
-        <tr><td><kbd>P</kbd></td><td>Pivot: front view ⇄ side view</td></tr>
-        <tr><td><kbd>Space</kbd></td><td>Play / stop</td></tr>
-        <tr><td><kbd>Enter</kbd></td><td>Exact value</td></tr>
-        <tr><td><kbd>O</kbd></td><td>Overview: every January, 1990–2015</td></tr>
-        <tr><td><kbd>Home</kbd> <kbd>End</kbd></td><td>First / last</td></tr>
-        <tr><td><kbd>V</kbd></td><td>Screen off / on</td></tr>
+        <tr><td><kbd>P</kbd></td><td>Pivot: front view (one date, all maturities) ⇄ side view (one maturity, all dates)</td></tr>
+        <tr><td><kbd>←</kbd> <kbd>→</kbd></td><td>Move along the view · <kbd>Shift</kbd> moves a year in the side view</td></tr>
+        <tr><td><kbd>Space</kbd> · <kbd>Enter</kbd></td><td>Play / stop · exact value</td></tr>
+        <tr><td><kbd>Home</kbd> <kbd>End</kbd> · <kbd>V</kbd></td><td>First / last · screen off / on</td></tr>
       </table>
     </div>
     <div>
       <h2>Sound</h2>
       <table class="keys">
-        <tr><td>Pitch</td><td>Yield on one fixed scale, 0–9%, as in Chart Reader. <kbd>Z</kbd> stretches it to the month’s range.</td></tr>
-        <tr><td>Stereo</td><td>Short → long maturity, or 1990 → 2015</td></tr>
-        <tr><td>Click</td><td>New year</td></tr>
-        <tr><td>Bonk</td><td>End of the line</td></tr>
+        <tr><td>Pitch</td><td>Yield on one fixed scale, 0–9.5%, as in Chart Reader · <kbd>Z</kbd> stretches it to the date’s range</td></tr>
+        <tr><td>Stereo · click · bonk</td><td>Left to right along the line · each new year · end of the line</td></tr>
       </table>
-      <div class="jump" style="margin-top:18px">
-        <label for="jYear">Go to</label>
-        <select id="jMonth" aria-label="Month"></select>
-        <select id="jYear" aria-label="Year"></select>
-        <select id="jMat" aria-label="Maturity"></select>
-      </div>
+      <div class="jump"><label for="jYear">Go to</label><select id="jMonth" aria-label="Month"></select><select id="jYear" aria-label="Year"></select><select id="jMat" aria-label="Maturity"></select></div>
     </div>
   </div>
 </div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+<script src="assets/js/nytcurve.js"></script>
+<script src="assets/js/nytstage.js"></script>
 <script src="assets/js/nav.js"></script>
 <script src="assets/js/voice.js"></script>
 <script>
 const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
-let D, m = 0, k = 7, dir = 'time';
-let playing = null;            // { stop() }
-let ctx = null, bonkBuf = null;
-
+const MATS = ['1-month','3-month','6-month','1-year','2-year','3-year','5-year','7-year','10-year','20-year','30-year'];
+// The two views are the NYT's own cameras: step 2 (front) and step 5 (side), widened to all 25 years.
+const VIEW = {
+  front: { cam: { azi: 1.57061, phi: 0, fov: 0.5, width: 35, lookat_x: 0, lookat_y: 7.97333, lookat_z: 0.21667 }, grid: ['front'], labels: ['x'] },
+  side: { cam: { azi: Math.PI / 2, phi: Math.PI / 2, fov: 0.1, width: 48, lookat_x: 3.5, lookat_y: 14, lookat_z: 0 }, grid: ['product', 'date', 'front'], labels: ['y'] },
+};
+const PRESET = {
+  1: ['2015-03', '10-year', 'time'], 2: ['2015-03', '3-month', 'curve'], 3: ['2008-01', '3-month', 'time'],
+  4: ['2004-06', '3-month', 'time'], 5: ['2012-07', '10-year', 'time'], 6: ['2015-03', '10-year', 'time'],
+  7: ['2015-02', '10-year', 'time'], 8: ['2015-02', '10-year', 'time'], 9: ['2015-02', '10-year', 'time'],
+};
+let app = null, g = null, D = null, m = 0, k = 8, dir = 'time', stretch = false;
+let playing = null, ctx = null, bonkBuf = null;
 const $ = id => document.getElementById(id);
+
+// Monthly averages of the NYT daily rows (the same data the surface is drawn from)
+function monthly(rows) {
+  const by = new Map();
+  rows.forEach((r, idx) => {
+    const key = `${r.date.getFullYear()}-${String(r.date.getMonth() + 1).padStart(2, '0')}`;
+    if (!by.has(key)) by.set(key, { key, row: idx, sums: MATS.map(() => 0), n: MATS.map(() => 0) });
+    const o = by.get(key); r.curve.forEach((v, e) => { if (!isNaN(v)) { o.sums[e] += v; o.n[e]++; } });
+  });
+  const list = [...by.values()];
+  return { months: list.map(o => o.key), rowOf: list.map(o => o.row), values: list.map(o => o.sums.map((s, e) => o.n[e] ? s / o.n[e] : NaN)) };
+}
 const fmtMonth = i => { const [y, mo] = D.months[i].split('-'); return `${MONTHS[+mo - 1]} ${y}`; };
 const val = (mi, ki) => D.values[mi][ki];
 const pct = v => `${v.toFixed(2)} percent`;
+const has = (mi, ki) => !isNaN(val(mi, ki));
 
 // ---------- audio ----------
 function audio() {
@@ -128,268 +115,145 @@ function audio() {
   if (ctx.state === 'suspended') ctx.resume();
   return ctx;
 }
-const freq = t => 220 * Math.pow(2, 2.6 * Math.max(0, Math.min(1, t)));   // ~220 Hz to ~1340 Hz
+const freq = t => 220 * Math.pow(2, 2.6 * Math.max(0, Math.min(1, t)));
 function tone(t, when, dur = 0.12, pan = 0, gain = 0.22) {
-  const c = audio(), o = c.createOscillator(), g = c.createGain(), p = c.createStereoPanner();
-  o.type = 'triangle'; o.frequency.value = freq(t);
-  p.pan.value = pan;
-  g.gain.setValueAtTime(0, when);
-  g.gain.linearRampToValueAtTime(gain, when + 0.008);
-  g.gain.exponentialRampToValueAtTime(0.001, when + dur);
-  o.connect(g).connect(p).connect(c.destination);
-  o.start(when); o.stop(when + dur + 0.02);
+  const c = audio(), o = c.createOscillator(), gn = c.createGain(), p = c.createStereoPanner();
+  o.type = 'triangle'; o.frequency.value = freq(t); p.pan.value = pan;
+  gn.gain.setValueAtTime(0, when); gn.gain.linearRampToValueAtTime(gain, when + 0.008); gn.gain.exponentialRampToValueAtTime(0.001, when + dur);
+  o.connect(gn).connect(p).connect(c.destination); o.start(when); o.stop(when + dur + 0.02);
 }
 function click(when, pan = 0) {
   const c = audio(), n = c.createBufferSource(), b = c.createBuffer(1, 600, c.sampleRate), d = b.getChannelData(0);
   for (let i = 0; i < d.length; i++) d[i] = (Math.random() * 2 - 1) * Math.exp(-i / 70);
-  const g = c.createGain(), p = c.createStereoPanner();
-  g.gain.value = 0.35; p.pan.value = pan;
-  n.buffer = b; n.connect(g).connect(p).connect(c.destination); n.start(when);
+  const gn = c.createGain(), p = c.createStereoPanner(); gn.gain.value = 0.35; p.pan.value = pan;
+  n.buffer = b; n.connect(gn).connect(p).connect(c.destination); n.start(when);
 }
-function bonk() {
-  const c = audio();
-  if (!bonkBuf) { tone(0, c.currentTime, 0.2, 0, 0.3); return; }
-  const s = c.createBufferSource(); s.buffer = bonkBuf; s.connect(c.destination); s.start();
-}
-const FIXED = v => v / 9;     // fixed scale: 0 to 9 percent
-
+function bonk() { const c = audio(); if (!bonkBuf) { tone(0, c.currentTime, 0.2, 0, 0.3); return; } const s = c.createBufferSource(); s.buffer = bonkBuf; s.connect(c.destination); s.start(); }
+const FIXED = v => v / 9.5;
+const rangeOf = arr => { const a = arr.filter(v => !isNaN(v)); return [Math.min(...a), Math.max(...a)]; };
+const fit = (lo, hi) => v => hi - lo < 0.05 ? 0.5 : 0.12 + 0.76 * (v - lo) / (hi - lo);
+const curveScale = () => { if (!stretch) return FIXED; const [lo, hi] = rangeOf(D.values[m]); return fit(lo, hi); };
 function stopPlay() { if (playing) { playing.stop(); playing = null; document.body.classList.remove('sounding'); } }
-
-// Play a sequence of values; onStep(i) keeps the cursor in sync; returns a controller.
 function playSeq(vals, { scale, step = 0.16, dur = 0.13, ticks = null, onStep, onEnd }) {
   stopPlay();
   const c = audio(), t0 = c.currentTime + 0.08, n = vals.length;
-  vals.forEach((v, i) => {
-    const pan = n > 1 ? -0.8 + 1.6 * i / (n - 1) : 0;
-    tone(scale(v), t0 + i * step, dur, pan);
-    if (ticks && ticks[i]) click(t0 + i * step, pan);
-  });
+  vals.forEach((v, i) => { const pan = n > 1 ? -0.8 + 1.6 * i / (n - 1) : 0; tone(scale(v), t0 + i * step, dur, pan); if (ticks && ticks[i]) click(t0 + i * step, pan); });
   document.body.classList.add('sounding');
   let cancelled = false, last = -1;
   const timer = setInterval(() => {
     const i = Math.min(n - 1, Math.floor((c.currentTime - t0) / step));
     if (i !== last && i >= 0) { last = i; onStep && onStep(i); }
-    if (c.currentTime > t0 + n * step + 0.1) { done(); }
+    if (c.currentTime > t0 + n * step + 0.1) done();
   }, 30);
-  function done() {
-    if (cancelled) return;
-    cancelled = true; clearInterval(timer); playing = null;
-    document.body.classList.remove('sounding');
-    onEnd && onEnd(last);
-  }
-  return playing = {
-    stop() {
-      // silence everything scheduled by closing and reopening the context
-      cancelled = true; clearInterval(timer);
-      try { ctx.close(); } catch (e) {}
-      ctx = null; bonkBuf = null; audio();
-      onEnd && onEnd(last, true);
-    }
-  };
+  function done() { if (cancelled) return; cancelled = true; clearInterval(timer); playing = null; document.body.classList.remove('sounding'); onEnd && onEnd(last); }
+  return playing = { stop() { cancelled = true; clearInterval(timer); try { ctx.close(); } catch (e) {} ctx = null; bonkBuf = null; audio(); onEnd && onEnd(last, true); } };
 }
 
-// ---------- speech ----------
-function say(text) { $('said').textContent = text; Voice.speak(text); }
-
-// ---------- actions ----------
-function lineLabel() {
-  return dir === 'time'
-    ? `side view, ${D.maturities[k]} yield, 1990 to 2015`
-    : `front view, ${fmtMonth(m)}, 3-month to 30-year`;
+// ---------- view + speech ----------
+function say(t) { $('said').textContent = t; Voice.speak(t); }
+function show(animate = true) {
+  if (!g) return;
+  const v = VIEW[dir === 'time' ? 'side' : 'front'];
+  g.newScene();
+  v.grid.forEach(g.hideGridLines); v.labels.forEach(g.hideLabels);
+  g.animateTo(v.cam, animate ? 1500 : 1);
+  draw();
 }
+function draw() {
+  $('rMonth').textContent = fmtMonth(m);
+  $('rMat').textContent = MATS[k];
+  $('rVal').textContent = has(m, k) ? val(m, k).toFixed(2) + '%' : '—';
+  $('rDir').textContent = dir === 'time' ? 'Side · over time' : 'Front · across maturities';
+  $('jYear').value = D.months[m].slice(0, 4); $('jMonth').value = D.months[m].slice(5, 7); $('jMat').value = String(k);
+  if (!g) return;
+  if (dir === 'time') { g.highlightRow(null); g.highlightSeries(k); }
+  else { g.highlightSeries(null); g.highlightRow(D.rowOf[m]); }
+  g.setMarker(D.rowOf[m], k);
+}
+const lineLabel = () => dir === 'time' ? `Side view. ${MATS[k]} yield over time` : `Front view. ${fmtMonth(m)}, all maturities`;
+function value() { say(has(m, k) ? `${MATS[k]}, ${fmtMonth(m)}: ${pct(val(m, k))}.` : `${MATS[k]}, ${fmtMonth(m)}: no data.`); }
 function move(delta) {
   stopPlay();
   if (dir === 'time') {
     const nm = m + delta;
     if (nm < 0 || nm >= D.months.length) { bonk(); return; }
     m = nm;
-    tone(FIXED(val(m, k)), audio().currentTime + 0.01, 0.12, -0.8 + 1.6 * m / (D.months.length - 1));
-    say(`${fmtMonth(m)}. ${pct(val(m, k))}.`);
+    if (has(m, k)) tone(FIXED(val(m, k)), audio().currentTime + 0.01, 0.12, -0.8 + 1.6 * m / (D.months.length - 1));
+    say(has(m, k) ? `${fmtMonth(m)}. ${pct(val(m, k))}.` : `${fmtMonth(m)}. No data.`);
   } else {
-    const nk = k + delta;
-    if (nk < 0 || nk >= D.maturities.length) { bonk(); return; }
+    let nk = k + delta;
+    while (nk >= 0 && nk < MATS.length && !has(m, nk)) nk += delta;
+    if (nk < 0 || nk >= MATS.length) { bonk(); return; }
     k = nk;
-    tone(curveScale()(val(m, k)), audio().currentTime + 0.01, 0.12, -0.8 + 1.6 * k / (D.maturities.length - 1));
-    say(`${D.maturities[k]}. ${pct(val(m, k))}.`);
+    tone(curveScale()(val(m, k)), audio().currentTime + 0.01, 0.12, -0.8 + 1.6 * k / (MATS.length - 1));
+    say(`${MATS[k]}. ${pct(val(m, k))}.`);
   }
   draw();
-}
-function edge(toEnd) {
-  stopPlay();
-  if (dir === 'time') m = toEnd ? D.months.length - 1 : 0; else k = toEnd ? D.maturities.length - 1 : 0;
-  draw(); value();
 }
 function turn() {
   stopPlay();
   dir = dir === 'time' ? 'curve' : 'time';
-  draw();
-  say(`${lineLabel()}.`);
+  if (dir === 'curve' && !has(m, k)) { const e = MATS.findIndex((_, e) => has(m, e)); if (e >= 0) k = e; }
+  show(true);
+  say(lineLabel() + '.');
 }
-function value() {
-  say(`${D.maturities[k]}, ${fmtMonth(m)}: ${pct(val(m, k))}.`);
-}
-const rangeOf = arr => [Math.min(...arr), Math.max(...arr)];
-const fit = (lo, hi) => v => hi - lo < 0.05 ? 0.5 : 0.12 + 0.76 * (v - lo) / (hi - lo);
-// Default: one fixed pitch scale (0-9%), like Chart Reader. Z stretches the front view to the month's range.
-let stretch = false;
-const curveScale = () => { if (!stretch) return FIXED; const [lo, hi] = rangeOf(D.values[m]); return fit(lo, hi); };
-function toggleStretch() {
-  stretch = !stretch;
-  say(stretch ? 'Pitch stretched to this month’s range.' : 'Pitch on the fixed scale, 0 to 9 percent.');
-}
-
 async function play() {
   if (playing) { stopPlay(); return; }
   if (dir === 'curve') {
-    const vals = D.values[m], [lo, hi] = rangeOf(vals);
-    if (stretch) {
-      $('said').textContent = `${fmtMonth(m)}: ${lo.toFixed(2)} to ${hi.toFixed(2)} percent.`;
-      await Voice.speak(`${fmtMonth(m)}. ${lo.toFixed(2)} to ${hi.toFixed(2)} percent.`);
-    }
+    const idx = MATS.map((_, e) => e).filter(e => has(m, e)), vals = idx.map(e => val(m, e));
+    if (stretch) { const [lo, hi] = rangeOf(vals); await Voice.speak(`${fmtMonth(m)}. ${lo.toFixed(2)} to ${hi.toFixed(2)} percent.`); }
     const k0 = k;
-    playSeq(vals, {
-      scale: curveScale(), step: 0.24, dur: 0.2,
-      onStep: i => { k = i; draw(); },
-      onEnd: (last, stopped) => { if (!stopped) k = k0; draw(); value(); },
-    });
+    playSeq(vals, { scale: curveScale(), step: 0.24, dur: 0.2, onStep: i => { k = idx[i]; draw(); }, onEnd: (l, stopped) => { if (!stopped) k = k0; draw(); value(); } });
   } else {
     const from = m >= D.months.length - 1 ? 0 : m;
-    const vals = D.values.slice(from).map(r => r[k]);
-    const ticks = D.months.slice(from).map(s => s.endsWith('-01'));
-    playSeq(vals, {
-      scale: FIXED, step: 0.028, dur: 0.06, ticks,
-      onStep: i => { m = from + i; draw(); },
-      onEnd: () => { draw(); value(); },
-    });
+    const ids = []; for (let i = from; i < D.months.length; i++) if (has(i, k)) ids.push(i);
+    playSeq(ids.map(i => val(i, k)), { scale: FIXED, step: 0.028, dur: 0.06, ticks: ids.map(i => D.months[i].endsWith('-01')), onStep: i => { m = ids[i]; draw(); }, onEnd: () => { draw(); value(); } });
   }
 }
-function overview() {
-  if (playing) { stopPlay(); return; }
-  const jans = D.months.map((s, i) => s.endsWith('-01') ? i : -1).filter(i => i >= 0);
-  const vals = [], ticks = [];
-  jans.forEach(i => D.values[i].forEach((v, j) => { vals.push(v); ticks.push(j === 0); }));
-  say('Overview. Every January, 1990 to 2015.');
-  setTimeout(() => {
-    playSeq(vals, {
-      scale: FIXED, step: 0.045, dur: 0.05, ticks,
-      onStep: i => { m = jans[Math.floor(i / 9)]; k = i % 9; draw(); },
-      onEnd: () => { draw(); },
-    });
-  }, 2600);
-}
-
-// ---------- drawing (mirrors the NYT front and side views) ----------
-const W = 520, H = 330, L = 44, R = 14, T = 16, B = 40;
-const yS = v => T + (1 - v / 9) * (H - T - B);
-function axisY(g) {
-  [0, 2, 4, 6, 8].forEach(v => {
-    g.push(`<line x1="${L}" x2="${W - R}" y1="${yS(v)}" y2="${yS(v)}" stroke="${v === 0 ? '#121212' : '#e4e4e4'}"/>`);
-    g.push(`<text x="${L - 8}" y="${yS(v) + 5}" text-anchor="end" font-size="14" font-weight="600" fill="#363636">${v}%</text>`);
-  });
-}
-function draw() {
-  $('rMonth').textContent = fmtMonth(m);
-  $('rMat').textContent = D.maturities[k];
-  $('rVal').textContent = val(m, k).toFixed(2) + '%';
-  $('rDir').textContent = dir === 'time' ? 'Side view (time)' : 'Front view (maturity)';
-  $('tCurve').textContent = fmtMonth(m);
-  $('tTime').textContent = D.maturities[k] + ', 1990–2015';
-  $('vCurve').classList.toggle('active', dir === 'curve');
-  $('vTime').classList.toggle('active', dir === 'time');
-  $('lPrev').textContent = dir === 'time' ? 'Earlier' : 'Shorter';
-  $('lNext').textContent = dir === 'time' ? 'Later' : 'Longer';
-  $('jYear').value = D.months[m].slice(0, 4);
-  $('jMonth').value = D.months[m].slice(5, 7);
-  $('jMat').value = String(k);
-
-  // Front view: every month's curve faint, this month's curve bold
-  const xc = i => L + i * (W - L - R) / (D.maturities.length - 1);
-  const g1 = []; axisY(g1);
-  D.maturities.forEach((s, i) => g1.push(`<text x="${xc(i)}" y="${H - 14}" text-anchor="middle" font-size="13" font-weight="600" fill="#363636">${s.replace('-month', 'M').replace('-year', 'Y')}</text>`));
-  for (let i = 0; i < D.months.length; i += 3) {
-    g1.push(`<polyline points="${D.values[i].map((v, j) => `${xc(j)},${yS(v)}`).join(' ')}" fill="none" stroke="#cde2fb" stroke-width="1"/>`);
-  }
-  g1.push(`<polyline class="hero" points="${D.values[m].map((v, j) => `${xc(j)},${yS(v)}`).join(' ')}" fill="none" stroke="#184f95" stroke-width="2.5" stroke-linejoin="round"/>`);
-  g1.push(`<circle cx="${xc(k)}" cy="${yS(val(m, k))}" r="7" fill="#fefad1" stroke="#121212" stroke-width="2"/>`);
-  $('svgCurve').innerHTML = g1.join('');
-
-  // Side view: every maturity faint, this maturity bold, this month marked
-  const xt = i => L + i * (W - L - R) / (D.months.length - 1);
-  const g2 = []; axisY(g2);
-  [1990, 1995, 2000, 2005, 2010, 2015].forEach(y => {
-    const i = D.months.indexOf(`${y}-01`);
-    g2.push(`<text x="${xt(i)}" y="${H - 14}" text-anchor="middle" font-size="13" font-weight="600" fill="#363636">${y}</text>`);
-  });
-  D.maturities.forEach((s, j) => {
-    if (j === k) return;
-    g2.push(`<polyline points="${D.values.map((r, i) => `${xt(i)},${yS(r[j])}`).join(' ')}" fill="none" stroke="#cde2fb" stroke-width="1"/>`);
-  });
-  g2.push(`<polyline class="hero" points="${D.values.map((r, i) => `${xt(i)},${yS(r[k])}`).join(' ')}" fill="none" stroke="#184f95" stroke-width="2" stroke-linejoin="round"/>`);
-  g2.push(`<line x1="${xt(m)}" x2="${xt(m)}" y1="${T}" y2="${H - B}" stroke="#121212" stroke-width="1"/>`);
-  g2.push(`<circle cx="${xt(m)}" cy="${yS(val(m, k))}" r="7" fill="#fefad1" stroke="#121212" stroke-width="2"/>`);
-  $('svgTime').innerHTML = g2.join('');
+function edge(toEnd) {
+  stopPlay();
+  if (dir === 'time') m = toEnd ? D.months.length - 1 : 0;
+  else { const ids = MATS.map((_, e) => e).filter(e => has(m, e)); k = toEnd ? ids[ids.length - 1] : ids[0]; }
+  draw(); value();
 }
 
 // ---------- input ----------
 const stage = $('stage');
 stage.addEventListener('keydown', e => {
   const key = e.key;
-  if (key === 'ArrowLeft' || key === 'ArrowRight') {
-    e.preventDefault();
-    const d = key === 'ArrowLeft' ? -1 : 1;
-    move(e.shiftKey && dir === 'time' ? 12 * d : d);
-  } else if (key === 'p' || key === 'P' || key === 't' || key === 'T') { e.preventDefault(); turn(); }
+  if (key === 'ArrowLeft' || key === 'ArrowRight') { e.preventDefault(); const d = key === 'ArrowLeft' ? -1 : 1; move(e.shiftKey && dir === 'time' ? 12 * d : d); }
+  else if (/^[pPtT]$/.test(key)) { e.preventDefault(); turn(); }
   else if (key === ' ') { e.preventDefault(); play(); }
   else if (key === 'Enter') { e.preventDefault(); value(); }
-  else if (key === 'o' || key === 'O') { e.preventDefault(); overview(); }
+  else if (key === 'z' || key === 'Z') { e.preventDefault(); stretch = !stretch; say(stretch ? 'Pitch stretched to this date’s range.' : 'Pitch on the fixed scale.'); }
   else if (key === 'Home' || key === 'End') { e.preventDefault(); edge(key === 'End'); }
-  else if (key === 'z' || key === 'Z') { e.preventDefault(); toggleStretch(); }
   else if (key === 'Escape') { stopPlay(); Voice.stop(); }
 });
-$('bPrev').onclick = () => move(-1);
-$('bNext').onclick = () => move(1);
-$('bTurn').onclick = turn;
-$('bPlay').onclick = play;
-$('bValue').onclick = value;
-$('bOver').onclick = overview;
+$('bPrev').onclick = () => move(-1); $('bNext').onclick = () => move(1);
+$('bTurn').onclick = turn; $('bPlay').onclick = play; $('bValue').onclick = value;
 ['jYear', 'jMonth', 'jMat'].forEach(id => $(id).addEventListener('change', () => {
-  stopPlay();
-  const key = `${$('jYear').value}-${$('jMonth').value}`;
-  const i = D.months.indexOf(key);
-  if (i >= 0) m = i;
-  k = +$('jMat').value;
-  draw(); value(); stage.focus();
+  stopPlay(); const i = D.months.indexOf(`${$('jYear').value}-${$('jMonth').value}`); if (i >= 0) m = i; k = +$('jMat').value; draw(); value(); stage.focus();
 }));
 
-fetch('assets/data/surface.json').then(r => r.json()).then(d => {
-  D = d;
+NYTStage.mount($('nyt'), { panel: false, maxHeight: () => window.innerHeight * 0.58 }).then(a => {
+  app = a; window.__app = a;
+  const step = NYT_STEP;
+  g = a.current;
+  D = monthly(g.rows);
   const years = [...new Set(D.months.map(s => s.slice(0, 4)))];
   $('jYear').innerHTML = years.map(y => `<option>${y}</option>`).join('');
   $('jMonth').innerHTML = MONTHS.map((n, i) => `<option value="${String(i + 1).padStart(2, '0')}">${n.slice(0, 3)}</option>`).join('');
-  $('jMat').innerHTML = D.maturities.map((s, i) => `<option value="${i}">${s}</option>`).join('');
-  // Start point per NYT step (U.S. steps 1-6); ?month=YYYY-MM&mat=10-year&dir=curve overrides
-  const PRESET = {
-    1: { m: '2015-03', k: '10-year', dir: 'time' },
-    2: { m: '2015-03', k: '3-month', dir: 'curve' },
-    3: { m: '2008-01', k: '3-month', dir: 'time' },
-    4: { m: '2004-06', k: '3-month', dir: 'time' },
-    5: { m: '2012-07', k: '10-year', dir: 'time' },
-    6: { m: '2015-03', k: '10-year', dir: 'time' },
-  }[NYT_STEP];
-  if (!PRESET) {
-    document.getElementById('nodata').hidden = false;
-    ['stage', 'bPrev'].forEach(id => { const el = document.getElementById(id); if (el) el.closest('#stage, .pad').hidden = true; });
-    document.querySelector('.lower').hidden = true;
-    return;
-  }
-  const q = new URLSearchParams(location.search);
-  const mm = q.get('month') || PRESET.m, kk = q.get('mat') || PRESET.k;
+  $('jMat').innerHTML = MATS.map((s, i) => `<option value="${i}">${s}</option>`).join('');
+  const q = new URLSearchParams(location.search), p = PRESET[step];
+  const mm = q.get('month') || p[0], kk = q.get('mat') || p[1];
   m = D.months.includes(mm) ? D.months.indexOf(mm) : D.months.length - 1;
-  k = D.maturities.includes(kk) ? D.maturities.indexOf(kk) : 7;
-  dir = (q.get('dir') || PRESET.dir) === 'curve' ? 'curve' : 'time';
+  k = MATS.includes(kk) ? MATS.indexOf(kk) : 8;
+  dir = (q.get('dir') || p[2]) === 'curve' ? 'curve' : 'time';
+  if (!has(m, k)) { const e = MATS.findIndex((_, e) => has(m, e)); if (e >= 0) k = e; }
   draw();
+  // start on the NYT scene of this step, then turn to the listening view
+  setTimeout(() => show(true), 900);
 });
-
 Voice.bindControls();
 </script>
 </body>

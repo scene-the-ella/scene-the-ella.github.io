@@ -203,6 +203,7 @@
       renderer.clear(); renderer.render(k, camera); renderer.clearDepth(); renderer.render(Mo, camera);
       camera.updateMatrixWorld();
       labels.forEach(l => l.update());
+      if (typeof placeMarker === 'function') placeMarker();
     }
     // Same as the original: place the camera on a sphere around the origin, then let OrbitControls'
     // update() clamp the polar angle around the target (EPS keeps the top view off the pole).
@@ -294,6 +295,41 @@
       if (flat) { const e = Object.assign({}, camParams()); e.fov = 10; e.width = Math.max(e.width, 45); delete e.r; animateTo(e, 300); }
     });
 
+    // ---- hooks for the listening modes (not in the original) ----
+    let rowLine = null, seriesLine = null;
+    const marker = document.createElement('div');
+    marker.className = 'g-marker'; marker.style.display = 'none';
+    el.appendChild(marker);
+    let markerAt = null;
+    function placeMarker() {
+      if (!markerAt) { marker.style.display = 'none'; return; }
+      const [i, e] = markerAt, v = rows[i] && rows[i].curve[e];
+      if (v === undefined || isNaN(v)) { marker.style.display = 'none'; return; }
+      const q = new THREE.Vector3(S(rows[i].date), T(v), X(e)).project(camera);
+      marker.style.display = 'block';
+      marker.style.left = ((q.x + 1) / 2 * A) + 'px';
+      marker.style.top = (-(q.y - 1) / 2 * O) + 'px';
+    }
+    function highlightRow(i) {
+      if (rowLine) { Mo.remove(rowLine); rowLine = null; }
+      if (i !== null && i !== undefined && rows[i]) { rowLine = dateLine(i, true); Mo.add(rowLine); }
+      render();
+    }
+    function highlightSeries(e) {
+      if (seriesLine) { Mo.remove(seriesLine); seriesLine = null; }
+      if (e !== null && e !== undefined) {
+        const pts = []; rows.forEach(r => { if (!isNaN(r.curve[e])) pts.push([S(r.date), T(r.curve[e]), X(e)]); });
+        seriesLine = lineFrom(pts, true, 1); Mo.add(seriesLine);
+      }
+      render();
+    }
+    function setMarker(i, e) { markerAt = (i === null || i === undefined) ? null : [i, e]; placeMarker(); }
+    function rowIndexOf(date) {
+      const t = date.getTime(); let lo = 0, hi = rows.length - 1;
+      while (lo < hi) { const mid = (lo + hi) >> 1; if (rows[mid].date.getTime() < t) lo = mid + 1; else hi = mid; }
+      return lo;
+    }
+
     function setWidth(w) { A = w; O = A / L; renderer.setSize(A, O); camera.aspect = A / O; camera.updateProjectionMatrix(); render(); }
 
     return {
@@ -303,6 +339,7 @@
       hideGridLines(g) { tt[g] = true; }, hideLabels(g) { zHide[g] = true; },
       highlightProduct(p) { Jh = p; }, highlightDate(d) { Kh = d; },
       // hooks for the other demo modes
+      highlightRow, highlightSeries, setMarker, rowIndexOf, slide: null,
       S, X, T, rows, camera, target, labels: J, plane, project(v3) { const e = v3.clone().project(camera); return { x: (e.x + 1) / 2 * A, y: -(e.y - 1) / 2 * O }; },
     };
   }
