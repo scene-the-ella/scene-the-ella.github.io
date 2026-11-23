@@ -1,0 +1,219 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Join the Quiz</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@300;400;600;700;800&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/site.css">
+<style>
+  .wrap { max-width: 620px; }
+  .mast { margin-bottom: 18px; }
+  .q-num { font-family: var(--mono); font-weight: 600; font-size: 15px; }
+  .q { font-size: clamp(25px, 6.4vw, 34px); font-weight: 800; line-height: 1.15; margin: 6px 0 18px; }
+  fieldset { border: 0; padding: 0; margin: 0 0 22px; }
+  legend { font-weight: 800; font-size: 18px; margin-bottom: 8px; padding: 0; }
+  .opt {
+    display: flex; align-items: center; gap: 14px; width: 100%;
+    padding: 14px 12px; border-top: 1px solid var(--rule); cursor: pointer; font-size: 19px; font-weight: 600;
+  }
+  .opt:last-child { border-bottom: 1px solid var(--rule); }
+  .opt input { width: 22px; height: 22px; accent-color: #121212; flex: none; margin: 0; }
+  .opt:has(input:checked) { background: var(--mark); }
+  .opt svg { flex: none; }
+  .scale { display: grid; grid-template-columns: repeat(5, 1fr); border: 1px solid var(--ink); border-radius: var(--r); overflow: hidden; }
+  .scale label { text-align: center; padding: 12px 0 10px; cursor: pointer; font-weight: 800; font-size: 20px; border-left: 1px solid var(--ink); }
+  .scale label:first-child { border-left: 0; }
+  .scale input { position: absolute; opacity: 0; pointer-events: none; }
+  .scale label:has(input:checked) { background: var(--ink); color: #fff; }
+  .scale label:has(input:focus-visible) { outline: 3px solid var(--blue-5); outline-offset: -3px; }
+  .scale-ends { display: flex; justify-content: space-between; font-size: 15px; font-weight: 600; margin-top: 6px; }
+  textarea { width: 100%; min-height: 90px; font: inherit; font-size: 17px; padding: 10px; border: 1px solid var(--ink); border-radius: var(--r); }
+  input[type=text] { width: 100%; font: inherit; font-size: 20px; padding: 12px; border: 1px solid var(--ink); border-radius: var(--r); }
+  .submit { width: 100%; justify-content: center; font-size: 19px; padding: 15px; }
+  .big { font-size: clamp(28px, 7vw, 40px); font-weight: 800; line-height: 1.15; margin: 10px 0 12px; }
+  .note { font-size: 18px; color: var(--ink-2); }
+  .mine { margin-top: 18px; padding-top: 12px; border-top: 1px solid var(--ink); font-size: 18px; font-weight: 600; }
+  .right { color: var(--good); font-weight: 800; }
+  .wrong { color: var(--bad); font-weight: 800; }
+  .try { display: inline-block; margin: 0 0 18px; font-weight: 700; }
+  .links a { display: block; padding: 12px 0; border-top: 1px solid var(--rule); font-weight: 700; font-size: 19px; text-decoration: none; }
+  .links a:last-child { border-bottom: 1px solid var(--rule); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="mast"><span class="name">Seeing without seeing</span><span class="mono" id="who" style="font-size:15px"></span></div>
+  <main id="app" aria-live="polite"></main>
+</div>
+
+<script src="assets/js/config.js"></script>
+<script src="assets/js/questions.js"></script>
+<script src="assets/js/quiz.js"></script>
+<script>
+const app = document.getElementById('app');
+const store = {
+  get(k, d = null) { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } },
+  set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} },
+};
+let pid = store.get('crq-pid');
+if (!pid) { pid = Math.random().toString(36).slice(2, 10); store.set('crq-pid', pid); }
+let name = store.get('crq-name', '');
+let session = 'local', stage = 'lobby', localIndex = 0, lastRendered = '';
+
+const Q = id => QUESTIONS.find(q => q.id === id);
+const ansKey = qid => `crq-ans:${session}:${qid}`;
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+
+function renderJoin() {
+  app.innerHTML = `
+    <p class="big">Join in</p>
+    <p class="note">Pick a name the room will see. A nickname is fine.</p>
+    <form id="join" autocomplete="off">
+      <label class="sr-only" for="nm">Name</label>
+      <input type="text" id="nm" maxlength="30" value="${esc(name)}" placeholder="Your name" required>
+      <div style="height:14px"></div>
+      <button class="btn main submit" type="submit">Join</button>
+    </form>`;
+  document.getElementById('join').onsubmit = async e => {
+    e.preventDefault();
+    name = document.getElementById('nm').value.trim().slice(0, 30);
+    if (!name) return;
+    store.set('crq-name', name);
+    document.getElementById('who').textContent = ' · ' + name;
+    if (Quiz.live) {
+      try { const s = await Quiz.state(); if (s && s.session) { session = s.session; stage = s.stage || stage; } } catch (err) {}
+      Quiz.send({ type: 'join', session, pid, name, ua: navigator.userAgent });
+      lastRendered = '';
+      render();
+      poll();
+    } else { localIndex = 0; renderLocal(); }
+  };
+}
+
+function questionHTML(q, idx) {
+  const opts = q.options.map(o => `
+    <label class="opt"><input type="radio" name="choice" value="${o.id}" required>
+      ${o.shape ? shapeSVG(o.shape) : ''}<span>${esc(o.label)}</span></label>`).join('');
+  const vivid = q.vivid ? `
+    <fieldset>
+      <legend>How clearly could you picture it?</legend>
+      <div class="scale">${[1, 2, 3, 4, 5].map(n => `<label><input type="radio" name="vivid" value="${n}" required>${n}</label>`).join('')}</div>
+      <div class="scale-ends"><span>${VIVID_LABELS[0]}</span><span>${VIVID_LABELS[4]}</span></div>
+    </fieldset>` : '';
+  const text = q.text ? `<fieldset><legend>${esc(q.text)}</legend><textarea name="text" maxlength="500"></textarea></fieldset>` : '';
+  const demo = q.demo ? `<a class="try" href="${q.demo}" target="_blank" rel="noopener">Try “${esc(q.demoName)}” yourself ↗</a>` : '';
+  return `
+    <div class="q-num">${idx + 1} / ${QUESTIONS.length} · ${esc(q.demoName)}</div>
+    <p class="q">${esc(q.prompt)}</p>
+    ${demo}
+    <form id="qf">
+      <fieldset><legend class="sr-only">Answer</legend>${opts}</fieldset>
+      ${vivid}${text}
+      <button class="btn main submit" type="submit">Submit</button>
+    </form>`;
+}
+
+function bindForm(q, after) {
+  document.getElementById('qf').onsubmit = async e => {
+    e.preventDefault();
+    const f = new FormData(e.target);
+    const choice = f.get('choice');
+    if (!choice || (q.vivid && !f.get('vivid'))) return;
+    const rec = {
+      type: 'answer', session, pid, name, qid: q.id, choice,
+      vivid: q.vivid ? +f.get('vivid') : '',
+      correct: q.answer ? (choice === q.answer ? 1 : 0) : '',
+      text: f.get('text') || '', ua: navigator.userAgent,
+    };
+    store.set(ansKey(q.id), rec);
+    e.target.querySelector('button').disabled = true;
+    if (Quiz.live) await Quiz.send(rec);
+    after();
+  };
+}
+
+function mineHTML(q, reveal) {
+  const a = store.get(ansKey(q.id));
+  if (!a) return '';
+  const opt = q.options.find(o => o.id === a.choice);
+  let verdict = '';
+  if (reveal && q.answer) verdict = a.choice === q.answer ? ' <span class="right">Right</span>' : ` <span class="wrong">Not quite.</span> It was “${esc(q.options.find(o => o.id === q.answer).label)}”.`;
+  return `<div class="mine">Your answer: ${esc(opt ? opt.label : a.choice)}${a.vivid ? ` · picture ${a.vivid}/5` : ''}.${verdict}</div>`;
+}
+
+function endHTML() {
+  return `
+    <p class="big">Thank you</p>
+    <p class="note">Try the demos with headphones:</p>
+    <div class="links">
+      <a href="screen-reader.html">01 · The NYT graphic, through a screen reader</a>
+      <a href="chart-reader.html">02 · Chart Reader</a>
+      <a href="turn.html">03 · Turn the chart, by ear</a>
+      <a href="https://www.nytimes.com/interactive/2015/03/19/upshot/3d-yield-curve-economic-growth.html" target="_blank" rel="noopener">The original NYT graphic ↗</a>
+    </div>`;
+}
+
+function render() {
+  const key = stage + '|' + session;
+  if (key === lastRendered) return;
+  lastRendered = key;
+  const [qid, phase] = stage.split(':');
+  const q = Q(qid);
+  if (stage === 'end') { app.innerHTML = endHTML(); return; }
+  if (!q) { app.innerHTML = `<p class="big">You’re in${name ? ', ' + esc(name) : ''}.</p><p class="note">Watch the screen. The first question opens after the first demo.</p>`; return; }
+  const idx = QUESTIONS.indexOf(q);
+  if (phase === 'results') {
+    app.innerHTML = `<div class="q-num">${idx + 1} / ${QUESTIONS.length}</div><p class="big">Results are on the screen.</p>${mineHTML(q, true)}`;
+    return;
+  }
+  if (store.get(ansKey(q.id))) {
+    app.innerHTML = `<div class="q-num">${idx + 1} / ${QUESTIONS.length}</div><p class="big">Recorded.</p><p class="note">Waiting for the others.</p>${mineHTML(q, false)}`;
+    return;
+  }
+  app.innerHTML = questionHTML(q, idx);
+  bindForm(q, () => { lastRendered = ''; render(); });
+}
+
+// Local mode: no endpoint, so step through the questions on this phone only.
+function renderLocal() {
+  if (localIndex >= QUESTIONS.length) { app.innerHTML = endHTML(); return; }
+  const q = QUESTIONS[localIndex];
+  app.innerHTML = questionHTML(q, localIndex);
+  bindForm(q, () => {
+    app.innerHTML = `<div class="q-num">${localIndex + 1} / ${QUESTIONS.length}</div><p class="big">Saved on this phone.</p>${mineHTML(q, true)}<div style="height:16px"></div><button class="btn main submit" id="nx">Next question</button>`;
+    document.getElementById('nx').onclick = () => { localIndex++; renderLocal(); };
+  });
+}
+
+let polling = false;
+async function poll() {
+  if (polling) return;
+  polling = true;
+  const tick = async () => {
+    try {
+      const s = await Quiz.state();
+      if (s && s.stage) {
+        if (s.session && s.session !== session) { session = s.session; lastRendered = ''; }
+        stage = s.stage;
+        render();
+      }
+      Quiz.flush();
+    } catch (e) { /* keep the current screen; try again */ }
+    setTimeout(tick, document.hidden ? 6000 : 2500);
+  };
+  tick();
+}
+
+if (name) document.getElementById('who').textContent = ' · ' + name;
+if (Quiz.live && name) {
+  Quiz.state().then(s => { if (s && s.session) session = s.session; Quiz.send({ type: 'join', session, pid, name, ua: navigator.userAgent }); }).catch(() => {});
+  render(); poll();
+} else {
+  renderJoin();
+}
+</script>
+</body>
+</html>

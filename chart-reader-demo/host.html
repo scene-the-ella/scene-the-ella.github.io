@@ -1,0 +1,254 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Quiz Host</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@300;400;600;700;800&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/site.css">
+<style>
+  .wrap { max-width: 1320px; padding-top: 16px; }
+  .bar-top { display: flex; gap: 14px; align-items: center; justify-content: space-between; flex-wrap: wrap; border-bottom: 1px solid var(--ink); padding-bottom: 12px; }
+  .stages { display: flex; flex-wrap: wrap; }
+  .stages button { font: inherit; font-size: 14px; font-weight: 700; border: 1px solid #b8b8b8; background: #fff; padding: 6px 10px; margin: 0 -1px -1px 0; cursor: pointer; }
+  .stages button[aria-current="step"] { background: var(--ink); color: #fff; border-color: var(--ink); }
+  .ctl { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; font-size: 15px; font-weight: 600; }
+  .ctl > * { flex: none; }
+  .ctl input { font: inherit; font-size: 15px; padding: 6px 8px; border: 1px solid var(--ink); border-radius: var(--r); width: 150px; }
+  .status { font-family: var(--mono); font-size: 14px; font-weight: 600; }
+  .status.off { color: var(--bad); }
+  .main { display: grid; grid-template-columns: 340px minmax(0, 1fr); gap: 48px; margin-top: 28px; }
+  .join .qr svg { width: 100%; height: auto; display: block; }
+  .join .url { font-weight: 800; font-size: 19px; word-break: break-all; margin-top: 10px; }
+  .count { font-size: 64px; font-weight: 800; line-height: 1; margin-top: 22px; }
+  .count small { display: block; font-size: 17px; font-weight: 700; margin-top: 6px; }
+  .names { margin-top: 14px; font-size: 17px; font-weight: 600; max-height: 260px; overflow: hidden; }
+  .stage-title { font-family: var(--mono); font-weight: 600; font-size: 17px; }
+  .prompt { font-size: clamp(34px, 3.6vw, 54px); font-weight: 800; line-height: 1.1; margin: 8px 0 26px; max-width: 24ch; }
+  .rows { display: grid; gap: 14px; }
+  .r { display: grid; grid-template-columns: 300px minmax(0, 1fr) 90px; gap: 16px; align-items: center; }
+  .r .lab { display: flex; gap: 12px; align-items: center; font-size: 21px; font-weight: 700; }
+  .r .track { height: 34px; background: var(--tint); border-radius: 0 4px 4px 0; position: relative; }
+  .r .fill { height: 100%; background: var(--ink); border-radius: 0 4px 4px 0; transition: width .4s; }
+  .r .num { font-size: 24px; font-weight: 800; text-align: right; }
+  .r.answer .fill { background: var(--blue-7); }
+  .r .ans { font-family: var(--mono); font-size: 14px; font-weight: 600; background: var(--mark); border: 1px solid var(--ink); padding: 0 6px; border-radius: var(--r); }
+  .vivid { margin-top: 30px; padding-top: 16px; border-top: 1px solid var(--ink); display: grid; grid-template-columns: 220px minmax(0, 1fr); gap: 30px; align-items: end; }
+  .vivid .big { font-size: 72px; font-weight: 800; line-height: 1; }
+  .vivid .big small { font-size: 22px; }
+  .dist { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; align-items: end; height: 120px; }
+  .dist div { background: var(--blue-5); border-radius: 4px 4px 0 0; position: relative; min-height: 2px; }
+  .dist-l { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; text-align: center; font-weight: 700; font-size: 15px; margin-top: 6px; }
+  .summary { display: grid; grid-template-columns: repeat(auto-fit, minmax(440px, 1fr)); gap: 40px; }
+  .summary h2 { font-size: 24px; }
+  .sr { display: grid; grid-template-columns: 200px minmax(140px, 1fr) 70px; gap: 14px; align-items: center; margin-bottom: 14px; font-size: 19px; font-weight: 700; }
+  .sr .track { height: 30px; background: var(--tint); border-radius: 0 4px 4px 0; }
+  .sr .fill { height: 100%; border-radius: 0 4px 4px 0; transition: width .4s; }
+  .sr .num { font-size: 22px; font-weight: 800; text-align: right; }
+  .texts { margin-top: 26px; border-top: 1px solid var(--ink); }
+  .texts p { margin: 0; padding: 10px 0; border-bottom: 1px solid var(--rule); font-size: 19px; }
+  .texts b { font-weight: 800; }
+  .big-msg { font-size: clamp(40px, 4.4vw, 64px); font-weight: 800; line-height: 1.08; max-width: 18ch; }
+  @media (max-width: 1000px) { .main, .summary { grid-template-columns: 1fr; } .r { grid-template-columns: 1fr 1fr 60px; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="bar-top">
+    <div class="stages" id="stages" role="toolbar" aria-label="Stage"></div>
+    <div class="ctl">
+      <label for="sess">Session</label><input id="sess">
+      <button class="btn" id="newSess">New</button>
+      <button class="btn" id="prev">←</button>
+      <button class="btn main" id="next">Next →</button>
+      <span class="status" id="status"></span>
+    </div>
+  </div>
+
+  <div class="main">
+    <aside class="join">
+      <div class="qr" id="qr"></div>
+      <div class="url" id="url"></div>
+      <div class="count"><span id="nJoined">0</span><small>joined</small></div>
+      <div class="names" id="names"></div>
+    </aside>
+    <section id="board" aria-live="polite"></section>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
+<script src="assets/js/config.js"></script>
+<script src="assets/js/questions.js"></script>
+<script src="assets/js/quiz.js"></script>
+<script>
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const store = {
+  get(k, d = null) { try { const v = localStorage.getItem(k); return v === null ? d : v; } catch (e) { return d; } },
+  set(k, v) { try { localStorage.setItem(k, v); } catch (e) {} },
+};
+const params = new URLSearchParams(location.search);
+const SAMPLE = params.has('sample');
+let stage = 'lobby';
+let session = store.get('crq-host-session') || ('class-' + new Date().toISOString().slice(0, 10));
+let rows = [];
+let adopted = false;
+
+// Join link + QR
+const joinURL = new URL('play.html', location.href).href.split('?')[0];
+$('url').textContent = joinURL.replace(/^https?:\/\//, '');
+try {
+  const qr = qrcode(0, 'M'); qr.addData(joinURL); qr.make();
+  $('qr').innerHTML = qr.createSvgTag({ cellSize: 8, margin: 2, scalable: true });
+} catch (e) { $('qr').textContent = ''; }
+
+$('sess').value = session;
+$('sess').addEventListener('change', () => { session = $('sess').value.trim() || session; store.set('crq-host-session', session); pushState(); });
+$('newSess').onclick = () => {
+  session = 'class-' + new Date().toISOString().slice(0, 10) + '-' + Math.random().toString(36).slice(2, 5);
+  $('sess').value = session; store.set('crq-host-session', session); stage = 'lobby'; pushState();
+};
+
+function stageLabel(s) {
+  if (s === 'lobby') return 'Lobby';
+  if (s === 'end') return 'End';
+  const [q, p] = s.split(':');
+  return q.toUpperCase() + (p ? ' results' : '');
+}
+function renderStages() {
+  $('stages').innerHTML = STAGES.map(s => `<button data-s="${s}"${s === stage ? ' aria-current="step"' : ''}>${stageLabel(s)}</button>`).join('');
+  $('stages').querySelectorAll('button').forEach(b => b.onclick = () => { stage = b.dataset.s; pushState(); });
+}
+function step(d) {
+  const i = Math.max(0, Math.min(STAGES.length - 1, STAGES.indexOf(stage) + d));
+  stage = STAGES[i]; pushState();
+}
+$('prev').onclick = () => step(-1);
+$('next').onclick = () => step(1);
+window.addEventListener('keydown', e => {
+  if (e.target.tagName === 'INPUT') return;
+  if (e.key === 'ArrowRight' || e.key === 'PageDown') { e.preventDefault(); step(1); }
+  if (e.key === 'ArrowLeft' || e.key === 'PageUp') { e.preventDefault(); step(-1); }
+});
+
+function hostKey() {
+  let k = store.get('crq-hostkey');
+  if (!k) { k = prompt('Host key (the HOST_KEY in the Apps Script)') || ''; store.set('crq-hostkey', k); }
+  return k;
+}
+async function pushState() {
+  renderStages(); render();
+  if (!Quiz.live) return;
+  try {
+    const r = await Quiz.setState(hostKey(), stage, session);
+    if (r && r.error) { $('status').textContent = 'Key rejected'; $('status').className = 'status off'; store.set('crq-hostkey', ''); }
+  } catch (e) { $('status').textContent = 'Offline'; $('status').className = 'status off'; }
+}
+
+// Keep the latest answer per person per question
+function latest(qid) {
+  const by = new Map();
+  rows.filter(r => r.qid === qid).forEach(r => by.set(r.pid, r));
+  return [...by.values()];
+}
+function joined() {
+  const by = new Map();
+  rows.forEach(r => { if (r.pid) by.set(r.pid, r.name); });
+  return [...by.values()];
+}
+
+function questionBoard(q, reveal) {
+  const ans = latest(q.id), n = ans.length;
+  const counts = Object.fromEntries(q.options.map(o => [o.id, 0]));
+  ans.forEach(a => { if (counts[a.choice] !== undefined) counts[a.choice]++; });
+  const max = Math.max(1, ...Object.values(counts));
+  const bars = q.options.map(o => {
+    const c = counts[o.id], isAns = reveal && q.answer === o.id;
+    return `<div class="r${isAns ? ' answer' : ''}">
+      <div class="lab">${o.shape ? shapeSVG(o.shape) : ''}<span>${esc(o.label)}</span>${isAns ? '<span class="ans">answer</span>' : ''}</div>
+      <div class="track"><div class="fill" style="width:${reveal ? 100 * c / max : 0}%"></div></div>
+      <div class="num">${reveal ? c : ''}</div></div>`;
+  }).join('');
+  let vivid = '';
+  if (q.vivid && reveal) {
+    const v = ans.map(a => +a.vivid).filter(x => x >= 1 && x <= 5);
+    const mean = v.length ? (v.reduce((s, x) => s + x, 0) / v.length).toFixed(1) : '–';
+    const dist = [1, 2, 3, 4, 5].map(k => v.filter(x => x === k).length), dm = Math.max(1, ...dist);
+    vivid = `<div class="vivid">
+      <div><div style="font-weight:800;font-size:18px">Could picture it</div><div class="big">${mean}<small> / 5</small></div></div>
+      <div><div class="dist">${dist.map(c => `<div style="height:${100 * c / dm}%" title="${c}"></div>`).join('')}</div>
+      <div class="dist-l">${VIVID_LABELS.map((l, i) => `<span>${i + 1}</span>`).join('')}</div></div></div>`;
+  }
+  let texts = '';
+  if (q.text && reveal) {
+    const t = ans.filter(a => String(a.text || '').trim());
+    if (t.length) texts = `<div class="texts">${t.slice(-8).map(a => `<p><b>${esc(a.name)}</b> ${esc(a.text)}</p>`).join('')}</div>`;
+  }
+  return `<div class="stage-title">${QUESTIONS.indexOf(q) + 1} / ${QUESTIONS.length} · ${esc(q.demoName)} · ${n} answered</div>
+    <p class="prompt">${esc(q.prompt)}</p>
+    <div class="rows">${bars}</div>${vivid}${texts}`;
+}
+
+function summaryBoard() {
+  const qs = QUESTIONS.filter(q => q.answer);
+  const right = qs.map(q => { const a = latest(q.id); return a.length ? a.filter(x => x.choice === q.answer).length / a.length : 0; });
+  const viv = qs.map(q => { const v = latest(q.id).map(a => +a.vivid).filter(x => x >= 1); return v.length ? v.reduce((s, x) => s + x, 0) / v.length : 0; });
+  const row = (label, frac, text, color) => `<div class="sr"><span>${esc(label)}</span>
+    <div class="track"><div class="fill" style="width:${100 * frac}%;background:${color}"></div></div><span class="num">${text}</span></div>`;
+  return `<div class="stage-title">All three</div>
+    <p class="prompt">Did it feel clear, and was it right?</p>
+    <div class="summary">
+      <div><h2>Got it right</h2>${qs.map((q, i) => row(q.demoName, right[i], Math.round(100 * right[i]) + '%', '#184f95')).join('')}</div>
+      <div><h2>Could picture it</h2>${qs.map((q, i) => row(q.demoName, viv[i] / 5, viv[i] ? viv[i].toFixed(1) : '–', '#86b6ef')).join('')}</div>
+    </div>`;
+}
+
+function render() {
+  const names = joined();
+  $('nJoined').textContent = names.length;
+  $('names').textContent = names.slice(-24).join(' · ');
+  if (!Quiz.live && !SAMPLE) { $('status').textContent = 'Local preview · not recording'; $('status').className = 'status off'; }
+  const [qid, phase] = stage.split(':');
+  const q = QUESTIONS.find(x => x.id === qid);
+  if (stage === 'lobby') $('board').innerHTML = `<p class="big-msg">Scan to join.</p><p class="lead" style="margin-top:18px">Questions open after each demo.</p>`;
+  else if (stage === 'end') $('board').innerHTML = summaryBoard();
+  else if (q) $('board').innerHTML = questionBoard(q, phase === 'results' || SAMPLE);
+}
+
+async function poll() {
+  if (SAMPLE) { rows = sampleRows(); render(); return; }
+  if (Quiz.live) {
+    try {
+      const r = await Quiz.results(session);
+      rows = (r && r.rows) || [];
+      // After a reload, pick up where the room is
+      if (!adopted && r && r.state && r.state.session === session && r.state.stage) stage = r.state.stage;
+      adopted = true;
+      $('status').textContent = 'Live · recording'; $('status').className = 'status';
+      renderStages(); render();
+    } catch (e) { $('status').textContent = 'Offline'; $('status').className = 'status off'; }
+  }
+  setTimeout(poll, 2000);
+}
+
+// Fake answers for rehearsing the layout: host.html?sample
+function sampleRows() {
+  const out = [], names = ['Minji', 'Jae', 'Ana', 'Sora', 'Leo', 'Hyun', 'Yuna', 'Ken', 'Dae', 'Mia', 'Joon', 'Eun'];
+  const pick = { q1: ['flat', 'flat', 'flat', 'rise', 'flat', 'dip', 'rise', 'flat', 'flat', 'fall', 'flat', 'rise'],
+                 q2: ['10y', '3m', '3m', '10y', '3m', '3m', 'same', '3m', '10y', '3m', '3m', '3m'],
+                 q3: ['dip', 'dip', 'fall', 'dip', 'dip', 'flat', 'dip', 'dip', 'fall', 'dip', 'dip', 'dip'],
+                 q4: ['turn', 'cr', 'turn', 'cr', 'turn', 'turn', 'cr', 'turn', 'cr', 'turn', 'turn', 'cr'] };
+  const viv = { q1: [2, 1, 2, 3, 2, 1, 2, 2, 1, 2, 3, 2], q2: [3, 3, 4, 2, 3, 3, 3, 4, 2, 3, 3, 3], q3: [4, 4, 3, 5, 4, 3, 4, 5, 3, 4, 4, 4] };
+  names.forEach((n, i) => {
+    out.push({ pid: 'p' + i, name: n, qid: 'join' });
+    Object.keys(pick).forEach(q => out.push({ pid: 'p' + i, name: n, qid: q, choice: pick[q][i], vivid: viv[q] ? viv[q][i] : '', text: q === 'q4' && i % 4 === 0 ? 'Let me ask for the value where the sound changes most.' : '' }));
+  });
+  return out;
+}
+
+renderStages(); render(); poll();
+</script>
+</body>
+</html>

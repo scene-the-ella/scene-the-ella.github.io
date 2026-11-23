@@ -1,0 +1,74 @@
+/* Styles for the classes the Chart Reader engine (microsoft/chart-reader) renders.
+   Written for this site; behaviour follows the engine's show/hide conventions. */
+.cr svg { overflow: visible; }
+
+/* Off-screen descriptions read by the screen reader */
+.cr .chart-sr-desc-container { position: relative; }
+.cr .chart-sr-desc-wrapper {
+  position: absolute; width: 1px; height: 1px; overflow: hidden;
+  white-space: nowrap; clip: rect(1px, 1px, 1px, 1px); opacity: 0.01;
+}
+
+/* Axes */
+.cr .axis .tick text { fill: #363636; font-size: 15px; font-weight: 600; font-family: var(--sans); }
+.cr .axis .tick line { stroke: #c9c9c9; }
+.cr .axis .domain { stroke: #121212; }
+.cr .axis-y .tick:not(:first-of-type) line { stroke: #e4e4e4; }
+.cr .axis-x .tick text { visibility: hidden; }
+.cr .axis-x .tick:nth-of-type(5n + 1) text { visibility: visible; }
+.cr .axis-label { fill: #121212; font-size: 15px; font-weight: 700; font-family: var(--sans); }
+
+/* Legend */
+.cr .legend-value { font-family: var(--sans); font-size: 15px; font-weight: 700; fill: #121212; }
+.cr .legend-tick.filtered .legend-card { fill-opacity: 0.2; }
+.cr .legend-tick.filtered .legend-value { font-weight: 400; }
+
+/* Marks */
+.cr .line { stroke-width: 2.5px; stroke-linecap: round; stroke-linejoin: round; fill: none; }
+.cr .line.base-mark.fade { stroke-opacity: 0.25; }
+.cr .bar { fill-opacity: 0.001; }
+.cr .bar:focus, .cr .bar:focus-visible { outline: none; }
+.cr .bg-ghost-container { opacity: 0.001; pointer-events: none; }
+.cr .x-ghost, .cr .y-ghost { opacity: 0.001; }
+.cr .threshold { stroke: #121212; stroke-width: 2px; fill: none; }
+.cr .data-tip path { stroke: #121212; stroke-width: 1px; fill: none; }
+.cr .data-tip circle { stroke: #fff; stroke-width: 2px; }
+
+/* Insight annotations: hidden until their insight is focused */
+.cr .annotation, .cr .annotation-group { opacity: 0; }
+.cr .annotation.highlight, .cr .annotation-group.highlight { opacity: 1; }
+.cr .annotation-ghost circle { fill: #fff; stroke: #121212; stroke-width: 1px; }
+.cr .annotation-ghost rect { fill: #fff; opacity: 0.0001; }
+.cr .annotation-ghost text { font-size: 12px; font-weight: 700; fill: #121212; }
+.cr .annotation-connector .connector, .cr .annotation-subject .subject, .cr .annotation-note .note-line { fill: none; stroke: #121212; }
+.cr .annotation-note text { fill: #121212; font-size: 15px; font-family: var(--sans); }
+.cr .annotation-note .annotation-note-title { font-weight: 800; }
+.cr .annotation-note .annotation-note-bg { fill: rgba(255, 255, 255, 0.85); }
+
+/* Axis bins: shown when focused */
+.cr .x-group, .cr .x-group-container, .cr .y-group, .cr .y-group-container { opacity: 0; }
+.cr .x-group.highlight, .cr .x-group-container.highlight, .cr .x-group-container.highlight .x-group,
+.cr .y-group.highlight, .cr .y-group-container.highlight { opacity: 1; }
+.cr .x-group .bg, .cr .x-group-container .bg { fill: rgba(254, 250, 209, 0.75); }
+.cr .y-group .bg { fill: #fff; }
+.cr .x-group .x-group-label, .cr .x-group-container .x-group-label, .cr .year-label { font-size: 15px; font-weight: 700; text-anchor: middle; }
+.cr .y-group .span-line { stroke: #121212; stroke-width: 3px; fill: none; }
+
+/* Tooltips */
+.cr .tooltip-container { position: absolute; width: 0; height: 0; z-index: 30; pointer-events: none; }
+.cr .tooltip {
+  position: absolute; left: 0; bottom: 20px; display: inline-block; box-sizing: border-box;
+  background: #fff; border: 1px solid #121212; border-radius: 3px; pointer-events: none;
+  font-family: var(--sans); font-size: 16px; line-height: 21px;
+}
+.cr .tooltip-container.tooltip-right .tooltip { left: auto; right: 20px; bottom: 0; }
+.cr .tooltip-container.tooltip-left .tooltip { right: auto; left: 20px; bottom: 0; }
+.cr .tooltip-inner { display: block; min-width: 220px; padding: 10px 13px 8px; white-space: nowrap; }
+.cr .tooltip-inner span { display: block; }
+.cr .tooltip-inner .tooltip-date, .cr .tooltip-inner .tooltip-label {
+  font-size: 15px; font-weight: 700; border-bottom: 1px solid #dfdfdf; margin-bottom: 6px; padding-bottom: 6px;
+}
+.cr .tooltip-inner .tooltip-value { font-weight: 800; }
+.cr .tooltip-inner .tooltip-series span { display: inline-block; font-weight: 700; }
+.cr .tooltip-inner .tooltip-series .tooltip-series-legend { min-width: 12px; min-height: 12px; border-radius: 2px; background: #000; margin: 0 6px 0 0; }
+.cr .tooltip-inner .tooltip-series .tooltip-series-value { float: right; margin-left: 14px; }

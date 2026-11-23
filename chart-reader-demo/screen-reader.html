@@ -1,0 +1,188 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Through a Screen Reader</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@300;400;600;700;800&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/site.css">
+<style>
+  .tabs { display: flex; gap: 0; margin: 0 0 18px; }
+  .tabs .seg > * { font-size: 16px; padding: 9px 16px; }
+  .tabs .seg > [aria-selected="true"] { background: var(--ink); color: #fff; }
+  .stream { display: flex; flex-wrap: wrap; gap: 6px 6px; align-content: flex-start; padding: 16px 0 4px; border-top: 1px solid var(--ink); }
+  .tok {
+    font-size: 17px; line-height: 1.3; padding: 3px 7px; border-radius: var(--r);
+    border: 1px solid var(--rule); background: #fff; transition: background .12s;
+  }
+  .tok.role { font-family: var(--mono); font-weight: 600; border-color: var(--ink); }
+  .tok.btnlike { border: 1px dashed var(--ink); font-weight: 600; }
+  .tok.title { flex-basis: 100%; border: 0; padding: 10px 0 0; font-weight: 800; font-size: 21px; }
+  .tok.para { flex-basis: 100%; border: 0; padding: 2px 0; font-size: 19px; color: var(--ink-2); max-width: 62ch; }
+  .tok.now { background: var(--mark); border-color: var(--ink); }
+  .tok.para.now, .tok.title.now { box-shadow: -10px 0 0 var(--mark), 10px 0 0 var(--mark); }
+  .count { display: flex; gap: 28px; flex-wrap: wrap; margin: 18px 0 0; padding-top: 14px; border-top: 1px solid var(--rule); }
+  .count div { font-size: 16px; font-weight: 600; }
+  .count b { display: block; font-size: 38px; font-weight: 800; line-height: 1; font-family: var(--sans); }
+  .reveal { display: none; }
+  .reveal.show { display: block; }
+  .chart-box { position: relative; max-width: 900px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header id="mast" data-page="screen-reader" data-screen="yes"></header>
+
+  <p class="kicker"><b>01</b>The original, through a screen reader</p>
+  <h1>What the NYT graphic <strong>says out loud</strong></h1>
+  <p class="lead">This is everything the page hands to a screen reader, in reading order, taken from Chrome’s accessibility tree.</p>
+
+  <div class="tabs"><div class="seg" role="tablist" aria-label="Step of the NYT story">
+    <button role="tab" data-step="1" aria-selected="false">Step 1 · Yield curve 101</button>
+    <button role="tab" data-step="2" aria-selected="true">Step 2 · Where we stand</button>
+  </div></div>
+
+  <div class="row" style="margin-bottom:18px">
+    <button class="btn main" id="play">Read it aloud</button>
+    <button class="btn" id="toCaption">Jump to the caption</button>
+    <button class="btn" id="stop">Stop</button>
+    <button class="btn" id="revealBtn" aria-expanded="false">Show the line</button>
+  </div>
+
+  <div class="stream" id="stream"></div>
+  <div class="count" id="count"></div>
+
+  <section class="sec reveal" id="reveal" aria-label="The line on March 18, 2015">
+    <h2>What the eye got on step 2</h2>
+    <div class="chart-box" id="chartBox">
+      <svg id="curve" width="100%" viewBox="0 0 900 360" role="img" aria-label="Treasury yields on March 18, 2015, rising from 0.02 percent at 1 month to 2.51 percent at 30 years."></svg>
+      <div class="tip" id="tip"></div>
+    </div>
+  </section>
+</div>
+
+<script src="assets/js/nav.js"></script>
+<script src="assets/js/voice.js"></script>
+<script>
+// Reading order copied from the page's accessibility tree (Chrome on macOS), captured at steps 1 and 2.
+const ticksY = ['2%', '4%', '6%', '8% yield', 'per year'];
+const mats = ['1-month', 'Treasury', '3-month', '6-month', '1-year', '2-year', '3-year', '5-year', '7-year', '10-year', '20-year', '30-year'];
+const years1 = ['’90', '’92', '’94', '’96', '’98', '’00', '’02', '’04', '’06', '’08', '’10', '’12', '2014'];
+const years2 = ['’90','’91','’92','’93','’94','’95','’96','’97','’98','’99','’00','’01','’02','’03','’04','’05','’06','’07','’08','’09','’10','’11','’12','2013','2014','2015'];
+
+const STEPS = {
+  1: [
+    ['role', 'image'],
+    ...ticksY.map(t => ['tick', t]), ...years1.map(t => ['tick', t]), ...mats.map(t => ['tick', t]),
+    ['btnlike', 'Back'], ['btnlike', 'Next'],
+    ['title', 'Yield curve 101'],
+    ['para', 'The yield curve shows how much it costs the federal government to borrow money for a given amount of time, revealing the relationship between long- and short-term interest rates.'],
+    ['para', 'It is, inherently, a forecast for what the economy holds in the future — how much inflation there will be, for example, and how healthy growth will be over the years ahead — all embodied in the price of money today, tomorrow and many years from now.'],
+  ],
+  2: [
+    ['role', 'image'],
+    ...ticksY.map(t => ['tick', t]), ...years2.map(t => ['tick', t]), ...mats.map(t => ['tick', t]),
+    ['tick', 'Short-term rates basically'], ['tick', 'follow the interest rates'], ['tick', 'set by the Federal Reserve.'],
+    ['tick', 'Wednesday'],
+    ['btnlike', 'Back'], ['btnlike', 'Next'],
+    ['title', 'Where we stand'],
+    ['para', 'On Wednesday, both short-term and long-term rates were lower than they have been for most of history – a reflection of the continuing hangover from the financial crisis.'],
+    ['para', 'The yield curve is fairly flat, which is a sign that investors expect mediocre growth in the years ahead.'],
+  ],
+};
+
+let step = 2, runId = 0;
+const stream = document.getElementById('stream');
+
+function render() {
+  stream.innerHTML = '';
+  STEPS[step].forEach(([kind, text], i) => {
+    const s = document.createElement('span');
+    s.className = 'tok ' + kind;
+    s.textContent = text;
+    s.dataset.i = i;
+    stream.appendChild(s);
+  });
+  document.querySelectorAll('[data-step]').forEach(b => b.setAttribute('aria-selected', String(+b.dataset.step === step)));
+  const items = STEPS[step];
+  const labels = items.filter(([k]) => k === 'tick').length;
+  document.getElementById('count').innerHTML =
+    `<div><b>${labels}</b>labels before the caption</div>` +
+    `<div><b>0</b>data values</div>` +
+    `<div><b>0</b>buttons</div>`;
+}
+
+async function read(from = 0) {
+  const id = ++runId;
+  Voice.stop();
+  const items = STEPS[step];
+  for (let i = from; i < items.length; i++) {
+    if (id !== runId) return;
+    stream.querySelectorAll('.tok').forEach(c => c.classList.toggle('now', +c.dataset.i === i));
+    const [kind, text] = items[i];
+    const long = kind === 'para' || kind === 'title';
+    await Voice.speak(text, { interrupt: false, rate: long ? 1.0 : 1.2 });
+    await new Promise(r => setTimeout(r, kind === 'tick' ? 40 : 200));
+  }
+  if (id === runId) stream.querySelectorAll('.tok').forEach(c => c.classList.remove('now'));
+}
+function stopAll() { runId++; Voice.stop(); stream.querySelectorAll('.tok').forEach(c => c.classList.remove('now')); }
+
+document.getElementById('play').onclick = () => read(0);
+document.getElementById('stop').onclick = stopAll;
+document.getElementById('toCaption').onclick = () => read(STEPS[step].findIndex(([k]) => k === 'title'));
+document.querySelectorAll('[data-step]').forEach(b => b.onclick = () => { stopAll(); step = +b.dataset.step; render(); });
+document.getElementById('revealBtn').onclick = e => {
+  const r = document.getElementById('reveal');
+  const on = !r.classList.contains('show');
+  r.classList.toggle('show', on);
+  e.currentTarget.setAttribute('aria-expanded', String(on));
+  e.currentTarget.textContent = on ? 'Hide the line' : 'Show the line';
+  if (on) r.scrollIntoView({ behavior: 'smooth', block: 'start' });
+};
+window.addEventListener('keydown', e => {
+  if (e.key === 'Escape') stopAll();
+});
+
+// The March 18, 2015 curve (Federal Reserve H.15 via FRED), drawn like the NYT front view.
+fetch('assets/data/surface.json').then(r => r.json()).then(d => {
+  const w = d.wednesday, svg = document.getElementById('curve');
+  const W = 900, H = 360, L = 56, R = 24, T = 30, B = 50;
+  const x = i => L + i * (W - L - R) / (w.values.length - 1);
+  const y = v => T + (1 - v / 3) * (H - T - B);
+  let g = '';
+  [0, 1, 2, 3].forEach(v => {
+    g += `<line x1="${L}" x2="${W - R}" y1="${y(v)}" y2="${y(v)}" stroke="${v === 0 ? '#121212' : '#dfdfdf'}" stroke-width="1"/>`;
+    g += `<text x="${L - 10}" y="${y(v) + 6}" text-anchor="end" font-size="17" font-weight="600" fill="#363636">${v}%</text>`;
+  });
+  w.maturities.forEach((m, i) => {
+    g += `<text x="${x(i)}" y="${H - B + 28}" text-anchor="middle" font-size="16" font-weight="600" fill="#363636">${m.replace('-month', 'M').replace('-year', 'Y')}</text>`;
+  });
+  g += `<polyline points="${w.values.map((v, i) => `${x(i)},${y(v)}`).join(' ')}" fill="none" stroke="#2a78d6" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>`;
+  w.values.forEach((v, i) => {
+    g += `<circle cx="${x(i)}" cy="${y(v)}" r="5" fill="#2a78d6" stroke="#fff" stroke-width="2"/>`;
+    g += `<circle cx="${x(i)}" cy="${y(v)}" r="22" fill="transparent" data-i="${i}" class="hit"/>`;
+  });
+  const n = w.values.length - 1;
+  g += `<text x="${x(n) - 6}" y="${y(w.values[n]) - 16}" text-anchor="end" font-size="19" font-weight="800" fill="#121212">Wednesday, March 18, 2015</text>`;
+  svg.innerHTML = g;
+  const tip = document.getElementById('tip');
+  svg.querySelectorAll('.hit').forEach(h => {
+    h.addEventListener('pointerenter', () => {
+      const i = +h.dataset.i, s = svg.getBoundingClientRect().width / W;
+      tip.textContent = `${w.maturities[i]}  ${w.values[i].toFixed(2)}%`;
+      tip.style.display = 'block';
+      tip.style.left = (x(i) * s - tip.offsetWidth / 2) + 'px';
+      tip.style.top = (y(w.values[i]) * s - 42) + 'px';
+    });
+    h.addEventListener('pointerleave', () => { tip.style.display = 'none'; });
+  });
+});
+
+render();
+Voice.bindControls();
+</script>
+</body>
+</html>
