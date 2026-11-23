@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Pivot · NYT Yield Curve</title>
+<title>Pivot: NYT Yield Curve</title>
 <link rel="icon" href="data:,">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -13,13 +13,22 @@
 <style>
   .wrap.full { max-width: none; padding-left: 24px; padding-right: 24px; }
   .wrap.full .mast2, .bar, .lower { max-width: 1280px; margin-left: auto; margin-right: auto; }
-  .bar { display: grid; grid-template-columns: auto auto auto 1fr auto; align-items: stretch; border-top: 1px solid var(--ink); border-bottom: 1px solid var(--ink); margin-bottom: 10px; }
-  .bar > div { padding: 8px 20px 8px 0; margin-right: 20px; border-right: 1px solid var(--rule); }
-  .bar .k { font-size: 14px; font-weight: 700; }
-  .bar .v { font-size: clamp(20px, 2.4vw, 30px); font-weight: 800; line-height: 1.1; white-space: nowrap; }
-  .bar .dir .v { color: var(--blue-7); }
-  .bar .pad { border-right: 0; margin-right: 0; display: flex; gap: 6px; align-items: center; flex-wrap: wrap; justify-content: flex-end; }
+  .now { max-width: 1280px; margin: 0 auto 8px; }
+  .now h1 { font-size: clamp(24px, 3vw, 36px); font-weight: 800; line-height: 1.15; margin: 0 0 12px; }
+  .now h1 em { font-style: normal; color: var(--blue-7); }
+  .ctl { display: flex; gap: 18px; align-items: center; flex-wrap: wrap; padding: 10px 0; border-top: 1px solid var(--ink); border-bottom: 1px solid var(--ink); }
+  .dirs { display: inline-flex; border: 1px solid var(--ink); border-radius: var(--r); overflow: hidden; }
+  .dirs button { font: inherit; font-size: 16px; font-weight: 700; padding: 9px 14px; background: #fff; color: var(--ink); border: 0; cursor: pointer; text-align: left; line-height: 1.2; }
+  .dirs button + button { border-left: 1px solid var(--ink); }
+  .dirs button small { display: block; font-size: 14px; font-weight: 400; }
+  .dirs button[aria-pressed="true"] { background: var(--ink); color: #fff; }
+  .cells { display: flex; gap: 22px; }
+  .cells .k { font-size: 14px; font-weight: 700; }
+  .cells .v { font-size: 24px; font-weight: 800; line-height: 1.1; white-space: nowrap; }
+  .pad { display: flex; gap: 6px; margin-left: auto; }
   .pad .btn { padding: 8px 12px; font-size: 15px; }
+  .axisnote { max-width: 1280px; margin: 6px auto 0; font-size: 17px; }
+  .axisnote b { font-weight: 800; }
   #stage:focus-visible { outline: 3px solid var(--blue-5); outline-offset: 4px; }
   .said { max-width: 1280px; margin: 8px auto 0; font-size: 18px; font-weight: 600; min-height: 1.6em; }
   .lower { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-top: 10px; }
@@ -32,35 +41,49 @@
 <body>
 <div class="wrap full">
   <header id="mast" data-page="pivot" data-screen="yes" data-voice="yes"></header>
-  <div id="stage" tabindex="0" role="application" aria-roledescription="yield surface" aria-label="Yield surface. Left and right arrows move. P pivots between front and side views. Space plays. Enter reads the value.">
-    <div class="bar" aria-hidden="true">
-      <div><div class="k">Date</div><div class="v" id="rMonth">—</div></div>
-      <div><div class="k">Maturity</div><div class="v" id="rMat">—</div></div>
-      <div><div class="k">Yield</div><div class="v" id="rVal">—</div></div>
-      <div class="dir"><div class="k">View</div><div class="v" id="rDir">—</div></div>
-      <div class="pad" role="group" aria-label="Controls">
-        <button class="btn" id="bPrev">◀</button><button class="btn" id="bNext">▶</button>
-        <button class="btn main" id="bTurn">Pivot</button><button class="btn" id="bPlay">Play</button><button class="btn" id="bValue">Value</button>
+  <div id="stage" tabindex="0" role="application" aria-roledescription="yield surface" aria-label="Yield surface. Left and right arrows move along the line. P switches between one maturity over time and one date across maturities. Space plays the line. Enter reads the value.">
+    <div class="now">
+      <h1 id="nowLine" aria-hidden="true">—</h1>
+      <div class="ctl">
+        <div class="dirs" role="group" aria-label="Direction">
+          <button id="dTime" aria-pressed="true">One maturity over time<small>1990 to 2015</small></button>
+          <button id="dCurve" aria-pressed="false">One date across maturities<small>1 month to 30 years</small></button>
+        </div>
+        <div class="cells" aria-hidden="true">
+          <div><div class="k">Date</div><div class="v" id="rMonth">—</div></div>
+          <div><div class="k">Maturity</div><div class="v" id="rMat">—</div></div>
+          <div><div class="k">Yield</div><div class="v" id="rVal">—</div></div>
+        </div>
+        <div class="pad" role="group" aria-label="Controls">
+          <button class="btn" id="bPrev" aria-label="Previous">◀</button><button class="btn" id="bNext" aria-label="Next">▶</button>
+          <button class="btn main" id="bPlay">Play</button><button class="btn" id="bValue">Value</button>
+        </div>
       </div>
     </div>
     <div id="nyt"></div>
+    <p class="axisnote" id="axisNote" aria-hidden="true"></p>
   </div>
   <p class="said" id="said" aria-live="polite"></p>
   <div class="lower">
     <div>
       <h2>Keys</h2>
       <table class="keys">
-        <tr><td><kbd>P</kbd></td><td>Pivot: front view (one date, all maturities) ⇄ side view (one maturity, all dates)</td></tr>
-        <tr><td><kbd>←</kbd> <kbd>→</kbd></td><td>Move along the view · <kbd>Shift</kbd> moves a year in the side view</td></tr>
-        <tr><td><kbd>Space</kbd> · <kbd>Enter</kbd></td><td>Play / stop · exact value</td></tr>
-        <tr><td><kbd>Home</kbd> <kbd>End</kbd> · <kbd>V</kbd></td><td>First / last · screen off / on</td></tr>
+        <tr><td><kbd>P</kbd></td><td>Switch direction</td></tr>
+        <tr><td><kbd>←</kbd> <kbd>→</kbd></td><td>Move along the black line</td></tr>
+        <tr><td><kbd>Shift</kbd> + <kbd>←</kbd> <kbd>→</kbd></td><td>Move one year (over time)</td></tr>
+        <tr><td><kbd>Space</kbd></td><td>Play the line, or stop</td></tr>
+        <tr><td><kbd>Enter</kbd></td><td>Read the exact value</td></tr>
+        <tr><td><kbd>V</kbd></td><td>Screen off or on</td></tr>
       </table>
     </div>
     <div>
       <h2>Sound</h2>
       <table class="keys">
-        <tr><td>Pitch</td><td>Yield on one fixed scale, 0–9.5%, as in Chart Reader · <kbd>Z</kbd> stretches it to the date’s range</td></tr>
-        <tr><td>Stereo · click · bonk</td><td>Left to right along the line · each new year · end of the line</td></tr>
+        <tr><td>Pitch</td><td>Yield from 0 to 9.5 percent, the same scale as Chart Reader</td></tr>
+        <tr><td>Left to right</td><td>Position along the line</td></tr>
+        <tr><td>Click</td><td>A new year</td></tr>
+        <tr><td>Bonk</td><td>End of the line</td></tr>
+        <tr><td><kbd>Z</kbd></td><td>Stretch the pitch to one date’s range</td></tr>
       </table>
       <div class="jump"><label for="jYear">Go to</label><select id="jMonth" aria-label="Month"></select><select id="jYear" aria-label="Year"></select><select id="jMat" aria-label="Maturity"></select></div>
     </div>
@@ -79,7 +102,7 @@ const MATS = ['1-month','3-month','6-month','1-year','2-year','3-year','5-year',
 // The two views are the NYT's own cameras: step 2 (front) and step 5 (side), widened to all 25 years.
 const VIEW = {
   front: { cam: { azi: 1.57061, phi: 0, fov: 0.5, width: 35, lookat_x: 0, lookat_y: 7.97333, lookat_z: 0.21667 }, grid: ['front'], labels: ['x'] },
-  side: { cam: { azi: Math.PI / 2, phi: Math.PI / 2, fov: 0.1, width: 48, lookat_x: 3.5, lookat_y: 14, lookat_z: 0 }, grid: ['product', 'date', 'front'], labels: ['y'] },
+  side: { cam: { azi: Math.PI / 2, phi: Math.PI / 2, fov: 0.1, width: 50, lookat_x: 2.6, lookat_y: 14, lookat_z: 0 }, grid: ['product', 'date', 'front'], labels: ['y'] },
 };
 const PRESET = {
   1: ['2015-03', '10-year', 'time'], 2: ['2015-03', '3-month', 'curve'], 3: ['2008-01', '3-month', 'time'],
@@ -163,14 +186,21 @@ function draw() {
   $('rMonth').textContent = fmtMonth(m);
   $('rMat').textContent = MATS[k];
   $('rVal').textContent = has(m, k) ? val(m, k).toFixed(2) + '%' : '—';
-  $('rDir').textContent = dir === 'time' ? 'Side · over time' : 'Front · across maturities';
+  $('nowLine').innerHTML = dir === 'time'
+    ? `Listening to the <em>${MATS[k]}</em> yield over time, 1990 to 2015`
+    : `Listening to every maturity on <em>${fmtMonth(m)}</em>`;
+  $('axisNote').innerHTML = dir === 'time'
+    ? `<b>Horizontal axis:</b> time, 1990 to 2015. <b>Black line:</b> the ${MATS[k]} yield. <b>Circle:</b> where you are.`
+    : `<b>Horizontal axis:</b> maturity, 1 month to 30 years. <b>Black line:</b> the curve on ${fmtMonth(m)}. <b>Circle:</b> where you are.`;
+  $('dTime').setAttribute('aria-pressed', String(dir === 'time'));
+  $('dCurve').setAttribute('aria-pressed', String(dir === 'curve'));
   $('jYear').value = D.months[m].slice(0, 4); $('jMonth').value = D.months[m].slice(5, 7); $('jMat').value = String(k);
   if (!g) return;
   if (dir === 'time') { g.highlightRow(null); g.highlightSeries(k); }
   else { g.highlightSeries(null); g.highlightRow(D.rowOf[m]); }
   g.setMarker(D.rowOf[m], k);
 }
-const lineLabel = () => dir === 'time' ? `Side view. ${MATS[k]} yield over time` : `Front view. ${fmtMonth(m)}, all maturities`;
+const lineLabel = () => dir === 'time' ? `The ${MATS[k]} yield over time` : `Every maturity on ${fmtMonth(m)}`;
 function value() { say(has(m, k) ? `${MATS[k]}, ${fmtMonth(m)}: ${pct(val(m, k))}.` : `${MATS[k]}, ${fmtMonth(m)}: no data.`); }
 function move(delta) {
   stopPlay();
@@ -230,7 +260,9 @@ stage.addEventListener('keydown', e => {
   else if (key === 'Escape') { stopPlay(); Voice.stop(); }
 });
 $('bPrev').onclick = () => move(-1); $('bNext').onclick = () => move(1);
-$('bTurn').onclick = turn; $('bPlay').onclick = play; $('bValue').onclick = value;
+$('bPlay').onclick = play; $('bValue').onclick = value;
+$('dTime').onclick = () => { if (dir !== 'time') turn(); };
+$('dCurve').onclick = () => { if (dir !== 'curve') turn(); };
 ['jYear', 'jMonth', 'jMat'].forEach(id => $(id).addEventListener('change', () => {
   stopPlay(); const i = D.months.indexOf(`${$('jYear').value}-${$('jMonth').value}`); if (i >= 0) m = i; k = +$('jMat').value; draw(); value(); stage.focus();
 }));

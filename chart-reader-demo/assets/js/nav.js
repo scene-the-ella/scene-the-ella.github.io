@@ -32,7 +32,7 @@
   function render() {
     mast.innerHTML = `
       <div class="m-row">
-        <a class="name" href="./">Chart Reader <span>· CHI 2023 · Demo</span></a>
+        <a class="name" href="./">Chart Reader <span>CHI 2023 demo</span></a>
         <div class="row">${tools}</div>
       </div>
       <div class="m-row m-steps">
