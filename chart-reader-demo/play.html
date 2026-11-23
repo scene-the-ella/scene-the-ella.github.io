@@ -140,18 +140,24 @@ function mineHTML(q, reveal) {
   if (!a) return '';
   const opt = q.options.find(o => o.id === a.choice);
   let verdict = '';
-  if (reveal && q.answer) verdict = a.choice === q.answer ? ' <span class="right">Right</span>' : ` <span class="wrong">Not quite.</span> It was “${esc(q.options.find(o => o.id === q.answer).label)}”.`;
-  return `<div class="mine">Your answer: ${esc(opt ? opt.label : a.choice)}${a.vivid ? ` · picture ${a.vivid}/5` : ''}.${verdict}</div>`;
+  if (reveal && q.answer) verdict = a.choice === q.answer ? ' <span class="right">Right</span>' : ' <span class="wrong">Not quite</span>';
+  return `<div class="mine">${esc(q.demoName)}: ${esc(opt ? opt.label : a.choice)}${a.vivid ? ` · pictured ${a.vivid}/5` : ''}${verdict}</div>`;
 }
 
+// The answer is revealed only at the end, so later demos are not primed.
 function endHTML() {
+  const q0 = QUESTIONS[0];
+  const ans = q0.options.find(o => o.id === q0.answer);
   return `
-    <p class="big">Thank you</p>
+    <p class="big">Answer: ${esc(ans.label)}</p>
+    <p class="note">January 2007 averages: 3-month 5.11%, 10-year 4.76%</p>
+    ${QUESTIONS.map(q => mineHTML(q, true)).join('')}
+    <div style="height:22px"></div>
     <div class="links">
-      <a href="visual.html?step=1">Visual</a>
-      <a href="screen-reader.html?step=2">Screen reader</a>
+      <a href="visual.html?step=4">Visual</a>
+      <a href="screen-reader.html?step=4">Screen reader</a>
       <a href="chart-reader.html?step=4">Chart Reader</a>
-      <a href="pivot.html?step=2">Pivot</a>
+      <a href="pivot.html?step=4">Pivot</a>
       <a href="https://www.nytimes.com/interactive/2015/03/19/upshot/3d-yield-curve-economic-growth.html" target="_blank" rel="noopener">NYT original ↗</a>
     </div>`;
 }
@@ -166,7 +172,7 @@ function render() {
   if (!q) { app.innerHTML = `<p class="big">Joined${name ? ': ' + esc(name) : ''}</p><p class="note">Questions open after each demo.</p>`; return; }
   const idx = QUESTIONS.indexOf(q);
   if (phase === 'results') {
-    app.innerHTML = `<div class="q-num">${idx + 1} / ${QUESTIONS.length}</div><p class="big">Results on screen</p>${mineHTML(q, true)}`;
+    app.innerHTML = `<div class="q-num">${idx + 1} / ${QUESTIONS.length}</div><p class="big">Results on screen</p>${mineHTML(q, false)}`;
     return;
   }
   if (store.get(ansKey(q.id))) {
@@ -183,7 +189,7 @@ function renderLocal() {
   const q = QUESTIONS[localIndex];
   app.innerHTML = questionHTML(q, localIndex);
   bindForm(q, () => {
-    app.innerHTML = `<div class="q-num">${localIndex + 1} / ${QUESTIONS.length}</div><p class="big">Saved</p>${mineHTML(q, true)}<div style="height:16px"></div><button class="btn main submit" id="nx">Next question</button>`;
+    app.innerHTML = `<div class="q-num">${localIndex + 1} / ${QUESTIONS.length}</div><p class="big">Saved</p>${mineHTML(q, false)}<div style="height:16px"></div><button class="btn main submit" id="nx">Next question</button>`;
     document.getElementById('nx').onclick = () => { localIndex++; renderLocal(); };
   });
 }

@@ -165,7 +165,7 @@ function questionBoard(q, reveal) {
   ans.forEach(a => { if (counts[a.choice] !== undefined) counts[a.choice]++; });
   const max = Math.max(1, ...Object.values(counts));
   const bars = q.options.map(o => {
-    const c = counts[o.id], isAns = reveal && q.answer === o.id;
+    const c = counts[o.id], isAns = false;  // the answer is shown only at the end
     return `<div class="r${isAns ? ' answer' : ''}">
       <div class="lab">${o.shape ? shapeSVG(o.shape) : ''}<span>${esc(o.label)}</span>${isAns ? '<span class="ans">answer</span>' : ''}</div>
       <div class="track"><div class="fill" style="width:${reveal ? 100 * c / max : 0}%"></div></div>
@@ -197,7 +197,8 @@ function summaryBoard() {
   const viv = qs.map(q => { const v = latest(q.id).map(a => +a.vivid).filter(x => x >= 1); return v.length ? v.reduce((s, x) => s + x, 0) / v.length : 0; });
   const row = (label, frac, text, color) => `<div class="sr"><span>${esc(label)}</span>
     <div class="track"><div class="fill" style="width:${100 * frac}%;background:${color}"></div></div><span class="num">${text}</span></div>`;
-  return `<div class="stage-title">Summary</div>
+  const q0 = QUESTIONS[0], ans = q0.options.find(o => o.id === q0.answer);
+  return `<div class="stage-title">Answer · ${esc(ans.label)} · January 2007: 5.11% vs 4.76%</div>
     <p class="prompt">Pictured vs. correct</p>
     <div class="summary">
       <div><h2>Correct</h2>${qs.map((q, i) => row(q.demoName, right[i], Math.round(100 * right[i]) + '%', '#184f95')).join('')}</div>
@@ -236,14 +237,13 @@ async function poll() {
 // Fake answers for rehearsing the layout: host.html?sample
 function sampleRows() {
   const out = [], names = ['Minji', 'Jae', 'Ana', 'Sora', 'Leo', 'Hyun', 'Yuna', 'Ken', 'Dae', 'Mia', 'Joon', 'Eun'];
-  const pick = { q1: ['flat', 'flat', 'flat', 'rise', 'flat', 'dip', 'rise', 'flat', 'flat', 'fall', 'flat', 'rise'],
-                 q2: ['10y', '3m', '3m', '10y', '3m', '3m', 'same', '3m', '10y', '3m', '3m', '3m'],
-                 q3: ['dip', 'dip', 'fall', 'dip', 'dip', 'flat', 'dip', 'dip', 'fall', 'dip', 'dip', 'dip'],
-                 q4: ['turn', 'cr', 'turn', 'cr', 'turn', 'turn', 'cr', 'turn', 'cr', 'turn', 'turn', 'cr'] };
+  const pick = { q1: ['cant', 'cant', '10y', 'cant', 'same', 'cant', '10y', 'cant', 'cant', '3m', 'cant', '10y'],
+                 q2: ['3m', '3m', '3m', '10y', '3m', '3m', 'same', '3m', '3m', '3m', '3m', '3m'],
+                 q3: ['3m', '3m', '3m', '3m', 'same', '3m', '3m', '3m', '10y', '3m', '3m', '3m'] };
   const viv = { q1: [2, 1, 2, 3, 2, 1, 2, 2, 1, 2, 3, 2], q2: [3, 3, 4, 2, 3, 3, 3, 4, 2, 3, 3, 3], q3: [4, 4, 3, 5, 4, 3, 4, 5, 3, 4, 4, 4] };
   names.forEach((n, i) => {
     out.push({ pid: 'p' + i, name: n, qid: 'join' });
-    Object.keys(pick).forEach(q => out.push({ pid: 'p' + i, name: n, qid: q, choice: pick[q][i], vivid: viv[q] ? viv[q][i] : '', text: q === 'q4' && i % 4 === 0 ? 'Let me ask for the value where the sound changes most.' : '' }));
+    Object.keys(pick).forEach(q => out.push({ pid: 'p' + i, name: n, qid: q, choice: pick[q][i], vivid: viv[q] ? viv[q][i] : '', text: '' }));
   });
   return out;
 }

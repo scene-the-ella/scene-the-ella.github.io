@@ -91,10 +91,10 @@
     <div>
       <h2>Sound</h2>
       <table class="keys">
-        <tr><td>Pitch</td><td>Yield. Front view: scaled to that month’s range, announced first.</td></tr>
+        <tr><td>Pitch</td><td>Yield on one fixed scale, 0–9%, as in Chart Reader. <kbd>Z</kbd> stretches it to the month’s range.</td></tr>
         <tr><td>Stereo</td><td>Short → long maturity, or 1990 → 2015</td></tr>
         <tr><td>Click</td><td>New year</td></tr>
-        <tr><td>Thud</td><td>End of the line</td></tr>
+        <tr><td>Bonk</td><td>End of the line</td></tr>
       </table>
       <div class="jump" style="margin-top:18px">
         <label for="jYear">Go to</label>
@@ -209,8 +209,7 @@ function move(delta) {
     const nk = k + delta;
     if (nk < 0 || nk >= D.maturities.length) { bonk(); return; }
     k = nk;
-    const [lo, hi] = rangeOf(D.values[m]);
-    tone(fit(lo, hi)(val(m, k)), audio().currentTime + 0.01, 0.12, -0.8 + 1.6 * k / (D.maturities.length - 1));
+    tone(curveScale()(val(m, k)), audio().currentTime + 0.01, 0.12, -0.8 + 1.6 * k / (D.maturities.length - 1));
     say(`${D.maturities[k]}. ${pct(val(m, k))}.`);
   }
   draw();
@@ -231,18 +230,27 @@ function value() {
 }
 const rangeOf = arr => [Math.min(...arr), Math.max(...arr)];
 const fit = (lo, hi) => v => hi - lo < 0.05 ? 0.5 : 0.12 + 0.76 * (v - lo) / (hi - lo);
+// Default: one fixed pitch scale (0-9%), like Chart Reader. Z stretches the front view to the month's range.
+let stretch = false;
+const curveScale = () => { if (!stretch) return FIXED; const [lo, hi] = rangeOf(D.values[m]); return fit(lo, hi); };
+function toggleStretch() {
+  stretch = !stretch;
+  say(stretch ? 'Pitch stretched to this month’s range.' : 'Pitch on the fixed scale, 0 to 9 percent.');
+}
 
 async function play() {
   if (playing) { stopPlay(); return; }
   if (dir === 'curve') {
     const vals = D.values[m], [lo, hi] = rangeOf(vals);
-    $('said').textContent = `${fmtMonth(m)}: ${lo.toFixed(2)} to ${hi.toFixed(2)} percent.`;
-    await Voice.speak(`${fmtMonth(m)}. ${lo.toFixed(2)} to ${hi.toFixed(2)} percent.`);
+    if (stretch) {
+      $('said').textContent = `${fmtMonth(m)}: ${lo.toFixed(2)} to ${hi.toFixed(2)} percent.`;
+      await Voice.speak(`${fmtMonth(m)}. ${lo.toFixed(2)} to ${hi.toFixed(2)} percent.`);
+    }
     const k0 = k;
     playSeq(vals, {
-      scale: fit(lo, hi), step: 0.24, dur: 0.2,
+      scale: curveScale(), step: 0.24, dur: 0.2,
       onStep: i => { k = i; draw(); },
-      onEnd: (last, stopped) => { if (!stopped) { k = k0; draw(); } },
+      onEnd: (last, stopped) => { if (!stopped) k = k0; draw(); value(); },
     });
   } else {
     const from = m >= D.months.length - 1 ? 0 : m;
@@ -335,6 +343,7 @@ stage.addEventListener('keydown', e => {
   else if (key === 'Enter') { e.preventDefault(); value(); }
   else if (key === 'o' || key === 'O') { e.preventDefault(); overview(); }
   else if (key === 'Home' || key === 'End') { e.preventDefault(); edge(key === 'End'); }
+  else if (key === 'z' || key === 'Z') { e.preventDefault(); toggleStretch(); }
   else if (key === 'Escape') { stopPlay(); Voice.stop(); }
 });
 $('bPrev').onclick = () => move(-1);

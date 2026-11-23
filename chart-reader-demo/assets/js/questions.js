@@ -7,44 +7,25 @@
     fall: [[6, 22], [30, 34], [55, 50], [80, 68], [94, 82]],
     dip: [[6, 26], [30, 54], [55, 66], [80, 50], [94, 32]],
   };
-  const shapeOptions = [
+  const shapeOptions = [  // kept for reference; not used in the current quiz
     { id: 'rise', label: 'Rises from short to long', shape: SHAPES.rise },
     { id: 'flat', label: 'Flat', shape: SHAPES.flat },
     { id: 'fall', label: 'Falls all the way', shape: SHAPES.fall },
     { id: 'dip', label: 'Dips, then rises at the long end', shape: SHAPES.dip },
   ];
 
+  // One question, asked after each of the three demos (all on NYT step 4).
+  const relation = [
+    { id: '3m', label: '3-month (short-term)' },
+    { id: '10y', label: '10-year (long-term)' },
+    { id: 'same', label: 'About the same' },
+    { id: 'cant', label: 'Can’t tell' },
+  ];
+  const PROMPT = 'Right after step 4, in January 2007, which yield was higher?';
   window.QUESTIONS = [
-    {
-      id: 'q1', demo: 'screen-reader.html?step=2', demoName: 'Screen reader',
-      prompt: 'Step 2. What shape was the curve on March 18, 2015?',
-      options: shapeOptions, answer: 'rise', vivid: true,
-    },
-    {
-      id: 'q2', demo: 'chart-reader.html?step=4', demoName: 'Chart Reader',
-      prompt: 'Step 4 ends in 2006. In January 2007, which yield was higher?',
-      options: [
-        { id: '3m', label: '3-month' },
-        { id: '10y', label: '10-year' },
-        { id: 'same', label: 'About the same' },
-      ],
-      answer: '3m', vivid: true,
-    },
-    {
-      id: 'q3', demo: 'pivot.html?step=2&month=2007-01&dir=curve', demoName: 'Pivot',
-      prompt: 'What shape was the curve in January 2007?',
-      options: shapeOptions, answer: 'dip', vivid: true,
-    },
-    {
-      id: 'q4', demo: null, demoName: 'Your pick',
-      prompt: 'Which would you use to explore a chart yourself?',
-      options: [
-        { id: 'sr', label: 'Screen reader on the original' },
-        { id: 'cr', label: 'Chart Reader' },
-        { id: 'turn', label: 'Pivot' },
-      ],
-      answer: null, vivid: false, text: 'What would you add?',
-    },
+    { id: 'q1', demo: 'screen-reader.html?step=4', demoName: 'Screen reader', prompt: PROMPT, options: relation, answer: '3m', vivid: true },
+    { id: 'q2', demo: 'chart-reader.html?step=4', demoName: 'Chart Reader', prompt: PROMPT, options: relation, answer: '3m', vivid: true },
+    { id: 'q3', demo: 'pivot.html?step=4', demoName: 'Pivot', prompt: PROMPT, options: relation, answer: '3m', vivid: true },
   ];
 
   window.VIVID_LABELS = ['Not at all', 'A little', 'Somewhat', 'Clearly', 'Like I saw it'];
@@ -57,5 +38,5 @@
   };
 
   // Stages the presenter steps through
-  window.STAGES = ['lobby', 'q1', 'q1:results', 'q2', 'q2:results', 'q3', 'q3:results', 'q4', 'q4:results', 'end'];
+  window.STAGES = ['lobby', 'q1', 'q1:results', 'q2', 'q2:results', 'q3', 'q3:results', 'end'];
 })();
