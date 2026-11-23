@@ -141,6 +141,32 @@ body.speaking .meter i, body.sounding .meter i { opacity: 1; animation: lv 0.7s 
   clip: rect(0 0 0 0); white-space: nowrap;
 }
 
+/* 3-D yield surface */
+.s3d { position: relative; overflow: hidden; background: #fff; }
+.s3d canvas { display: block; }
+.s3d-labels { position: absolute; inset: 0; pointer-events: none; }
+.s3d-label {
+  position: absolute; left: 0; top: 0; white-space: nowrap; font-size: 13px; font-weight: 600; color: #363636;
+  transition: opacity .5s, background .2s; margin: -9px 0 0 -2px; padding: 0 3px; border-radius: 3px;
+}
+.s3d-label.yr { margin-left: -12px; }
+.s3d-label.yr:not(.major) { font-size: 11px; }
+.s3d-label.off { opacity: 0; }
+.s3d-label.note { font-size: 14px; font-weight: 800; color: #121212; margin: -24px 0 0 -40px; }
+.s3d-label.lit { background: var(--mark); color: #121212; outline: 1px solid #121212; opacity: 1 !important; }
+.s3d-label.yr.lit:not(.major) { font-size: 13px; }
+.s3d-marker {
+  position: absolute; left: 0; top: 0; width: 18px; height: 18px; margin: -9px 0 0 -9px;
+  border-radius: 50%; background: var(--mark); border: 2px solid #121212; display: none;
+}
+.caption-panel {
+  position: absolute; top: 14px; right: 14px; width: min(360px, 42%); background: rgba(255,255,255,.94);
+  padding: 12px 14px; border: 1px solid var(--rule); z-index: 2;
+}
+.caption-panel h3 { margin: 0 0 6px; font-size: 18px; font-weight: 800; }
+.caption-panel p { margin: 0 0 6px; font-size: 15px; line-height: 1.4; }
+.caption-panel.lit { outline: 2px solid #121212; background: var(--mark); }
+
 /* Small chart tooltip */
 .tip {
   position: absolute; pointer-events: none; background: var(--ink); color: #fff;

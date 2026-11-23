@@ -1,5 +1,7 @@
 // Shared header: NYT-style step control (dots + Back/Next) and mode tabs.
 // Every demo page is one "mode" of the same NYT step: ?step=1..9
+// Pages that animate between steps set window.STEP_INPAGE = true before this script;
+// they then receive a "stepchange" event instead of a page load.
 (function () {
   const MODES = [
     { id: 'visual', href: 'visual.html', label: 'Visual' },
@@ -27,24 +29,38 @@
   ].join('');
 
   mast.className = 'mast2';
-  mast.innerHTML = `
-    <div class="m-row">
-      <a class="name" href="./">Chart Reader <span>· CHI 2023 · Demo</span></a>
-      <div class="row">${tools}</div>
-    </div>
-    <div class="m-row m-steps">
-      <div class="stepper">
-        <nav class="dots" aria-label="NYT steps">${TITLES.map((t, k) =>
-          `<a href="${url(mode, k + 1)}" title="${t}" aria-label="Step ${k + 1}: ${t}"${k + 1 === step ? ' aria-current="page"' : ''}></a>`).join('')}</nav>
-        <div class="seg">
-          <a href="${url(mode, Math.max(1, step - 1))}"${step === 1 ? ' class="is-off" aria-disabled="true"' : ''}>Back</a>
-          <a href="${url(mode, Math.min(9, step + 1))}"${step === 9 ? ' class="is-off" aria-disabled="true"' : ''}>Next</a>
-        </div>
-        <div class="step-title"><b>${step}</b> ${TITLES[step - 1]}</div>
+  function render() {
+    mast.innerHTML = `
+      <div class="m-row">
+        <a class="name" href="./">Chart Reader <span>· CHI 2023 · Demo</span></a>
+        <div class="row">${tools}</div>
       </div>
-      <nav class="modes seg" aria-label="Mode">${MODES.map(m =>
-        `<a href="${url(m.id, step)}"${m.id === mode ? ' aria-current="page"' : ''}>${m.label}</a>`).join('')}</nav>
-    </div>`;
+      <div class="m-row m-steps">
+        <div class="stepper">
+          <nav class="dots" aria-label="NYT steps">${TITLES.map((t, k) =>
+            `<a href="${url(mode, k + 1)}" data-step="${k + 1}" title="${t}" aria-label="Step ${k + 1}: ${t}"${k + 1 === step ? ' aria-current="page"' : ''}></a>`).join('')}</nav>
+          <div class="seg">
+            <a href="${url(mode, Math.max(1, step - 1))}" data-step="${Math.max(1, step - 1)}"${step === 1 ? ' class="is-off" aria-disabled="true"' : ''}>Back</a>
+            <a href="${url(mode, Math.min(9, step + 1))}" data-step="${Math.min(9, step + 1)}"${step === 9 ? ' class="is-off" aria-disabled="true"' : ''}>Next</a>
+          </div>
+          <div class="step-title"><b>${step}</b> ${TITLES[step - 1]}</div>
+        </div>
+        <nav class="modes seg" aria-label="Mode">${MODES.map(m =>
+          `<a href="${url(m.id, step)}"${m.id === mode ? ' aria-current="page"' : ''}>${m.label}</a>`).join('')}</nav>
+      </div>`;
+    if (window.STEP_INPAGE) {
+      mast.querySelectorAll('[data-step]').forEach(a => a.addEventListener('click', e => {
+        e.preventDefault();
+        const s = +a.dataset.step;
+        if (s === step) return;
+        step = s; window.NYT_STEP = s;
+        history.replaceState(null, '', url(mode, s) + location.hash);
+        render();
+        window.dispatchEvent(new CustomEvent('stepchange', { detail: s }));
+      }));
+    }
+  }
+  render();
 
   if (mast.dataset.screen === 'yes' && !document.querySelector('.curtain')) {
     const c = document.createElement('div');

@@ -4,31 +4,75 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Visual · NYT Yield Curve</title>
+<link rel="icon" href="data:,">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@300;400;600;700;800&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="assets/css/site.css">
+<link rel="stylesheet" href="assets/css/nytcurve.css">
 <style>
-  .shot { width: 100%; height: auto; display: block; border: 1px solid var(--rule); }
-  .src { display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; margin-top: 10px; font-size: 16px; font-weight: 600; }
+  .wrap.full { max-width: none; padding-left: 24px; padding-right: 24px; }
+  .wrap.full .mast2 { max-width: 1080px; margin-left: auto; margin-right: auto; }
+  .credit { max-width: 1080px; margin: 10px auto 0; display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; font-size: 15px; font-weight: 600; }
 </style>
 </head>
 <body>
-<div class="wrap">
+<div class="wrap full">
+  <script>window.STEP_INPAGE = true;</script>
   <header id="mast" data-page="visual"></header>
-  <img class="shot" id="shot" alt="">
-  <div class="src">
-    <span>Gregor Aisch and Amanda Cox, The New York Times, March 2015</span>
+  <div class="nyt" id="nyt">
+    <div class="g-slide" id="slide">
+      <div class="g-stepper">
+        <div class="g-steps" id="gsteps"></div>
+        <div><span class="g-button g-back" id="gback">Back</span><span class="g-button g-next active" id="gnext">Next</span></div>
+      </div>
+      <div class="g-hed" id="ghed"></div>
+      <div class="g-text" id="gtext"></div>
+    </div>
+    <div class="g-loading" id="loading">Loading the NYT data…</div>
+  </div>
+  <div class="credit">
+    <span>Graphic: Gregor Aisch and Amanda Cox, The New York Times, 2015 · rebuilt from the original code and data</span>
     <a href="https://www.nytimes.com/interactive/2015/03/19/upshot/3d-yield-curve-economic-growth.html" target="_blank" rel="noopener">Original ↗</a>
   </div>
 </div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+<script src="assets/js/nytcurve.js"></script>
 <script src="assets/js/nav.js"></script>
 <script>
-fetch('assets/data/nyt_steps.json').then(r => r.json()).then(steps => {
-  const s = steps[NYT_STEP - 1];
-  const img = document.getElementById('shot');
-  img.src = s.img;
-  img.alt = `NYT step ${s.n}, ${s.title}. ${s.paras.join(' ')}`;
+const box = document.getElementById('nyt');
+function size() {
+  const top = box.getBoundingClientRect().top + window.scrollY;
+  const w = Math.min(document.documentElement.clientWidth - 48, (window.innerHeight - top - 40) * 1.8);
+  box.style.width = Math.max(720, Math.floor(w)) + 'px';
+  box.classList.toggle('wide', w >= 1200);
+}
+size();
+window.addEventListener('resize', size);
+
+NYTCurve.mount(box).then(app => {
+  window.__app = app;
+  document.getElementById('loading').remove();
+  const steps = document.getElementById('gsteps'), back = document.getElementById('gback'), next = document.getElementById('gnext');
+  steps.innerHTML = app.scenes.map((s, i) => `<div class="step" title="${s.id}" data-i="${i}"></div>`).join('');
+  app.onScene((i, sc) => {
+    document.getElementById('ghed').innerHTML = sc.hed;
+    document.getElementById('gtext').innerHTML = sc.text;
+    steps.querySelectorAll('.step').forEach((d, k) => d.classList.toggle('active', k === i));
+    back.classList.toggle('active', i > 0);
+    if (NYT_STEP !== i + 1) {     // keep the page header in sync
+      const a = document.querySelector(`#mast .dots a[data-step="${i + 1}"]`);
+      window.__fromGraphic = true; if (a) a.click(); window.__fromGraphic = false;
+    }
+  });
+  steps.addEventListener('click', e => { const d = e.target.closest('.step'); if (d) app.go(+d.dataset.i); });
+  next.addEventListener('click', () => app.go((app.index + 1) % app.scenes.length));
+  back.addEventListener('click', () => { if (app.index > 0) app.go(app.index - 1); });
+  window.addEventListener('stepchange', e => { if (!window.__fromGraphic && app.index !== e.detail - 1) app.go(e.detail - 1); });
+  app.go(NYT_STEP - 1);
+}).catch(err => {
+  document.getElementById('loading').textContent = 'Could not load the NYT data (' + err.message + ').';
 });
 </script>
 </body>
