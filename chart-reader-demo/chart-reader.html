@@ -29,6 +29,9 @@
   .tree li.on { background: var(--mark); outline: 1px solid var(--ink); }
   .keys td { font-size: 14px; padding: 4px 8px 4px 0; }
   .msg { font-size: 20px; }
+  .startrow { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin-bottom: 6px; font-size: 16px; font-weight: 600; }
+  .cr:focus-within { outline: 3px solid var(--blue-5); outline-offset: 4px; }
+  .cr { cursor: pointer; }
 </style>
 </head>
 <body>
@@ -37,6 +40,7 @@
   <div id="nyt"></div>
   <div class="lower">
     <div>
+      <div class="startrow"><button class="btn main" id="startCR">Start Chart Reader</button><span>then <kbd>Enter</kbd> to go in, arrows to move</span></div>
       <figure style="margin:0" class="cr" id="fig"><div id="chart" class="chart-box"></div></figure>
       <p class="said" id="said" aria-hidden="true"></p>
     </div>
@@ -53,7 +57,7 @@
         </ul>
       </div>
       <table class="keys" style="margin-top:12px">
-        <tr><td><kbd>Tab</kbd> <kbd>Enter</kbd></td><td>Start</td></tr>
+        <tr><td>Click the chart</td><td>Start (or <kbd>Tab</kbd> to it)</td></tr>
         <tr><td><kbd>Enter</kbd> <kbd>Esc</kbd></td><td>Level down / up</td></tr>
         <tr><td><kbd>←</kbd> <kbd>→</kbd> <kbd>↑</kbd> <kbd>↓</kbd></td><td>Siblings / other series</td></tr>
         <tr><td><kbd>Shift</kbd> + key</td><td>Play sound</td></tr>
@@ -150,6 +154,11 @@ function linkToGraphic(el) {
   }
   g.highlightSeries(null); g.highlightRow(i); g.setMarker(null);   // a year bin or a compare slice: that date's curve
 }
+
+// One click (or the button) puts focus on the chart, so Enter and the arrows work right away
+function focusChart() { const a = host.querySelector('[role=application]'); if (a && document.activeElement !== a && !host.contains(document.activeElement)) a.focus(); }
+document.getElementById('startCR').addEventListener('click', () => { const a = host.querySelector('[role=application]'); if (a) a.focus(); });
+host.addEventListener('mousedown', () => setTimeout(focusChart, 0));
 
 // Self-voicing: speak what a screen reader would announce. Turn Voice off when VoiceOver or NVDA is on.
 const said = document.getElementById('said');

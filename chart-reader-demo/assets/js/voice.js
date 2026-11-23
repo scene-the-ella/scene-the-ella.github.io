@@ -4,7 +4,7 @@
   const synth = window.speechSynthesis;
   let enabled = true;
   let voice = null;
-  let rate = 1.05;
+  let rate = 1.0;
 
   // Prefer the most natural English voice the browser offers (Premium/Enhanced/Neural first).
   function pickVoice() {

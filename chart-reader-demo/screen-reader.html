@@ -37,7 +37,7 @@
     <button class="btn" id="toCaption">Caption only</button>
     <button class="btn" id="stop">Stop</button>
     <label for="speed" class="sr-only">Speed</label>
-    <select id="speed"><option value="1">1×</option><option value="1.5" selected>1.5×</option><option value="2">2×</option><option value="3">3×</option></select>
+    <select id="speed"><option value="1" selected>1×</option><option value="1.5">1.5×</option><option value="2">2×</option><option value="3">3×</option></select>
     <div class="count" id="count"></div>
   </div>
   <div class="panel"><div class="stream" id="stream" aria-label="What the page exposes, in reading order"></div></div>
@@ -91,7 +91,7 @@ async function read(from = 0) {
     if (id !== runId) return;
     light(i);
     const [kind, text] = items[i];
-    await Voice.speak(text, { interrupt: false, rate: (kind === 'para' || kind === 'title' ? 1.0 : 1.15) * speed });
+    await Voice.speak(text, { interrupt: false, rate: speed });   // 1x = the voice's normal rate for every item
   }
   if (id === runId) light(-1);
 }
