@@ -1,0 +1,35 @@
+[
+ {
+  "type": "summary",
+  "target": {
+   "axis": "x",
+   "values": [
+    "2004-01-01",
+    "2007-06-01"
+   ],
+   "series": [
+    "3M",
+    "10Y"
+   ]
+  },
+  "dx": -160,
+  "dy": -30,
+  "note": {
+   "title": [
+    "Last time, a puzzle"
+   ],
+   "label": [
+    "The last time the Fed started raising rates",
+    "was in 2004. From 2004 to 2006, short-term",
+    "rates rose steadily.",
+    "But long-term rates didn\u2019t rise very much.",
+    "The Federal Reserve chairman called this",
+    "phenomenon a \u201cconundrum,\u201d and it raised",
+    "questions about the ability of the Fed to",
+    "guide the economy.",
+    "Part of the reason long-term rates failed to",
+    "rise was because of strong foreign demand. "
+   ]
+  }
+ }
+]

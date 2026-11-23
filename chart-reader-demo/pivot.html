@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Turn the Chart</title>
+<title>Pivot · NYT Yield Curve</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@300;400;600;700;800&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
@@ -41,27 +41,24 @@
 </head>
 <body>
 <div class="wrap">
-  <header id="mast" data-page="turn" data-screen="yes" data-voice="yes"></header>
+  <header id="mast" data-page="pivot" data-screen="yes" data-voice="yes"></header>
+  <p class="msg" id="nodata" hidden>Germany and Japan are not in this demo. It uses U.S. Treasury data only.</p>
 
-  <p class="kicker"><b>03</b>Further</p>
-  <h1>Turn the chart, <strong>by ear</strong></h1>
-  <p class="lead">The NYT story rotates one surface to show a single day’s curve or one rate across 25 years. Here you stand on one point and turn which way you listen.</p>
-
-  <div id="stage" tabindex="0" role="application" aria-roledescription="yield surface" aria-label="Yield surface. Left and right move. T turns. Space plays. Enter reads the value.">
+  <div id="stage" tabindex="0" role="application" aria-roledescription="yield surface" aria-label="Yield surface. Left and right arrows move. P pivots. Space plays. Enter reads the value.">
     <div class="readout" aria-hidden="true">
       <div><div class="k">Month</div><div class="v" id="rMonth">—</div></div>
       <div><div class="k">Maturity</div><div class="v" id="rMat">—</div></div>
       <div><div class="k">Yield</div><div class="v" id="rVal">—</div></div>
-      <div class="dir"><div class="k">Listening</div><div class="v" id="rDir">—</div></div>
+      <div class="dir"><div class="k">Direction</div><div class="v" id="rDir">—</div></div>
     </div>
 
     <div class="views" aria-hidden="true">
       <div class="view" id="vCurve">
-        <h2><span>The curve on <span id="tCurve">—</span></span><span class="now">listening</span></h2>
+        <h2><span>Front view · <span id="tCurve">—</span></span><span class="now">active</span></h2>
         <svg id="svgCurve" viewBox="0 0 520 330"></svg>
       </div>
       <div class="view" id="vTime">
-        <h2><span><span id="tTime">—</span> over 25 years</span><span class="now">listening</span></h2>
+        <h2><span>Side view · <span id="tTime">—</span></span><span class="now">active</span></h2>
         <svg id="svgTime" viewBox="0 0 520 330"></svg>
       </div>
     </div>
@@ -70,7 +67,7 @@
   <div class="pad" role="group" aria-label="Controls">
     <button class="btn" id="bPrev">◀ <span id="lPrev">Earlier</span></button>
     <button class="btn" id="bNext"><span id="lNext">Later</span> ▶</button>
-    <button class="btn main" id="bTurn">Turn</button>
+    <button class="btn main" id="bTurn">Pivot</button>
     <button class="btn" id="bPlay">Play</button>
     <button class="btn" id="bValue">Value</button>
     <button class="btn" id="bOver">Overview</button>
@@ -81,26 +78,26 @@
     <div>
       <h2>Keys</h2>
       <table class="keys">
-        <tr><td><kbd>←</kbd> <kbd>→</kbd></td><td>Move along the line you are listening to</td></tr>
-        <tr><td><kbd>Shift</kbd> <kbd>←</kbd> <kbd>→</kbd></td><td>Jump a year (through time)</td></tr>
-        <tr><td><kbd>T</kbd></td><td>Turn: the day’s curve ⇄ this maturity over time</td></tr>
-        <tr><td><kbd>Space</kbd></td><td>Play the whole line, or stop it there</td></tr>
-        <tr><td><kbd>Enter</kbd></td><td>Read the exact value</td></tr>
-        <tr><td><kbd>O</kbd></td><td>Overview: every January’s curve, 1990 to 2015</td></tr>
-        <tr><td><kbd>Home</kbd> <kbd>End</kbd></td><td>Start or end of the line</td></tr>
-        <tr><td><kbd>V</kbd></td><td>Screen off or on</td></tr>
+        <tr><td><kbd>←</kbd> <kbd>→</kbd></td><td>Move along the active view</td></tr>
+        <tr><td><kbd>Shift</kbd> <kbd>←</kbd> <kbd>→</kbd></td><td>Move one year (side view)</td></tr>
+        <tr><td><kbd>P</kbd></td><td>Pivot: front view ⇄ side view</td></tr>
+        <tr><td><kbd>Space</kbd></td><td>Play / stop</td></tr>
+        <tr><td><kbd>Enter</kbd></td><td>Exact value</td></tr>
+        <tr><td><kbd>O</kbd></td><td>Overview: every January, 1990–2015</td></tr>
+        <tr><td><kbd>Home</kbd> <kbd>End</kbd></td><td>First / last</td></tr>
+        <tr><td><kbd>V</kbd></td><td>Screen off / on</td></tr>
       </table>
     </div>
     <div>
       <h2>Sound</h2>
       <table class="keys">
-        <tr><td>Pitch</td><td>Higher yield, higher note. On a day’s curve the notes fit that day’s range, and the range is spoken first.</td></tr>
-        <tr><td>Left to right</td><td>Short to long maturity, or 1990 to 2015.</td></tr>
-        <tr><td>Click</td><td>Each new year while time plays.</td></tr>
-        <tr><td>Thud</td><td>The end of the line.</td></tr>
+        <tr><td>Pitch</td><td>Yield. Front view: scaled to that month’s range, announced first.</td></tr>
+        <tr><td>Stereo</td><td>Short → long maturity, or 1990 → 2015</td></tr>
+        <tr><td>Click</td><td>New year</td></tr>
+        <tr><td>Thud</td><td>End of the line</td></tr>
       </table>
       <div class="jump" style="margin-top:18px">
-        <label for="jYear">Jump to</label>
+        <label for="jYear">Go to</label>
         <select id="jMonth" aria-label="Month"></select>
         <select id="jYear" aria-label="Year"></select>
         <select id="jMat" aria-label="Maturity"></select>
@@ -197,8 +194,8 @@ function say(text) { $('said').textContent = text; Voice.speak(text); }
 // ---------- actions ----------
 function lineLabel() {
   return dir === 'time'
-    ? `the ${D.maturities[k]} yield over time, 1990 to 2015`
-    : `the curve on ${fmtMonth(m)}, from 3-month to 30-year`;
+    ? `side view, ${D.maturities[k]} yield, 1990 to 2015`
+    : `front view, ${fmtMonth(m)}, 3-month to 30-year`;
 }
 function move(delta) {
   stopPlay();
@@ -227,7 +224,7 @@ function turn() {
   stopPlay();
   dir = dir === 'time' ? 'curve' : 'time';
   draw();
-  say(`Turned. Now ${lineLabel()}.`);
+  say(`${lineLabel()}.`);
 }
 function value() {
   say(`${D.maturities[k]}, ${fmtMonth(m)}: ${pct(val(m, k))}.`);
@@ -263,7 +260,7 @@ function overview() {
   const jans = D.months.map((s, i) => s.endsWith('-01') ? i : -1).filter(i => i >= 0);
   const vals = [], ticks = [];
   jans.forEach(i => D.values[i].forEach((v, j) => { vals.push(v); ticks.push(j === 0); }));
-  say('Every January, 1990 to 2015. Each curve from short to long.');
+  say('Overview. Every January, 1990 to 2015.');
   setTimeout(() => {
     playSeq(vals, {
       scale: FIXED, step: 0.045, dur: 0.05, ticks,
@@ -286,9 +283,9 @@ function draw() {
   $('rMonth').textContent = fmtMonth(m);
   $('rMat').textContent = D.maturities[k];
   $('rVal').textContent = val(m, k).toFixed(2) + '%';
-  $('rDir').textContent = dir === 'time' ? 'Through time' : 'Across maturities';
+  $('rDir').textContent = dir === 'time' ? 'Side view (time)' : 'Front view (maturity)';
   $('tCurve').textContent = fmtMonth(m);
-  $('tTime').textContent = 'The ' + D.maturities[k] + ' yield';
+  $('tTime').textContent = D.maturities[k] + ', 1990–2015';
   $('vCurve').classList.toggle('active', dir === 'curve');
   $('vTime').classList.toggle('active', dir === 'time');
   $('lPrev').textContent = dir === 'time' ? 'Earlier' : 'Shorter';
@@ -333,7 +330,7 @@ stage.addEventListener('keydown', e => {
     e.preventDefault();
     const d = key === 'ArrowLeft' ? -1 : 1;
     move(e.shiftKey && dir === 'time' ? 12 * d : d);
-  } else if (key === 't' || key === 'T') { e.preventDefault(); turn(); }
+  } else if (key === 'p' || key === 'P' || key === 't' || key === 'T') { e.preventDefault(); turn(); }
   else if (key === ' ') { e.preventDefault(); play(); }
   else if (key === 'Enter') { e.preventDefault(); value(); }
   else if (key === 'o' || key === 'O') { e.preventDefault(); overview(); }
@@ -361,12 +358,26 @@ fetch('assets/data/surface.json').then(r => r.json()).then(d => {
   $('jYear').innerHTML = years.map(y => `<option>${y}</option>`).join('');
   $('jMonth').innerHTML = MONTHS.map((n, i) => `<option value="${String(i + 1).padStart(2, '0')}">${n.slice(0, 3)}</option>`).join('');
   $('jMat').innerHTML = D.maturities.map((s, i) => `<option value="${i}">${s}</option>`).join('');
-  // Optional start point in the URL: turn.html#2007-01&10-year&curve
-  const h = decodeURIComponent(location.hash.slice(1)).split('&');
-  m = D.months.length - 1;
-  if (h[0] && D.months.includes(h[0])) m = D.months.indexOf(h[0]);
-  if (h[1] && D.maturities.includes(h[1])) k = D.maturities.indexOf(h[1]);
-  if (h[2] === 'curve') dir = 'curve';
+  // Start point per NYT step (U.S. steps 1-6); ?month=YYYY-MM&mat=10-year&dir=curve overrides
+  const PRESET = {
+    1: { m: '2015-03', k: '10-year', dir: 'time' },
+    2: { m: '2015-03', k: '3-month', dir: 'curve' },
+    3: { m: '2008-01', k: '3-month', dir: 'time' },
+    4: { m: '2004-06', k: '3-month', dir: 'time' },
+    5: { m: '2012-07', k: '10-year', dir: 'time' },
+    6: { m: '2015-03', k: '10-year', dir: 'time' },
+  }[NYT_STEP];
+  if (!PRESET) {
+    document.getElementById('nodata').hidden = false;
+    ['stage', 'bPrev'].forEach(id => { const el = document.getElementById(id); if (el) el.closest('#stage, .pad').hidden = true; });
+    document.querySelector('.lower').hidden = true;
+    return;
+  }
+  const q = new URLSearchParams(location.search);
+  const mm = q.get('month') || PRESET.m, kk = q.get('mat') || PRESET.k;
+  m = D.months.includes(mm) ? D.months.indexOf(mm) : D.months.length - 1;
+  k = D.maturities.includes(kk) ? D.maturities.indexOf(kk) : 7;
+  dir = (q.get('dir') || PRESET.dir) === 'curve' ? 'curve' : 'time';
   draw();
 });
 

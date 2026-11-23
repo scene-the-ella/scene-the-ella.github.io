@@ -1,0 +1,33 @@
+[
+ {
+  "type": "summary",
+  "target": {
+   "axis": "x",
+   "values": [
+    "1990-01-01",
+    "2015-03-01"
+   ],
+   "series": [
+    "3M",
+    "6M",
+    "1Y",
+    "2Y",
+    "3Y",
+    "5Y",
+    "7Y",
+    "10Y",
+    "30Y"
+   ]
+  },
+  "dx": -160,
+  "dy": -30,
+  "note": {
+   "title": [
+    "Long-term rates are low now, too"
+   ],
+   "label": [
+    "Here is the same chart viewed from above. "
+   ]
+  }
+ }
+]

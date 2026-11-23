@@ -3,19 +3,18 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Chart Reader Demo</title>
+<title>Chart Reader · NYT Yield Curve</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@300;400;600;700;800&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="assets/css/site.css">
 <link rel="stylesheet" href="assets/css/chart-reader.css">
 <style>
-  .grid { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 36px; align-items: start; }
-  .chart-box { height: 460px; width: 100%; position: relative; }
-  .side h2 { font-size: 20px; }
-  .said { margin-top: 18px; padding-top: 12px; border-top: 1px solid var(--ink); }
-  .said p { margin: 6px 0 0; font-size: 19px; font-weight: 600; min-height: 3em; }
-  .said .label { font-weight: 800; font-size: 16px; }
+  .grid { display: grid; grid-template-columns: minmax(0, 1fr) 280px; gap: 36px; align-items: start; }
+  .chart-box { height: 470px; width: 100%; position: relative; }
+  .said { margin-top: 16px; padding-top: 12px; border-top: 1px solid var(--ink); font-size: 20px; font-weight: 600; min-height: 3.2em; }
+  .side h2 { font-size: 19px; }
+  .cr.bar .axis-x .tick text, .cr.short .axis-x .tick text { visibility: visible; }
   @media (max-width: 900px) { .grid { grid-template-columns: 1fr; } }
 </style>
 </head>
@@ -23,32 +22,22 @@
 <div class="wrap">
   <header id="mast" data-page="chart-reader" data-screen="yes" data-voice="yes"></header>
 
-  <p class="kicker"><b>02</b>Chart Reader · Thompson, Martinez, Sarikaya, Cutrell, Lee · CHI 2023</p>
-  <h1>The same yields, <strong>in Chart Reader</strong></h1>
-  <p class="lead">3-month and 10-year Treasury yields, rendered by the open-source Chart Reader engine. Press <kbd>Tab</kbd> to reach the chart, then <kbd>Enter</kbd>.</p>
-
   <div class="grid">
     <div>
-      <figure style="margin:0" class="cr">
-        <div id="chart" class="chart-box"></div>
-      </figure>
-      <div class="said" aria-hidden="true">
-        <span class="label">Last thing said</span>
-        <p id="said">—</p>
-      </div>
+      <figure style="margin:0" class="cr" id="fig"><div id="chart" class="chart-box"></div></figure>
+      <p class="said" id="said" aria-hidden="true"></p>
     </div>
     <aside class="side">
       <h2>Keys</h2>
       <table class="keys">
-        <tr><td><kbd>Enter</kbd> <kbd>Esc</kbd></td><td>Down or up a level</td></tr>
-        <tr><td><kbd>←</kbd> <kbd>→</kbd></td><td>Previous or next item</td></tr>
-        <tr><td><kbd>↑</kbd> <kbd>↓</kbd></td><td>Switch series at this date</td></tr>
-        <tr><td><kbd>Shift</kbd> <kbd>Enter</kbd></td><td>Play or pause the sound</td></tr>
-        <tr><td><kbd>Shift</kbd> <kbd>←</kbd> <kbd>→</kbd></td><td>Step and hear each point</td></tr>
-        <tr><td><kbd>Home</kbd> <kbd>End</kbd></td><td>First or last in this level</td></tr>
-        <tr><td><kbd>PgUp</kbd> <kbd>PgDn</kbd></td><td>Jump five</td></tr>
+        <tr><td><kbd>Tab</kbd> <kbd>Enter</kbd></td><td>Start</td></tr>
+        <tr><td><kbd>Enter</kbd> <kbd>Esc</kbd></td><td>Level down / up</td></tr>
+        <tr><td><kbd>←</kbd> <kbd>→</kbd></td><td>Previous / next</td></tr>
+        <tr><td><kbd>↑</kbd> <kbd>↓</kbd></td><td>Other series</td></tr>
+        <tr><td><kbd>Shift</kbd> <kbd>Enter</kbd></td><td>Play sound</td></tr>
+        <tr><td><kbd>Shift</kbd> <kbd>←</kbd> <kbd>→</kbd></td><td>Step with sound</td></tr>
         <tr><td><kbd>I</kbd> <kbd>X</kbd> <kbd>Y</kbd> <kbd>D</kbd> <kbd>F</kbd></td><td>Insights, x-axis, y-axis, data, filters</td></tr>
-        <tr><td><kbd>V</kbd></td><td>Screen off or on</td></tr>
+        <tr><td><kbd>V</kbd></td><td>Screen off / on</td></tr>
       </table>
     </aside>
   </div>
@@ -59,72 +48,71 @@
 <script src="assets/js/chartreader.bundle.js"></script>
 <script>
 const host = document.getElementById('chart');
-const rect = host.getBoundingClientRect();
-const dim = { width: rect.width, height: rect.height, margin: { l: 56, r: 40, t: 60, b: 44 } };
+const NAMES = { '3M': '3-month', '6M': '6-month', '1Y': '1-year', '2Y': '2-year', '3Y': '3-year', '5Y': '5-year', '7Y': '7-year', '10Y': '10-year', '30Y': '30-year' };
+const COLORS = { '3M': '#2a78d6', '10Y': '#eb6834', '6M': '#9db4cf', '1Y': '#9db4cf', '2Y': '#9db4cf', '3Y': '#9db4cf', '5Y': '#9db4cf', '7Y': '#9db4cf', '30Y': '#9db4cf' };
+const STEP = NYT_STEP;
 
-const config = {
-  description: {
-    title: 'Treasury yields, 1990 to 2015',
-    caption: 'Multi-series line chart of the 3-month and 10-year U.S. Treasury yields, monthly averages from January 1990 to March 2015.',
-  },
-  x: {
-    name: 'Date', encode: 'x', type: 'date',
-    label_axis: 'Time (in months)', label_group: 'average yield',
-    aggregate: ['mean'], period: 'Month', interval: 'Year',
-  },
-  y: {
-    name: 'Value', encode: 'y', type: 'number',
-    label_tooltip: 'Yield: ', label_axis: 'Yield (percent per year)', label_group: 'percent',
-    aggregate: ['consecutive_days', 'count'], interval: 1,
-    format_long: '.2f', format_short: '.1f',
-  },
-  z: {
-    name: 'Series', encode: 'z', type: 'string',
-    map: { '3M': '3-month Treasury', '10Y': '10-year Treasury' },
-  },
-};
-
-const dataConfig = {
-  annotations: { url: 'assets/data/cr_insights.json' },
-  raw: {
-    url: 'assets/data/cr_yields.csv',
-    filters: [],
-    fields: [
-      { name: 'Date', type: 'date', format: '%Y-%m-%d' },
-      { name: 'Value', type: 'number' },
-      { name: 'Series', type: 'string' },
-    ],
-    pivotRequired: false,
-  },
-};
-
-new chartreader.LineChart('#chart', config, dim, dataConfig);
-
-// Self-voicing: speak what a screen reader would announce, so the room can hear it
-// without a screen reader running. Turn "Voice" off if VoiceOver or NVDA is on.
-const said = document.getElementById('said');
-function say(text) {
-  if (!text) return;
-  said.textContent = text;
-  Voice.speak(text);
+function lineChart(caption, keys) {
+  const map = {}, colors = {};
+  keys.forEach(k => { map[k] = NAMES[k] + ' Treasury'; colors[k] = COLORS[k]; });
+  return {
+    config: {
+      description: { title: `${NYT_TITLES[STEP - 1]} (NYT step ${STEP})`, caption },
+      x: { name: 'Date', encode: 'x', type: 'date', label_axis: 'Time (in months)', label_group: 'average yield', aggregate: ['mean'], period: 'Month', interval: 'Year' },
+      y: { name: 'Value', encode: 'y', type: 'number', label_tooltip: 'Yield: ', label_axis: 'Yield (percent per year)', label_group: 'percent', aggregate: ['consecutive_days', 'count'], interval: 1, format_long: '.2f', format_short: '.1f' },
+      z: { name: 'Series', encode: 'z', type: 'string', map, colors },
+    },
+    fields: [{ name: 'Date', type: 'date', format: '%Y-%m-%d' }, { name: 'Value', type: 'number' }, { name: 'Series', type: 'string' }],
+    kind: 'line',
+  };
 }
-host.addEventListener('focusin', e => {
-  const label = e.target.getAttribute && e.target.getAttribute('aria-label');
-  if (label && label !== 'Aria-label goes here') say(label);
-});
-const watchLive = () => {
-  host.querySelectorAll('.chart-sr-live-content, .chart-sr-focus-content').forEach(node => {
-    if (node.dataset.watched) return;
-    node.dataset.watched = '1';
-    new MutationObserver(() => {
-      const t = node.textContent.trim();
-      if (t && t !== 'Aria-label goes here') say(t);
-    }).observe(node, { childList: true, characterData: true, subtree: true });
-  });
-};
-new MutationObserver(watchLive).observe(host, { childList: true, subtree: true });
-watchLive();
 
+const PLAN = {
+  1: () => lineChart('Multi-series line chart of the 3-month and 10-year Treasury yields, monthly, January 1990 to March 2015.', ['3M', '10Y']),
+  2: () => ({
+    kind: 'bar',
+    config: {
+      description: { title: 'Where we stand (NYT step 2)', caption: 'Bar chart of Treasury yields by maturity on Wednesday, March 18, 2015.' },
+      x: { name: 'Maturity', encode: 'x', type: 'string', label_axis: 'Term', label_tooltip: 'Yield: ', label_group: 'yield', aggregate: ['sum'], format_long: '.2f', format_short: '.2f', format_abbrev: '.2f',
+           map: Object.fromEntries(['1-month','3-month','6-month','1-year','2-year','3-year','5-year','7-year','10-year','20-year','30-year'].map(m => [m, m])) },
+      y: { name: 'Value', encode: 'y', type: 'number', label_tooltip: 'Yield: ', label_axis: 'Yield (percent)', label_group: 'percent', aggregate: ['layout_sum'], interval: 1, format_long: '.2f', format_short: '.1f' },
+      z: { name: 'Series', encode: 'z', type: 'string', label_axis: 'Day', layout: 'stack', map: { D: 'March 18, 2015' } },
+    },
+    fields: [{ name: 'Maturity', type: 'string' }, { name: 'Value', type: 'number' }, { name: 'Series', type: 'string' }],
+  }),
+  3: () => lineChart('Multi-series line chart of the 3-month and 10-year Treasury yields, monthly, January 2008 to March 2015.', ['3M', '10Y']),
+  4: () => lineChart('Multi-series line chart of the 3-month and 10-year Treasury yields, monthly, January 2004 to June 2007.', ['3M', '10Y']),
+  5: () => lineChart('Line chart of the 10-year Treasury yield, monthly, January 1990 to March 2015.', ['10Y']),
+  6: () => lineChart('Multi-series line chart of nine Treasury yields from 3-month to 30-year, monthly, January 1990 to March 2015.', ['3M', '6M', '1Y', '2Y', '3Y', '5Y', '7Y', '10Y', '30Y']),
+};
+
+const plan = PLAN[STEP] && PLAN[STEP]();
+if (!plan) {
+  document.getElementById('fig').innerHTML = `<p class="msg">Germany and Japan are not in this demo. It uses U.S. Treasury data only.</p>`;
+} else {
+  document.getElementById('fig').classList.add(plan.kind);
+  if (STEP === 3 || STEP === 4) document.getElementById('fig').classList.add('short');
+  const r = host.getBoundingClientRect();
+  const dim = { width: r.width, height: r.height, margin: { l: 56, r: 40, t: 60, b: 44 } };
+  const dataConfig = {
+    annotations: { url: `assets/data/cr/step${STEP}.json` },
+    raw: { url: `assets/data/cr/step${STEP}.csv`, filters: [], fields: plan.fields, pivotRequired: false },
+  };
+  if (plan.kind === 'bar') new chartreader.BarChart('#chart', plan.config, dim, dataConfig);
+  else new chartreader.LineChart('#chart', plan.config, dim, dataConfig);
+}
+
+// Self-voicing: speak what a screen reader would announce, so the room hears it.
+// Turn "Voice" off when VoiceOver or NVDA is running.
+const said = document.getElementById('said');
+function say(t) { if (!t || t === 'Aria-label goes here') return; said.textContent = t; Voice.speak(t); }
+host.addEventListener('focusin', e => say(e.target.getAttribute && e.target.getAttribute('aria-label')));
+const watchLive = () => host.querySelectorAll('.chart-sr-live-content, .chart-sr-focus-content').forEach(node => {
+  if (node.dataset.watched) return;
+  node.dataset.watched = '1';
+  new MutationObserver(() => say(node.textContent.trim())).observe(node, { childList: true, characterData: true, subtree: true });
+});
+new MutationObserver(watchLive).observe(host, { childList: true, subtree: true });
 Voice.bindControls();
 </script>
 </body>

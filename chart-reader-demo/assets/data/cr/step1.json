@@ -1,0 +1,84 @@
+[
+ {
+  "type": "summary",
+  "target": {
+   "axis": "x",
+   "values": [
+    "1990-01-01",
+    "2015-03-01"
+   ],
+   "series": [
+    "3M",
+    "10Y"
+   ]
+  },
+  "dx": -160,
+  "dy": -30,
+  "note": {
+   "title": [
+    "Yield curve 101"
+   ],
+   "label": [
+    "The yield curve shows how much it costs the",
+    "federal government to borrow money for a given",
+    "amount of time, revealing the relationship",
+    "between long- and short-term interest rates.",
+    "It is, inherently, a forecast for what the",
+    "economy holds in the future \u2014 how much",
+    "inflation there will be, for example, and how",
+    "healthy growth will be over the years ahead \u2014",
+    "all embodied in the price of money today,",
+    "tomorrow and many years from now. "
+   ]
+  }
+ },
+ {
+  "type": "landmarks",
+  "target": {
+   "axis": "x",
+   "values": [
+    "1990-09-01",
+    "1990-09-01"
+   ],
+   "series": [
+    "10Y"
+   ]
+  },
+  "dx": 50,
+  "dy": 10,
+  "note": {
+   "title": [
+    "Highest month: September 1990"
+   ],
+   "label": [
+    "The 10-year yield averaged 8.89 percent in",
+    "September 1990. "
+   ]
+  }
+ },
+ {
+  "type": "landmarks",
+  "target": {
+   "axis": "x",
+   "values": [
+    "2012-07-01",
+    "2012-07-01"
+   ],
+   "series": [
+    "10Y"
+   ]
+  },
+  "dx": -60,
+  "dy": -150,
+  "note": {
+   "title": [
+    "Lowest 10-year yield: July 2012"
+   ],
+   "label": [
+    "The 10-year yield averaged 1.53 percent in",
+    "July 2012. On July 25 it closed at 1.43",
+    "percent. "
+   ]
+  }
+ }
+]

@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Visual · NYT Yield Curve</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@300;400;600;700;800&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/site.css">
+<style>
+  .shot { width: 100%; height: auto; display: block; border: 1px solid var(--rule); }
+  .src { display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; margin-top: 10px; font-size: 16px; font-weight: 600; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header id="mast" data-page="visual"></header>
+  <img class="shot" id="shot" alt="">
+  <div class="src">
+    <span>Gregor Aisch and Amanda Cox, The New York Times, March 2015</span>
+    <a href="https://www.nytimes.com/interactive/2015/03/19/upshot/3d-yield-curve-economic-growth.html" target="_blank" rel="noopener">Original ↗</a>
+  </div>
+</div>
+<script src="assets/js/nav.js"></script>
+<script>
+fetch('assets/data/nyt_steps.json').then(r => r.json()).then(steps => {
+  const s = steps[NYT_STEP - 1];
+  const img = document.getElementById('shot');
+  img.src = s.img;
+  img.alt = `NYT step ${s.n}, ${s.title}. ${s.paras.join(' ')}`;
+});
+</script>
+</body>
+</html>

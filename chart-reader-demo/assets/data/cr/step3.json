@@ -1,0 +1,33 @@
+[
+ {
+  "type": "summary",
+  "target": {
+   "axis": "x",
+   "values": [
+    "2008-01-01",
+    "2015-03-01"
+   ],
+   "series": [
+    "3M",
+    "10Y"
+   ]
+  },
+  "dx": -160,
+  "dy": -30,
+  "note": {
+   "title": [
+    "Deep in the valley"
+   ],
+   "label": [
+    "In response to the last recession, the Federal",
+    "Reserve has kept short-term rates very low \u2014",
+    "near zero \u2014 since 2008. (Lower interest rates",
+    "stimulate the economy, by making it cheaper",
+    "for people to borrow money, but also spark",
+    "inflation.)",
+    "Now, the Fed is getting ready to raise rates",
+    "again, possibly as early as June. "
+   ]
+  }
+ }
+]

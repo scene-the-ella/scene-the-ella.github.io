@@ -11,18 +11,18 @@
     { id: 'rise', label: 'Rises from short to long', shape: SHAPES.rise },
     { id: 'flat', label: 'Flat', shape: SHAPES.flat },
     { id: 'fall', label: 'Falls all the way', shape: SHAPES.fall },
-    { id: 'dip', label: 'Dips in the middle, rises at the long end', shape: SHAPES.dip },
+    { id: 'dip', label: 'Dips, then rises at the long end', shape: SHAPES.dip },
   ];
 
   window.QUESTIONS = [
     {
-      id: 'q1', demo: 'screen-reader.html', demoName: 'Through a screen reader',
-      prompt: 'On March 18, 2015, what did the yield curve look like?',
+      id: 'q1', demo: 'screen-reader.html?step=2', demoName: 'Screen reader',
+      prompt: 'Step 2. What shape was the curve on March 18, 2015?',
       options: shapeOptions, answer: 'rise', vivid: true,
     },
     {
-      id: 'q2', demo: 'chart-reader.html', demoName: 'Chart Reader',
-      prompt: 'In January 2007, which yield was higher?',
+      id: 'q2', demo: 'chart-reader.html?step=4', demoName: 'Chart Reader',
+      prompt: 'Step 4 ends in 2006. In January 2007, which yield was higher?',
       options: [
         { id: '3m', label: '3-month' },
         { id: '10y', label: '10-year' },
@@ -31,19 +31,19 @@
       answer: '3m', vivid: true,
     },
     {
-      id: 'q3', demo: 'turn.html#2007-01&10-year&curve', demoName: 'Turn the chart',
-      prompt: 'In January 2007, what did the yield curve look like?',
+      id: 'q3', demo: 'pivot.html?step=2&month=2007-01&dir=curve', demoName: 'Pivot',
+      prompt: 'What shape was the curve in January 2007?',
       options: shapeOptions, answer: 'dip', vivid: true,
     },
     {
       id: 'q4', demo: null, demoName: 'Your pick',
-      prompt: 'Which would you reach for to explore a chart on your own?',
+      prompt: 'Which would you use to explore a chart yourself?',
       options: [
-        { id: 'sr', label: 'The original, with a screen reader' },
+        { id: 'sr', label: 'Screen reader on the original' },
         { id: 'cr', label: 'Chart Reader' },
-        { id: 'turn', label: 'Turn the chart' },
+        { id: 'turn', label: 'Pivot' },
       ],
-      answer: null, vivid: false, text: 'What would you add or change?',
+      answer: null, vivid: false, text: 'What would you add?',
     },
   ];
 

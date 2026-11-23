@@ -60,6 +60,19 @@ a { color: var(--ink); text-underline-offset: 3px; }
 .seg > *:hover { background: var(--tint); }
 .seg > .is-off { color: #9a9a9a; pointer-events: none; }
 
+/* Two-row header on the demo pages: brand/tools, then NYT step control + modes */
+.mast2 { border-bottom: 1px solid var(--ink); margin-bottom: 22px; }
+.m-row { display: flex; align-items: center; justify-content: space-between; gap: 14px; flex-wrap: wrap; padding: 0 0 12px; }
+.m-row .name { font-weight: 800; font-size: 18px; text-decoration: none; }
+.m-row .name span { font-weight: 400; }
+.m-steps { padding-top: 12px; border-top: 1px solid var(--rule); }
+.step-title { font-size: 20px; font-weight: 800; }
+.step-title b { font-family: var(--mono); font-weight: 600; font-size: 17px; margin-right: 6px; }
+.modes > a { font-size: 16px; padding: 8px 16px; }
+.modes > a[aria-current="page"] { background: var(--ink); color: #fff; }
+.msg { font-size: 22px; font-weight: 700; padding: 40px 0; border-bottom: 1px solid var(--rule); }
+.msg a { font-weight: 800; }
+
 .kicker { font-weight: 800; font-size: 17px; margin: 0 0 6px; }
 .kicker b { font-family: var(--mono); font-weight: 600; margin-right: 8px; }
 

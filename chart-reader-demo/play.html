@@ -45,7 +45,7 @@
 </head>
 <body>
 <div class="wrap">
-  <div class="mast"><span class="name">Seeing without seeing</span><span class="mono" id="who" style="font-size:15px"></span></div>
+  <div class="mast"><span class="name">Chart Reader · Quiz</span><span class="mono" id="who" style="font-size:15px"></span></div>
   <main id="app" aria-live="polite"></main>
 </div>
 
@@ -70,7 +70,7 @@ const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;',
 function renderJoin() {
   app.innerHTML = `
     <p class="big">Join in</p>
-    <p class="note">Pick a name the room will see. A nickname is fine.</p>
+    <p class="note">Name or nickname</p>
     <form id="join" autocomplete="off">
       <label class="sr-only" for="nm">Name</label>
       <input type="text" id="nm" maxlength="30" value="${esc(name)}" placeholder="Your name" required>
@@ -104,7 +104,7 @@ function questionHTML(q, idx) {
       <div class="scale-ends"><span>${VIVID_LABELS[0]}</span><span>${VIVID_LABELS[4]}</span></div>
     </fieldset>` : '';
   const text = q.text ? `<fieldset><legend>${esc(q.text)}</legend><textarea name="text" maxlength="500"></textarea></fieldset>` : '';
-  const demo = q.demo ? `<a class="try" href="${q.demo}" target="_blank" rel="noopener">Try “${esc(q.demoName)}” yourself ↗</a>` : '';
+  const demo = q.demo ? `<a class="try" href="${q.demo}" target="_blank" rel="noopener">Open ${esc(q.demoName)} ↗</a>` : '';
   return `
     <div class="q-num">${idx + 1} / ${QUESTIONS.length} · ${esc(q.demoName)}</div>
     <p class="q">${esc(q.prompt)}</p>
@@ -147,12 +147,12 @@ function mineHTML(q, reveal) {
 function endHTML() {
   return `
     <p class="big">Thank you</p>
-    <p class="note">Try the demos with headphones:</p>
     <div class="links">
-      <a href="screen-reader.html">01 · The NYT graphic, through a screen reader</a>
-      <a href="chart-reader.html">02 · Chart Reader</a>
-      <a href="turn.html">03 · Turn the chart, by ear</a>
-      <a href="https://www.nytimes.com/interactive/2015/03/19/upshot/3d-yield-curve-economic-growth.html" target="_blank" rel="noopener">The original NYT graphic ↗</a>
+      <a href="visual.html?step=1">Visual</a>
+      <a href="screen-reader.html?step=2">Screen reader</a>
+      <a href="chart-reader.html?step=4">Chart Reader</a>
+      <a href="pivot.html?step=2">Pivot</a>
+      <a href="https://www.nytimes.com/interactive/2015/03/19/upshot/3d-yield-curve-economic-growth.html" target="_blank" rel="noopener">NYT original ↗</a>
     </div>`;
 }
 
@@ -163,14 +163,14 @@ function render() {
   const [qid, phase] = stage.split(':');
   const q = Q(qid);
   if (stage === 'end') { app.innerHTML = endHTML(); return; }
-  if (!q) { app.innerHTML = `<p class="big">You’re in${name ? ', ' + esc(name) : ''}.</p><p class="note">Watch the screen. The first question opens after the first demo.</p>`; return; }
+  if (!q) { app.innerHTML = `<p class="big">Joined${name ? ': ' + esc(name) : ''}</p><p class="note">Questions open after each demo.</p>`; return; }
   const idx = QUESTIONS.indexOf(q);
   if (phase === 'results') {
-    app.innerHTML = `<div class="q-num">${idx + 1} / ${QUESTIONS.length}</div><p class="big">Results are on the screen.</p>${mineHTML(q, true)}`;
+    app.innerHTML = `<div class="q-num">${idx + 1} / ${QUESTIONS.length}</div><p class="big">Results on screen</p>${mineHTML(q, true)}`;
     return;
   }
   if (store.get(ansKey(q.id))) {
-    app.innerHTML = `<div class="q-num">${idx + 1} / ${QUESTIONS.length}</div><p class="big">Recorded.</p><p class="note">Waiting for the others.</p>${mineHTML(q, false)}`;
+    app.innerHTML = `<div class="q-num">${idx + 1} / ${QUESTIONS.length}</div><p class="big">Recorded</p>${mineHTML(q, false)}`;
     return;
   }
   app.innerHTML = questionHTML(q, idx);
@@ -183,7 +183,7 @@ function renderLocal() {
   const q = QUESTIONS[localIndex];
   app.innerHTML = questionHTML(q, localIndex);
   bindForm(q, () => {
-    app.innerHTML = `<div class="q-num">${localIndex + 1} / ${QUESTIONS.length}</div><p class="big">Saved on this phone.</p>${mineHTML(q, true)}<div style="height:16px"></div><button class="btn main submit" id="nx">Next question</button>`;
+    app.innerHTML = `<div class="q-num">${localIndex + 1} / ${QUESTIONS.length}</div><p class="big">Saved</p>${mineHTML(q, true)}<div style="height:16px"></div><button class="btn main submit" id="nx">Next question</button>`;
     document.getElementById('nx').onclick = () => { localIndex++; renderLocal(); };
   });
 }

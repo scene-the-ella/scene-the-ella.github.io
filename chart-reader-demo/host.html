@@ -177,7 +177,7 @@ function questionBoard(q, reveal) {
     const mean = v.length ? (v.reduce((s, x) => s + x, 0) / v.length).toFixed(1) : '–';
     const dist = [1, 2, 3, 4, 5].map(k => v.filter(x => x === k).length), dm = Math.max(1, ...dist);
     vivid = `<div class="vivid">
-      <div><div style="font-weight:800;font-size:18px">Could picture it</div><div class="big">${mean}<small> / 5</small></div></div>
+      <div><div style="font-weight:800;font-size:18px">Pictured</div><div class="big">${mean}<small> / 5</small></div></div>
       <div><div class="dist">${dist.map(c => `<div style="height:${100 * c / dm}%" title="${c}"></div>`).join('')}</div>
       <div class="dist-l">${VIVID_LABELS.map((l, i) => `<span>${i + 1}</span>`).join('')}</div></div></div>`;
   }
@@ -197,11 +197,11 @@ function summaryBoard() {
   const viv = qs.map(q => { const v = latest(q.id).map(a => +a.vivid).filter(x => x >= 1); return v.length ? v.reduce((s, x) => s + x, 0) / v.length : 0; });
   const row = (label, frac, text, color) => `<div class="sr"><span>${esc(label)}</span>
     <div class="track"><div class="fill" style="width:${100 * frac}%;background:${color}"></div></div><span class="num">${text}</span></div>`;
-  return `<div class="stage-title">All three</div>
-    <p class="prompt">Did it feel clear, and was it right?</p>
+  return `<div class="stage-title">Summary</div>
+    <p class="prompt">Pictured vs. correct</p>
     <div class="summary">
-      <div><h2>Got it right</h2>${qs.map((q, i) => row(q.demoName, right[i], Math.round(100 * right[i]) + '%', '#184f95')).join('')}</div>
-      <div><h2>Could picture it</h2>${qs.map((q, i) => row(q.demoName, viv[i] / 5, viv[i] ? viv[i].toFixed(1) : '–', '#86b6ef')).join('')}</div>
+      <div><h2>Correct</h2>${qs.map((q, i) => row(q.demoName, right[i], Math.round(100 * right[i]) + '%', '#184f95')).join('')}</div>
+      <div><h2>Pictured (1–5)</h2>${qs.map((q, i) => row(q.demoName, viv[i] / 5, viv[i] ? viv[i].toFixed(1) : '–', '#86b6ef')).join('')}</div>
     </div>`;
 }
 
@@ -212,7 +212,7 @@ function render() {
   if (!Quiz.live && !SAMPLE) { $('status').textContent = 'Local preview · not recording'; $('status').className = 'status off'; }
   const [qid, phase] = stage.split(':');
   const q = QUESTIONS.find(x => x.id === qid);
-  if (stage === 'lobby') $('board').innerHTML = `<p class="big-msg">Scan to join.</p><p class="lead" style="margin-top:18px">Questions open after each demo.</p>`;
+  if (stage === 'lobby') $('board').innerHTML = `<p class="big-msg">Scan to join</p>`;
   else if (stage === 'end') $('board').innerHTML = summaryBoard();
   else if (q) $('board').innerHTML = questionBoard(q, phase === 'results' || SAMPLE);
 }

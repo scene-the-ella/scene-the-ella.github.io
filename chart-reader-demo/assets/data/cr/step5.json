@@ -1,0 +1,59 @@
+[
+ {
+  "type": "summary",
+  "target": {
+   "axis": "x",
+   "values": [
+    "1990-01-01",
+    "2015-03-01"
+   ],
+   "series": [
+    "10Y"
+   ]
+  },
+  "dx": -160,
+  "dy": -30,
+  "note": {
+   "title": [
+    "Long-term rates are low now, too"
+   ],
+   "label": [
+    "Foreign buyers have helped keep long-term",
+    "rates low recently, too \u2014 as have new rules",
+    "encouraging banks to hold government debt and",
+    "expectations that economic growth could be",
+    "weak for a long time.",
+    "The 10-year Treasury yield was as low as it",
+    "has ever been in July 2012 and has risen only",
+    "modestly since.",
+    "Some economists refer to the economic",
+    "pessimism as \u201cthe new normal.\u201d "
+   ]
+  }
+ },
+ {
+  "type": "landmarks",
+  "target": {
+   "axis": "x",
+   "values": [
+    "2012-07-01",
+    "2012-07-01"
+   ],
+   "series": [
+    "10Y"
+   ]
+  },
+  "dx": -60,
+  "dy": -150,
+  "note": {
+   "title": [
+    "Lowest: July 2012"
+   ],
+   "label": [
+    "The 10-year yield averaged 1.53 percent in",
+    "July 2012. On July 25 it closed at 1.43",
+    "percent. "
+   ]
+  }
+ }
+]

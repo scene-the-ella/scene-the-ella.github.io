@@ -3,78 +3,64 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Seeing Without Seeing</title>
+<title>Chart Reader Demo</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@300;400;600;700;800&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="assets/css/site.css">
 <style>
-  .hero { display: grid; grid-template-columns: minmax(0, 1fr) 260px; gap: 40px; align-items: end; }
-  .hero h1 { font-size: clamp(44px, 7vw, 92px); max-width: 12ch; margin-bottom: 18px; }
+  .hero { display: grid; grid-template-columns: minmax(0, 1fr) 220px; gap: 40px; align-items: end; padding-bottom: 26px; }
+  .hero h1 { font-size: clamp(40px, 6vw, 76px); max-width: 14ch; margin: 0; }
   .qr svg { width: 100%; height: auto; display: block; }
-  .qr-cap { font-weight: 800; font-size: 18px; margin-top: 8px; }
-  .list { margin-top: 40px; border-top: 1px solid var(--ink); }
+  .qr-cap { font-weight: 800; font-size: 17px; margin-top: 8px; }
+  .list { border-top: 1px solid var(--ink); }
   .item {
-    display: grid; grid-template-columns: 70px minmax(0, 1fr) 140px; gap: 20px; align-items: baseline;
-    padding: 22px 0; border-bottom: 1px solid var(--rule); text-decoration: none; color: var(--ink);
+    display: grid; grid-template-columns: 56px minmax(0, 1fr) 120px; gap: 20px; align-items: baseline;
+    padding: 20px 0; border-bottom: 1px solid var(--rule); text-decoration: none; color: var(--ink);
   }
   .item:hover { background: var(--mark); }
-  .item .n { font-family: var(--mono); font-weight: 600; font-size: 18px; }
-  .item .t { font-size: clamp(24px, 2.8vw, 34px); font-weight: 800; line-height: 1.15; }
-  .item .d { font-size: 18px; color: var(--ink-2); margin-top: 4px; }
+  .item .n { font-family: var(--mono); font-weight: 600; font-size: 17px; }
+  .item .t { font-size: clamp(24px, 2.8vw, 32px); font-weight: 800; line-height: 1.15; }
+  .item .d { font-size: 18px; margin-top: 2px; }
   .item .go { font-weight: 700; text-align: right; }
-  .foot { margin-top: 30px; display: flex; gap: 24px; flex-wrap: wrap; font-weight: 700; }
+  .foot { margin-top: 26px; display: flex; gap: 24px; flex-wrap: wrap; font-weight: 700; }
   @media (max-width: 760px) {
     .hero { grid-template-columns: 1fr; }
-    .hero .qrbox { max-width: 220px; }
-    .item { grid-template-columns: 44px minmax(0, 1fr); }
+    .hero .qrbox { max-width: 200px; }
+    .item { grid-template-columns: 40px minmax(0, 1fr); }
     .item .go { display: none; }
   }
 </style>
 </head>
 <body>
 <div class="wrap">
-  <header class="mast"><span class="name">Seeing without seeing <span>· Chart Reader, CHI 2023</span></span></header>
+  <header class="mast"><span class="name">Chart Reader <span>· CHI 2023 · Demo</span></span></header>
 
   <div class="hero">
-    <div>
-      <h1>Seeing <strong>without seeing</strong></h1>
-      <p class="lead">One chart, four ways: by eye, through a screen reader, in Chart Reader, and turned by ear.</p>
-    </div>
+    <h1>The NYT yield curve, <strong>four ways</strong></h1>
     <div class="qrbox">
       <div class="qr" id="qr"></div>
-      <div class="qr-cap">Scan to join the quiz</div>
+      <div class="qr-cap">Quiz</div>
     </div>
   </div>
 
-  <nav class="list" aria-label="Demos">
-    <a class="item" href="https://www.nytimes.com/interactive/2015/03/19/upshot/3d-yield-curve-economic-growth.html" target="_blank" rel="noopener">
-      <span class="n">00</span>
-      <span><div class="t">The original</div><div class="d">A 3-D View of a Chart That Predicts the Economic Future. Gregor Aisch and Amanda Cox, The New York Times, 2015.</div></span>
-      <span class="go">nytimes.com ↗</span>
-    </a>
-    <a class="item" href="screen-reader.html">
-      <span class="n">01</span>
-      <span><div class="t">Through a screen reader</div><div class="d">Everything the graphic hands to assistive technology, read aloud in order.</div></span>
-      <span class="go">Open →</span>
-    </a>
-    <a class="item" href="chart-reader.html">
-      <span class="n">02</span>
-      <span><div class="t">Chart Reader</div><div class="d">The same yields in the open-source Chart Reader engine: insights, levels, and sound.</div></span>
-      <span class="go">Open →</span>
-    </a>
-    <a class="item" href="turn.html">
-      <span class="n">03</span>
-      <span><div class="t">Turn the chart, by ear</div><div class="d">Stand on one point. Listen across a day’s curve, or through 25 years of one rate.</div></span>
-      <span class="go">Open →</span>
-    </a>
+  <nav class="list" aria-label="Modes">
+    <a class="item" href="visual.html?step=1"><span class="n">01</span>
+      <span><div class="t">Visual</div><div class="d">The original graphic, nine steps</div></span><span class="go">Open →</span></a>
+    <a class="item" href="screen-reader.html?step=2"><span class="n">02</span>
+      <span><div class="t">Screen reader</div><div class="d">What the page exposes to assistive technology</div></span><span class="go">Open →</span></a>
+    <a class="item" href="chart-reader.html?step=4"><span class="n">03</span>
+      <span><div class="t">Chart Reader</div><div class="d">The same steps in the Chart Reader engine</div></span><span class="go">Open →</span></a>
+    <a class="item" href="pivot.html?step=2"><span class="n">04</span>
+      <span><div class="t">Pivot</div><div class="d">Front and side views, linked by sound</div></span><span class="go">Open →</span></a>
   </nav>
 
   <div class="foot">
-    <a href="play.html">Join the quiz</a>
+    <a href="play.html">Join quiz</a>
     <a href="host.html">Host</a>
+    <a href="https://www.nytimes.com/interactive/2015/03/19/upshot/3d-yield-curve-economic-growth.html" target="_blank" rel="noopener">NYT original ↗</a>
     <a href="https://doi.org/10.1145/3544548.3581186" target="_blank" rel="noopener">Paper ↗</a>
-    <a href="https://github.com/microsoft/chart-reader" target="_blank" rel="noopener">Chart Reader engine ↗</a>
+    <a href="https://github.com/microsoft/chart-reader" target="_blank" rel="noopener">Engine ↗</a>
   </div>
 </div>
 

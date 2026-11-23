@@ -1,0 +1,31 @@
+[
+ {
+  "type": "summary",
+  "target": {
+   "axis": "x",
+   "values": [
+    "1-month",
+    "30-year"
+   ],
+   "series": [
+    "D"
+   ]
+  },
+  "dx": -120,
+  "dy": -40,
+  "note": {
+   "title": [
+    "Where we stand"
+   ],
+   "label": [
+    "On Wednesday, both short-term and long-term",
+    "rates were lower than they have been for most",
+    "of history \u2013 a reflection of the continuing",
+    "hangover from the financial crisis.",
+    "The yield curve is fairly flat, which is a",
+    "sign that investors expect mediocre growth in",
+    "the years ahead. "
+   ]
+  }
+ }
+]

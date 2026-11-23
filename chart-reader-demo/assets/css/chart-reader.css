@@ -71,4 +71,5 @@
 .cr .tooltip-inner .tooltip-value { font-weight: 800; }
 .cr .tooltip-inner .tooltip-series span { display: inline-block; font-weight: 700; }
 .cr .tooltip-inner .tooltip-series .tooltip-series-legend { min-width: 12px; min-height: 12px; border-radius: 2px; background: #000; margin: 0 6px 0 0; }
-.cr .tooltip-inner .tooltip-series .tooltip-series-value { float: right; margin-left: 14px; }
+.cr .tooltip-inner .tooltip-series > div { display: flex; align-items: center; gap: 4px; }
+.cr .tooltip-inner .tooltip-series .tooltip-series-value { margin-left: auto; padding-left: 18px; }
