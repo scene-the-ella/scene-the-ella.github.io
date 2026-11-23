@@ -27,7 +27,16 @@
   .cells .v { font-size: 24px; font-weight: 800; line-height: 1.1; white-space: nowrap; }
   .pad { display: flex; gap: 6px; margin-left: auto; }
   .pad .btn { padding: 8px 12px; font-size: 15px; }
-  .axisnote { max-width: 1280px; margin: 6px auto 0; font-size: 17px; }
+  .axisnote { margin: 6px 0 0; font-size: 17px; }
+  .body { max-width: 1280px; margin: 0 auto; display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 24px; align-items: start; }
+  .feel { border-top: 1px solid var(--ink); padding-top: 8px; }
+  .feel h2 { font-size: 18px; margin: 0 0 6px; display: flex; justify-content: space-between; align-items: baseline; }
+  .feel h2 .k { font-size: 14px; font-weight: 400; }
+  .feel dl { margin: 0; }
+  .feel dt { font-weight: 800; font-size: 15px; margin-top: 10px; }
+  .feel dt small { font-weight: 400; font-size: 14px; margin-left: 4px; }
+  .feel dd { margin: 2px 0 0; font-size: 16px; line-height: 1.4; }
+  @media (max-width: 1100px) { .body { grid-template-columns: 1fr; } }
   .axisnote b { font-weight: 800; }
   #stage:focus-visible { outline: 3px solid var(--blue-5); outline-offset: 4px; }
   .said { max-width: 1280px; margin: 8px auto 0; font-size: 18px; font-weight: 600; min-height: 1.6em; }
@@ -41,7 +50,7 @@
 <body>
 <div class="wrap full">
   <header id="mast" data-page="pivot" data-screen="yes" data-voice="yes"></header>
-  <div id="stage" tabindex="0" role="application" aria-roledescription="yield surface" aria-label="Yield surface. Left and right arrows move along the line. P switches between one maturity over time and one date across maturities. Space plays the line. Enter reads the value.">
+  <div id="stage" tabindex="0" role="application" aria-roledescription="yield surface" aria-label="Yield surface. Left and right arrows move along the line. P switches between one maturity over time and one date across maturities. Space plays the line. D describes it in words. Enter reads the value.">
     <div class="now">
       <h1 id="nowLine" aria-hidden="true">—</h1>
       <div class="ctl">
@@ -56,12 +65,21 @@
         </div>
         <div class="pad" role="group" aria-label="Controls">
           <button class="btn" id="bPrev" aria-label="Previous">◀</button><button class="btn" id="bNext" aria-label="Next">▶</button>
-          <button class="btn main" id="bPlay">Play</button><button class="btn" id="bValue">Value</button>
+          <button class="btn main" id="bPlay">Play</button><button class="btn" id="bDesc">Describe</button><button class="btn" id="bValue">Value</button>
         </div>
       </div>
     </div>
-    <div id="nyt"></div>
-    <p class="axisnote" id="axisNote" aria-hidden="true"></p>
+    <div class="body">
+      <div><div id="nyt"></div><p class="axisnote" id="axisNote" aria-hidden="true"></p></div>
+      <aside class="feel" aria-hidden="true">
+        <h2>Without the picture <span class="k">press <kbd>D</kbd></span></h2>
+        <dl>
+          <dt>Pattern <small>a shape you can trace</small></dt><dd><b id="fPattern">—</b> <span id="fTrend"></span></dd>
+          <dt>Relation <small>no mental math</small></dt><dd id="fRel">—</dd>
+          <dt>Outliers <small>called out as you pass</small></dt><dd id="fOut">—</dd>
+        </dl>
+      </aside>
+    </div>
   </div>
   <p class="said" id="said" aria-live="polite"></p>
   <div class="lower">
@@ -72,18 +90,20 @@
         <tr><td><kbd>←</kbd> <kbd>→</kbd></td><td>Move along the black line</td></tr>
         <tr><td><kbd>Shift</kbd> + <kbd>←</kbd> <kbd>→</kbd></td><td>Move one year (over time)</td></tr>
         <tr><td><kbd>Space</kbd></td><td>Play the line, or stop</td></tr>
+        <tr><td><kbd>D</kbd></td><td>Describe the line in words</td></tr>
         <tr><td><kbd>Enter</kbd></td><td>Read the exact value</td></tr>
+        <tr><td><kbd>Z</kbd></td><td>Stretch the pitch to one date’s range</td></tr>
         <tr><td><kbd>V</kbd></td><td>Screen off or on</td></tr>
       </table>
     </div>
     <div>
-      <h2>Sound</h2>
+      <h2>Instead of seeing</h2>
       <table class="keys">
-        <tr><td>Pitch</td><td>Yield from 0 to 9.5 percent, the same scale as Chart Reader</td></tr>
-        <tr><td>Left to right</td><td>Position along the line</td></tr>
-        <tr><td>Click</td><td>A new year</td></tr>
-        <tr><td>Bonk</td><td>End of the line</td></tr>
-        <tr><td><kbd>Z</kbd></td><td>Stretch the pitch to one date’s range</td></tr>
+        <tr><td>Height</td><td>Pitch, 0 to 9.5 percent, Chart Reader’s scale</td></tr>
+        <tr><td>Left to right</td><td>Stereo, left ear to right ear</td></tr>
+        <tr><td>A new year</td><td>Click</td></tr>
+        <tr><td>End of the line</td><td>Bonk</td></tr>
+        <tr><td>Shape</td><td>Words: hills, valleys, cliffs, a rope</td></tr>
       </table>
       <div class="jump"><label for="jYear">Go to</label><select id="jMonth" aria-label="Month"></select><select id="jYear" aria-label="Year"></select><select id="jMat" aria-label="Maturity"></select></div>
     </div>
@@ -194,12 +214,139 @@ function draw() {
     : `<b>Horizontal axis:</b> maturity, 1 month to 30 years. <b>Black line:</b> the curve on ${fmtMonth(m)}. <b>Circle:</b> where you are.`;
   $('dTime').setAttribute('aria-pressed', String(dir === 'time'));
   $('dCurve').setAttribute('aria-pressed', String(dir === 'curve'));
+  fillFeel();
   $('jYear').value = D.months[m].slice(0, 4); $('jMonth').value = D.months[m].slice(5, 7); $('jMat').value = String(k);
   if (!g) return;
   if (dir === 'time') { g.highlightRow(null); g.highlightSeries(k); }
   else { g.highlightSeries(null); g.highlightRow(D.rowOf[m]); }
   g.setMarker(D.rowOf[m], k);
 }
+// ---------- in words: pattern, trend, outliers, relation ----------
+const f1 = v => v.toFixed(1), f2 = v => v.toFixed(2);
+const lvl = v => v < 0.05 ? 'zero' : `${f1(v)} percent`;   // spoken level: 'near zero' instead of '0.0 percent'
+const yearOf = i => D.months[i].slice(0, 4);
+function zigzag(v, th) {
+  const piv = [0]; let trend = 0, hi = 0, lo = 0, cand = 0;
+  for (let i = 1; i < v.length; i++) {
+    if (trend === 0) {
+      if (v[i] > v[hi]) hi = i; if (v[i] < v[lo]) lo = i;
+      if (v[hi] - v[0] >= th && hi >= lo) { trend = 1; cand = hi; } else if (v[0] - v[lo] >= th && lo >= hi) { trend = -1; cand = lo; }
+    } else if (trend === 1) {
+      if (v[i] > v[cand]) cand = i; else if (v[cand] - v[i] >= th) { piv.push(cand); trend = -1; cand = i; }
+    } else {
+      if (v[i] < v[cand]) cand = i; else if (v[i] - v[cand] >= th) { piv.push(cand); trend = 1; cand = i; }
+    }
+  }
+  // keep the last extreme only if the line really turns away from it before the end
+  if (trend !== 0 && piv[piv.length - 1] !== cand && Math.abs(v[v.length - 1] - v[cand]) >= th) piv.push(cand);
+  if (piv[piv.length - 1] !== v.length - 1) piv.push(v.length - 1);
+  return piv;
+}
+const TCACHE = {};
+function timeModel(kk) {
+  if (TCACHE[kk]) return TCACHE[kk];
+  const ids = [], v = [];
+  for (let i = 0; i < D.months.length; i++) if (has(i, kk)) { ids.push(i); v.push(val(i, kk)); }
+  let th = 1.0, piv = zigzag(v, th);
+  while (piv.length > 8) { th += 0.25; piv = zigzag(v, th); }
+  // sudden moves: month-to-month changes far beyond the usual
+  const d = v.slice(1).map((x, i) => x - v[i]);
+  const med = d.map(Math.abs).sort((a, b) => a - b)[Math.floor(d.length / 2)] || 0.05;
+  const jumps = d.map((x, i) => ({ i: i + 1, x })).filter(o => Math.abs(o.x) >= Math.max(0.6, 6 * med)).sort((a, b) => Math.abs(b.x) - Math.abs(a.x)).slice(0, 2);
+  const marks = {};
+  piv.forEach((p, j) => { if (j > 0 && j < piv.length - 1) marks[ids[p]] = v[p] > v[piv[j - 1]] ? 'Top of a hill.' : 'Bottom of a valley.'; });
+  jumps.forEach(o => { marks[ids[o.i]] = (marks[ids[o.i]] ? marks[ids[o.i]] + ' ' : '') + (o.x < 0 ? 'Sudden drop.' : 'Sudden jump.'); });
+  return TCACHE[kk] = { ids, v, piv, jumps, marks };
+}
+function describeTime() {
+  const { ids, v, piv, jumps } = timeModel(k);
+  const peaks = piv.filter((p, j) => j > 0 && j < piv.length - 1 && v[p] > v[piv[j - 1]]);
+  // flat ending: the last stretch barely moves
+  const last = piv[piv.length - 2];
+  let tail = v.slice(last);
+  // the floor: the final stretch that stays within half a point of where the line ends
+  let fs = v.length - 1; while (fs > 0 && Math.abs(v[fs - 1] - v[v.length - 1]) < 0.5) fs--;
+  if (v.length - fs >= 24) tail = v.slice(fs);
+  const flatEnd = v.length - fs >= 24;
+  const peakVals = peaks.map(p => v[p]), falling = peakVals.every((x, i) => i === 0 || x < peakVals[i - 1]);
+  const hills = peaks.length === 0 ? 'one long slope' : peaks.length === 1 ? 'a single hill' : `${peaks.length} hills${falling ? ', each lower than the one before' : ''}`;
+  const startsTop = peakVals.length && v[0] >= Math.max(...peakVals);
+  const pattern = `${startsTop ? 'Starts at the top, then ' : 'Like '}${hills}${flatEnd ? `, ending on a flat floor near ${lvl(tail[tail.length - 1])}` : ''}.`;
+  const parts = [`Starts at ${f1(v[0])} percent in ${yearOf(ids[0])}`];
+  for (let j = 1; j < piv.length; j++) {
+    const a = piv[j - 1], b = piv[j], dv = v[b] - v[a];
+    if (j === piv.length - 1 && flatEnd && Math.abs(dv) < 0.5) { parts.push(`then stays flat near ${lvl(v[b])} until ${yearOf(ids[b])}`); break; }
+    // most of the move (90 percent) happens by t90; judge steepness on that stretch
+    let t90 = b; for (let i = a + 1; i <= b; i++) { if ((dv < 0 && v[i] <= v[a] + 0.9 * dv) || (dv > 0 && v[i] >= v[a] + 0.9 * dv)) { t90 = i; break; } }
+    const rate = 0.9 * Math.abs(dv) / (Math.max(1, ids[t90] - ids[a]) / 12);
+    const when = rate < 2.5 ? '' : ` in ${yearOf(ids[t90])}`;
+    const verb = dv > 0 ? (rate >= 2.5 ? 'climbs steeply' + when : 'climbs') : (rate >= 2.5 ? 'drops like a cliff' + when : rate >= 1.5 ? 'falls' : 'slides down');
+    const where = j === piv.length - 1 ? (flatEnd ? `to ${v[b] < 0.05 ? 'near zero' : lvl(v[b])}` : `to ${lvl(v[b])} by ${yearOf(ids[b])}`) : dv > 0 ? `to a peak of ${f1(v[b])} percent in ${yearOf(ids[b])}` : `into a valley of ${f1(v[b])} percent${rate >= 2.5 ? '' : ` in ${yearOf(ids[b])}`}`;
+    parts.push(`${verb} ${where}`);
+    if (j === piv.length - 1 && flatEnd) { parts.push(`then stays flat near ${lvl(tail[tail.length - 1])} until ${yearOf(ids[ids.length - 1])}`); }
+  }
+  const trend = parts.join(', ') + '.';
+  const iMax = v.indexOf(Math.max(...v)), iMin = v.indexOf(Math.min(...v));
+  let out = `Highest ${f2(v[iMax])} percent in ${fmtMonth(ids[iMax])}. Lowest ${f2(v[iMin])} percent in ${fmtMonth(ids[iMin])}.`;
+  if (jumps.length) out += ' ' + jumps.map(o => `${o.x < 0 ? 'A sudden drop' : 'A sudden jump'} of ${f1(Math.abs(o.x))} points in ${fmtMonth(ids[o.i])}.`).join(' ');
+  // relation to the other end of the curve, at the current date
+  const SH = shortRef(), ref = k <= 2 ? 8 : SH, here = has(m, k) && has(m, ref) ? val(m, k) - val(m, ref) : NaN;
+  let rel = isNaN(here) ? '' : `In ${fmtMonth(m)} it sits ${f2(Math.abs(here))} points ${here >= 0 ? 'above' : 'below'} the ${MATS[ref]} yield. `;
+  const inv = [];
+  for (let i = 0; i < D.months.length; i++) if (has(i, SH) && has(i, 8) && val(i, SH) > val(i, 8)) inv.push(i);
+  const spans = []; inv.forEach(i => { const s0 = spans[spans.length - 1]; if (s0 && i - s0[1] <= 2) s0[1] = i; else spans.push([i, i]); });
+  const times = spans.length === 1 ? 'once' : spans.length === 2 ? 'twice' : `${spans.length} times`;
+  const list = spans.map(([a, b]) => a === b ? fmtMonth(a) : `${fmtMonth(a)} to ${fmtMonth(b)}`).join(', and ');
+  if (k === SH) rel += spans.length ? `It rose above the 10-year ${times}: ${list}.` : 'It stayed below the 10-year throughout.';
+  else if (k === 8) rel += spans.length ? `The ${MATS[SH]} rose above it ${times}: ${list}.` : `The ${MATS[SH]} stayed below it throughout.`;
+  return { pattern, trend, out, rel };
+}
+function describeCurve() {
+  const es = MATS.map((_, e) => e).filter(e => has(m, e)), v = es.map(e => val(m, e));
+  const lo = Math.min(...v), hi = Math.max(...v), iLo = v.indexOf(lo), iHi = v.indexOf(hi), n = v.length;
+  const vS = v[0], vL = v[n - 1], R = hi - lo, S = vL - vS;
+  const piv = R < 0.3 ? [0, n - 1] : zigzag(v, Math.max(0.12, R * 0.25));
+  const turns = piv.slice(1, -1);
+  let pattern;
+  if (R < 0.3) pattern = `Almost level, like a tabletop at about ${f1((hi + lo) / 2)} percent.`;
+  else if (turns.length === 0) pattern = S > 0 ? (S >= 2 ? 'A steep ramp, rising from short to long.' : 'A gentle ramp, rising from short to long.') : 'A slide, going down from short to long.';
+  else if (R < 0.6) pattern = `Nearly flat, all within ${f1(R)} points: ` + turns.map(t => (v[t] > v[piv[piv.indexOf(t) - 1]] ? `a slight bump at ${MATS[es[t]]}` : `a slight dip at ${MATS[es[t]]}`)).join(', then ') + '.';
+  else if (turns.length === 1) pattern = v[turns[0]] < vS ? 'Sags in the middle, like a rope held at both ends.' : 'Bulges in the middle, like a small hill.';
+  else pattern = 'A wave: ' + turns.map(t => (v[t] > v[piv[piv.indexOf(t) - 1]] ? `a bump at ${MATS[es[t]]}` : `a dip at ${MATS[es[t]]}`)).join(', then ') + '.';
+  let trend;
+  if (turns.length) {
+    const seg = [`From ${MATS[es[0]]} at ${f2(vS)} percent`];
+    piv.slice(1).forEach((t, j) => { const up = v[t] > v[piv[j]]; seg.push(`${j === piv.length - 2 ? 'then ' : ''}${up ? 'rises' : 'dips'} to ${f2(v[t])} at ${MATS[es[t]]}`); });
+    trend = seg.join(', ') + '.';
+  } else {
+    let best = 1; for (let i = 1; i < n; i++) if (Math.abs(v[i] - v[i - 1]) > Math.abs(v[best] - v[best - 1])) best = i;
+    trend = `From ${MATS[es[0]]} at ${f2(vS)} percent to ${MATS[es[n - 1]]} at ${f2(vL)} percent. The ${S >= 0 ? 'climb' : 'drop'} is steepest between ${MATS[es[best - 1]]} and ${MATS[es[best]]}.`;
+  }
+  const out = `Lowest: ${MATS[es[iLo]]}, ${f2(lo)} percent. Highest: ${MATS[es[iHi]]}, ${f2(hi)} percent.`;
+  const sh = shortRef(), lg = 8;
+  let rel = '';
+  if (has(m, sh) && has(m, lg)) {
+    const dlt = val(m, sh) - val(m, lg);
+    rel = Math.abs(dlt) < 0.05 ? `The ${MATS[sh]} and the 10-year are about the same, ${f2(val(m, sh))} percent.`
+      : dlt > 0 ? `The ${MATS[sh]} (${f2(val(m, sh))}) is ${f2(dlt)} points above the 10-year (${f2(val(m, lg))}). Short-term borrowing costs more than long-term: the curve is inverted.`
+      : `The 10-year (${f2(val(m, lg))}) is ${f2(-dlt)} points above the ${MATS[sh]} (${f2(val(m, sh))}), the usual order.`;
+  }
+  return { pattern, trend, out, rel };
+}
+// the shortest maturity this country reports (3-month for the U.S. and Japan, 6-month for Germany)
+function shortRef() { const c = [1, 2, 3].find(e => D.values.some((r, i) => has(i, e))); return c === undefined ? 1 : c; }
+const describe = () => dir === 'time' ? describeTime() : describeCurve();
+function fillFeel() {
+  const d = describe();
+  $('fPattern').textContent = d.pattern; $('fTrend').textContent = d.trend; $('fOut').textContent = d.out; $('fRel').textContent = d.rel;
+  return d;
+}
+function speakDescription() {
+  stopPlay();
+  const d = fillFeel();
+  say(`${lineLabel()}. ${d.pattern} ${d.trend} ${d.rel} ${d.out}`);
+}
+
 const lineLabel = () => dir === 'time' ? `The ${MATS[k]} yield over time` : `Every maturity on ${fmtMonth(m)}`;
 function value() { say(has(m, k) ? `${MATS[k]}, ${fmtMonth(m)}: ${pct(val(m, k))}.` : `${MATS[k]}, ${fmtMonth(m)}: no data.`); }
 function move(delta) {
@@ -209,7 +356,8 @@ function move(delta) {
     if (nm < 0 || nm >= D.months.length) { bonk(); return; }
     m = nm;
     if (has(m, k)) tone(FIXED(val(m, k)), audio().currentTime + 0.01, 0.12, -0.8 + 1.6 * m / (D.months.length - 1));
-    say(has(m, k) ? `${fmtMonth(m)}. ${pct(val(m, k))}.` : `${fmtMonth(m)}. No data.`);
+    const mark = timeModel(k).marks[m];
+    say((mark ? mark + ' ' : '') + (has(m, k) ? `${fmtMonth(m)}. ${pct(val(m, k))}.` : `${fmtMonth(m)}. No data.`));
   } else {
     let nk = k + delta;
     while (nk >= 0 && nk < MATS.length && !has(m, nk)) nk += delta;
@@ -225,7 +373,7 @@ function turn() {
   dir = dir === 'time' ? 'curve' : 'time';
   if (dir === 'curve' && !has(m, k)) { const e = MATS.findIndex((_, e) => has(m, e)); if (e >= 0) k = e; }
   show(true);
-  say(lineLabel() + '.');
+  say(`${lineLabel()}. ${describe().pattern}`);
 }
 async function play() {
   if (playing) { stopPlay(); return; }
@@ -255,12 +403,13 @@ stage.addEventListener('keydown', e => {
   else if (/^[pPtT]$/.test(key)) { e.preventDefault(); turn(); }
   else if (key === ' ') { e.preventDefault(); play(); }
   else if (key === 'Enter') { e.preventDefault(); value(); }
+  else if (key === 'd' || key === 'D') { e.preventDefault(); speakDescription(); }
   else if (key === 'z' || key === 'Z') { e.preventDefault(); stretch = !stretch; say(stretch ? 'Pitch stretched to this date’s range.' : 'Pitch on the fixed scale.'); }
   else if (key === 'Home' || key === 'End') { e.preventDefault(); edge(key === 'End'); }
   else if (key === 'Escape') { stopPlay(); Voice.stop(); }
 });
 $('bPrev').onclick = () => move(-1); $('bNext').onclick = () => move(1);
-$('bPlay').onclick = play; $('bValue').onclick = value;
+$('bPlay').onclick = play; $('bValue').onclick = value; $('bDesc').onclick = speakDescription;
 $('dTime').onclick = () => { if (dir !== 'time') turn(); };
 $('dCurve').onclick = () => { if (dir !== 'curve') turn(); };
 ['jYear', 'jMonth', 'jMat'].forEach(id => $(id).addEventListener('change', () => {
