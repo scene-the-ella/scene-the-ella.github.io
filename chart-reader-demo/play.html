@@ -3,15 +3,22 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="icon" href="data:,">
 <title>Join the Quiz</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@300;400;600;700;800&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@300;400;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="assets/css/site.css">
 <style>
   .wrap { max-width: 620px; }
   .mast { margin-bottom: 18px; }
-  .q-num { font-family: var(--mono); font-weight: 600; font-size: 15px; }
+  .q-num { font-weight: 700; font-size: 16px; }
+  .who-line { font-size: 16px; font-weight: 600; }
+  .how { margin: 0 0 22px; padding: 0; list-style: none; counter-reset: s; border-top: 1px solid var(--ink); }
+  .how li { counter-increment: s; display: grid; grid-template-columns: 34px minmax(0, 1fr); gap: 10px; padding: 12px 0; border-bottom: 1px solid var(--rule); font-size: 18px; line-height: 1.35; }
+  .how li::before { content: counter(s); font-weight: 800; font-size: 22px; line-height: 1.1; }
+  .how b { font-weight: 800; }
+  .next { margin-top: 18px; font-size: 18px; }
   .q { font-size: clamp(25px, 6.4vw, 34px); font-weight: 800; line-height: 1.15; margin: 6px 0 18px; }
   fieldset { border: 0; padding: 0; margin: 0 0 22px; }
   legend { font-weight: 800; font-size: 18px; margin-bottom: 8px; padding: 0; }
@@ -45,7 +52,7 @@
 </head>
 <body>
 <div class="wrap">
-  <div class="mast"><span class="name">Chart Reader · Quiz</span><span class="mono" id="who" style="font-size:15px"></span></div>
+  <div class="mast"><span class="name">Chart Reader quiz</span><span class="who-line" id="who"></span></div>
   <main id="app" aria-live="polite"></main>
 </div>
 
@@ -69,11 +76,15 @@ const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;',
 
 function renderJoin() {
   app.innerHTML = `
-    <p class="big">Join in</p>
-    <p class="note">Name or nickname</p>
+    <p class="big">Join the quiz</p>
+    <ol class="how">
+      <li><span><b>Enter a name.</b> A nickname is fine.</span></li>
+      <li><span><b>Watch the demo.</b> Keep this page open.</span></li>
+      <li><span><b>Answer one question after each demo.</b> There are three: Screen reader, Chart Reader, and Pivot.</span></li>
+    </ol>
     <form id="join" autocomplete="off">
-      <label class="sr-only" for="nm">Name</label>
-      <input type="text" id="nm" maxlength="30" value="${esc(name)}" placeholder="Your name" required>
+      <label class="legend-like" for="nm" style="display:block;font-weight:800;font-size:18px;margin-bottom:8px">Your name</label>
+      <input type="text" id="nm" maxlength="30" value="${esc(name)}" placeholder="Name or nickname" required>
       <div style="height:14px"></div>
       <button class="btn main submit" type="submit">Join</button>
     </form>`;
@@ -82,7 +93,7 @@ function renderJoin() {
     name = document.getElementById('nm').value.trim().slice(0, 30);
     if (!name) return;
     store.set('crq-name', name);
-    document.getElementById('who').textContent = ' · ' + name;
+    showWho();
     if (Quiz.live) {
       try { const s = await Quiz.state(); if (s && s.session) { session = s.session; stage = s.stage || stage; } } catch (err) {}
       Quiz.send({ type: 'join', session, pid, name, ua: navigator.userAgent });
@@ -104,11 +115,9 @@ function questionHTML(q, idx) {
       <div class="scale-ends"><span>${VIVID_LABELS[0]}</span><span>${VIVID_LABELS[4]}</span></div>
     </fieldset>` : '';
   const text = q.text ? `<fieldset><legend>${esc(q.text)}</legend><textarea name="text" maxlength="500"></textarea></fieldset>` : '';
-  const demo = q.demo ? `<a class="try" href="${q.demo}" target="_blank" rel="noopener">Open ${esc(q.demoName)} ↗</a>` : '';
   return `
-    <div class="q-num">${idx + 1} / ${QUESTIONS.length} · ${esc(q.demoName)}</div>
+    <div class="q-num">Question ${idx + 1} of ${QUESTIONS.length}, after the ${esc(q.demoName)} demo</div>
     <p class="q">${esc(q.prompt)}</p>
-    ${demo}
     <form id="qf">
       <fieldset><legend class="sr-only">Answer</legend>${opts}</fieldset>
       ${vivid}${text}
@@ -141,7 +150,7 @@ function mineHTML(q, reveal) {
   const opt = q.options.find(o => o.id === a.choice);
   let verdict = '';
   if (reveal && q.answer) verdict = a.choice === q.answer ? ' <span class="right">Right</span>' : ' <span class="wrong">Not quite</span>';
-  return `<div class="mine">${esc(q.demoName)}: ${esc(opt ? opt.label : a.choice)}${a.vivid ? ` · pictured ${a.vivid}/5` : ''}${verdict}</div>`;
+  return `<div class="mine">${esc(q.demoName)}: ${esc(opt ? opt.label : a.choice)}${a.vivid ? `, pictured ${a.vivid} of 5` : ''}${verdict}</div>`;
 }
 
 // The answer is revealed only at the end, so later demos are not primed.
@@ -153,12 +162,13 @@ function endHTML() {
     <p class="note">January 2007 averages: 3-month 5.11%, 10-year 4.76%</p>
     ${QUESTIONS.map(q => mineHTML(q, true)).join('')}
     <div style="height:22px"></div>
+    <p class="note" style="margin:0 0 6px">Try the demos yourself</p>
     <div class="links">
       <a href="visual.html?step=4">Visual</a>
       <a href="screen-reader.html?step=4">Screen reader</a>
       <a href="chart-reader.html?step=4">Chart Reader</a>
       <a href="pivot.html?step=4">Pivot</a>
-      <a href="https://www.nytimes.com/interactive/2015/03/19/upshot/3d-yield-curve-economic-growth.html" target="_blank" rel="noopener">NYT original ↗</a>
+      <a href="https://www.nytimes.com/interactive/2015/03/19/upshot/3d-yield-curve-economic-growth.html" target="_blank" rel="noopener">NYT original graphic</a>
     </div>`;
 }
 
@@ -169,18 +179,23 @@ function render() {
   const [qid, phase] = stage.split(':');
   const q = Q(qid);
   if (stage === 'end') { app.innerHTML = endHTML(); return; }
-  if (!q) { app.innerHTML = `<p class="big">Joined${name ? ': ' + esc(name) : ''}</p><p class="note">Questions open after each demo.</p>`; return; }
+  if (!q) { app.innerHTML = `<p class="big">You are in${name ? ', ' + esc(name) : ''}</p><p class="note">The first question appears here after the ${esc(QUESTIONS[0].demoName)} demo. Keep this page open.</p>`; return; }
   const idx = QUESTIONS.indexOf(q);
   if (phase === 'results') {
-    app.innerHTML = `<div class="q-num">${idx + 1} / ${QUESTIONS.length}</div><p class="big">Results on screen</p>${mineHTML(q, false)}`;
+    app.innerHTML = `<div class="q-num">Question ${idx + 1} of ${QUESTIONS.length}</div><p class="big">Results are on the screen</p>${mineHTML(q, false)}<p class="next">${nextNote(idx)}</p>`;
     return;
   }
   if (store.get(ansKey(q.id))) {
-    app.innerHTML = `<div class="q-num">${idx + 1} / ${QUESTIONS.length}</div><p class="big">Recorded</p>${mineHTML(q, false)}`;
+    app.innerHTML = `<div class="q-num">Question ${idx + 1} of ${QUESTIONS.length}</div><p class="big">Answer recorded</p>${mineHTML(q, false)}<p class="next">${nextNote(idx)}</p>`;
     return;
   }
   app.innerHTML = questionHTML(q, idx);
   bindForm(q, () => { lastRendered = ''; render(); });
+}
+
+function nextNote(idx) {
+  const nq = QUESTIONS[idx + 1];
+  return nq ? `The next question appears here after the ${esc(nq.demoName)} demo.` : 'The answer is revealed at the end.';
 }
 
 // Local mode: no endpoint, so step through the questions on this phone only.
@@ -189,10 +204,14 @@ function renderLocal() {
   const q = QUESTIONS[localIndex];
   app.innerHTML = questionHTML(q, localIndex);
   bindForm(q, () => {
-    app.innerHTML = `<div class="q-num">${localIndex + 1} / ${QUESTIONS.length}</div><p class="big">Saved</p>${mineHTML(q, false)}<div style="height:16px"></div><button class="btn main submit" id="nx">Next question</button>`;
+    const nq = QUESTIONS[localIndex + 1];
+    app.innerHTML = `<div class="q-num">Question ${localIndex + 1} of ${QUESTIONS.length}</div><p class="big">Answer saved</p>${mineHTML(q, false)}
+      <p class="next">${nq ? `Open the next question after the ${esc(nq.demoName)} demo.` : 'See the answer when the presenter shows the results.'}</p>
+      <button class="btn main submit" id="nx">${nq ? `Question ${localIndex + 2}, ${esc(nq.demoName)}` : 'See the answer'}</button>`;
     document.getElementById('nx').onclick = () => { localIndex++; renderLocal(); };
   });
 }
+function showWho() { document.getElementById('who').textContent = name ? 'Joined as ' + name : ''; }
 
 let polling = false;
 async function poll() {
@@ -213,7 +232,7 @@ async function poll() {
   tick();
 }
 
-if (name) document.getElementById('who').textContent = ' · ' + name;
+showWho();
 if (Quiz.live && name) {
   Quiz.state().then(s => { if (s && s.session) session = s.session; Quiz.send({ type: 'join', session, pid, name, ua: navigator.userAgent }); }).catch(() => {});
   render(); poll();

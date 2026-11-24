@@ -37,6 +37,7 @@
       u.lang = (voice && voice.lang) || 'en-US';
       u.rate = opts.rate || rate;
       const done = () => { document.body.classList.remove('speaking'); resolve(); };
+      speak.current = u;   // keep a reference so the browser does not drop the end event
       u.onstart = () => document.body.classList.add('speaking');
       u.onend = done;
       u.onerror = done;

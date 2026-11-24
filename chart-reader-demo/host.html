@@ -3,10 +3,11 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="data:,">
 <title>Quiz Host</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@300;400;600;700;800&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@300;400;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="assets/css/site.css">
 <style>
   .wrap { max-width: 1320px; padding-top: 16px; }
@@ -17,15 +18,18 @@
   .ctl { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; font-size: 15px; font-weight: 600; }
   .ctl > * { flex: none; }
   .ctl input { font: inherit; font-size: 15px; padding: 6px 8px; border: 1px solid var(--ink); border-radius: var(--r); width: 150px; }
-  .status { font-family: var(--mono); font-size: 14px; font-weight: 600; }
+  .status { font-size: 15px; font-weight: 700; }
   .status.off { color: var(--bad); }
   .main { display: grid; grid-template-columns: 340px minmax(0, 1fr); gap: 48px; margin-top: 28px; }
   .join .qr svg { width: 100%; height: auto; display: block; }
   .join .url { font-weight: 800; font-size: 19px; word-break: break-all; margin-top: 10px; }
+  .join .hint { font-size: 17px; margin-top: 4px; }
+  .lobby-steps { margin: 0; padding: 0; list-style: none; border-top: 1px solid var(--ink); max-width: 30ch; }
+  .lobby-steps li { padding: 12px 0; border-bottom: 1px solid var(--rule); font-size: 24px; font-weight: 700; }
   .count { font-size: 64px; font-weight: 800; line-height: 1; margin-top: 22px; }
   .count small { display: block; font-size: 17px; font-weight: 700; margin-top: 6px; }
   .names { margin-top: 14px; font-size: 17px; font-weight: 600; max-height: 260px; overflow: hidden; }
-  .stage-title { font-family: var(--mono); font-weight: 600; font-size: 17px; }
+  .stage-title { font-weight: 700; font-size: 18px; }
   .prompt { font-size: clamp(34px, 3.6vw, 54px); font-weight: 800; line-height: 1.1; margin: 8px 0 26px; max-width: 24ch; }
   .rows { display: grid; gap: 14px; }
   .r { display: grid; grid-template-columns: 300px minmax(0, 1fr) 90px; gap: 16px; align-items: center; }
@@ -34,7 +38,7 @@
   .r .fill { height: 100%; background: var(--ink); border-radius: 0 4px 4px 0; transition: width .4s; }
   .r .num { font-size: 24px; font-weight: 800; text-align: right; }
   .r.answer .fill { background: var(--blue-7); }
-  .r .ans { font-family: var(--mono); font-size: 14px; font-weight: 600; background: var(--mark); border: 1px solid var(--ink); padding: 0 6px; border-radius: var(--r); }
+  .r .ans { font-size: 15px; font-weight: 700; background: var(--mark); border: 1px solid var(--ink); padding: 0 6px; border-radius: var(--r); }
   .vivid { margin-top: 30px; padding-top: 16px; border-top: 1px solid var(--ink); display: grid; grid-template-columns: 220px minmax(0, 1fr); gap: 30px; align-items: end; }
   .vivid .big { font-size: 72px; font-weight: 800; line-height: 1; }
   .vivid .big small { font-size: 22px; }
@@ -61,8 +65,8 @@
     <div class="ctl">
       <label for="sess">Session</label><input id="sess">
       <button class="btn" id="newSess">New</button>
-      <button class="btn" id="prev">←</button>
-      <button class="btn main" id="next">Next →</button>
+      <button class="btn" id="prev">Back</button>
+      <button class="btn main" id="next">Next</button>
       <span class="status" id="status"></span>
     </div>
   </div>
@@ -71,6 +75,7 @@
     <aside class="join">
       <div class="qr" id="qr"></div>
       <div class="url" id="url"></div>
+      <div class="hint">Scan with your phone, or open this link.</div>
       <div class="count"><span id="nJoined">0</span><small>joined</small></div>
       <div class="names" id="names"></div>
     </aside>
@@ -174,7 +179,7 @@ function questionBoard(q, reveal) {
   let vivid = '';
   if (q.vivid && reveal) {
     const v = ans.map(a => +a.vivid).filter(x => x >= 1 && x <= 5);
-    const mean = v.length ? (v.reduce((s, x) => s + x, 0) / v.length).toFixed(1) : '–';
+    const mean = v.length ? (v.reduce((s, x) => s + x, 0) / v.length).toFixed(1) : '0';
     const dist = [1, 2, 3, 4, 5].map(k => v.filter(x => x === k).length), dm = Math.max(1, ...dist);
     vivid = `<div class="vivid">
       <div><div style="font-weight:800;font-size:18px">Pictured</div><div class="big">${mean}<small> / 5</small></div></div>
@@ -186,7 +191,7 @@ function questionBoard(q, reveal) {
     const t = ans.filter(a => String(a.text || '').trim());
     if (t.length) texts = `<div class="texts">${t.slice(-8).map(a => `<p><b>${esc(a.name)}</b> ${esc(a.text)}</p>`).join('')}</div>`;
   }
-  return `<div class="stage-title">${QUESTIONS.indexOf(q) + 1} / ${QUESTIONS.length} · ${esc(q.demoName)} · ${n} answered</div>
+  return `<div class="stage-title">Question ${QUESTIONS.indexOf(q) + 1} of ${QUESTIONS.length}, after the ${esc(q.demoName)} demo. ${n} answered</div>
     <p class="prompt">${esc(q.prompt)}</p>
     <div class="rows">${bars}</div>${vivid}${texts}`;
 }
@@ -198,22 +203,23 @@ function summaryBoard() {
   const row = (label, frac, text, color) => `<div class="sr"><span>${esc(label)}</span>
     <div class="track"><div class="fill" style="width:${100 * frac}%;background:${color}"></div></div><span class="num">${text}</span></div>`;
   const q0 = QUESTIONS[0], ans = q0.options.find(o => o.id === q0.answer);
-  return `<div class="stage-title">Answer · ${esc(ans.label)} · January 2007: 5.11% vs 4.76%</div>
+  return `<div class="stage-title">Answer: ${esc(ans.label)}. January 2007: 3-month 5.11%, 10-year 4.76%</div>
     <p class="prompt">Pictured vs. correct</p>
     <div class="summary">
       <div><h2>Correct</h2>${qs.map((q, i) => row(q.demoName, right[i], Math.round(100 * right[i]) + '%', '#184f95')).join('')}</div>
-      <div><h2>Pictured (1–5)</h2>${qs.map((q, i) => row(q.demoName, viv[i] / 5, viv[i] ? viv[i].toFixed(1) : '–', '#86b6ef')).join('')}</div>
+      <div><h2>Pictured (1 to 5)</h2>${qs.map((q, i) => row(q.demoName, viv[i] / 5, viv[i] ? viv[i].toFixed(1) : '0', '#86b6ef')).join('')}</div>
     </div>`;
 }
 
 function render() {
   const names = joined();
   $('nJoined').textContent = names.length;
-  $('names').textContent = names.slice(-24).join(' · ');
-  if (!Quiz.live && !SAMPLE) { $('status').textContent = 'Local preview · not recording'; $('status').className = 'status off'; }
+  $('names').textContent = names.slice(-24).join(', ');
+  if (!Quiz.live && !SAMPLE) { $('status').textContent = 'Local preview, not recording'; $('status').className = 'status off'; }
   const [qid, phase] = stage.split(':');
   const q = QUESTIONS.find(x => x.id === qid);
-  if (stage === 'lobby') $('board').innerHTML = `<p class="big-msg">Scan to join</p>`;
+  if (stage === 'lobby') $('board').innerHTML = `<p class="big-msg">Scan to join the quiz</p>
+    <ol class="lobby-steps"><li>1. Enter a name</li><li>2. Watch the demo</li><li>3. Answer one question after each demo</li></ol>`;
   else if (stage === 'end') $('board').innerHTML = summaryBoard();
   else if (q) $('board').innerHTML = questionBoard(q, phase === 'results' || SAMPLE);
 }
@@ -227,7 +233,7 @@ async function poll() {
       // After a reload, pick up where the room is
       if (!adopted && r && r.state && r.state.session === session && r.state.stage) stage = r.state.stage;
       adopted = true;
-      $('status').textContent = 'Live · recording'; $('status').className = 'status';
+      $('status').textContent = 'Live, recording'; $('status').className = 'status';
       renderStages(); render();
     } catch (e) { $('status').textContent = 'Offline'; $('status').className = 'status off'; }
   }

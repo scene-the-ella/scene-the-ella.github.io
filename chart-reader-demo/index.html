@@ -3,72 +3,84 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="data:,">
 <title>Chart Reader Demo</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@300;400;600;700;800&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@300;400;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="assets/css/site.css">
 <style>
-  .hero { display: grid; grid-template-columns: minmax(0, 1fr) 220px; gap: 40px; align-items: end; padding-bottom: 26px; }
-  .hero h1 { font-size: clamp(40px, 6vw, 76px); max-width: 14ch; margin: 0; }
+  .intro h1 { font-size: clamp(36px, 5vw, 60px); max-width: 20ch; margin: 0 0 8px; }
+  .intro p { font-size: clamp(18px, 1.8vw, 21px); margin: 0 0 30px; max-width: 60ch; }
+  .paths { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: 48px; align-items: start; }
+  .path { border-top: 3px solid var(--ink); padding-top: 14px; }
+  .who { font-weight: 700; font-size: 16px; letter-spacing: .02em; text-transform: uppercase; margin: 0 0 4px; }
+  .path h2 { font-size: clamp(28px, 3vw, 36px); margin: 0 0 8px; }
+  .path .how { font-size: 18px; margin: 0 0 18px; }
+  .qr { width: min(240px, 70%); }
   .qr svg { width: 100%; height: auto; display: block; }
-  .qr-cap { font-weight: 800; font-size: 17px; margin-top: 8px; }
-  .list { border-top: 1px solid var(--ink); }
-  .item {
-    display: grid; grid-template-columns: 56px minmax(0, 1fr) 120px; gap: 20px; align-items: baseline;
-    padding: 20px 0; border-bottom: 1px solid var(--rule); text-decoration: none; color: var(--ink);
-  }
-  .item:hover { background: var(--mark); }
-  .item .n { font-family: var(--mono); font-weight: 600; font-size: 17px; }
-  .item .t { font-size: clamp(24px, 2.8vw, 32px); font-weight: 800; line-height: 1.15; }
-  .item .d { font-size: 18px; margin-top: 2px; }
-  .item .go { font-weight: 700; text-align: right; }
-  .foot { margin-top: 26px; display: flex; gap: 24px; flex-wrap: wrap; font-weight: 700; }
-  @media (max-width: 760px) {
-    .hero { grid-template-columns: 1fr; }
-    .hero .qrbox { max-width: 200px; }
-    .item { grid-template-columns: 40px minmax(0, 1fr); }
-    .item .go { display: none; }
+  .url { font-weight: 700; font-size: 16px; word-break: break-all; margin: 10px 0 18px; }
+  .cta { font-size: 20px; padding: 14px 22px; }
+  .steps { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--ink); }
+  .steps li { display: grid; grid-template-columns: 44px minmax(0, 1fr) auto; gap: 16px; align-items: center; padding: 16px 0; border-bottom: 1px solid var(--rule); }
+  .steps .n { font-size: 28px; font-weight: 800; line-height: 1; }
+  .steps .t { font-size: 24px; font-weight: 800; line-height: 1.15; }
+  .steps .d { font-size: 17px; margin-top: 2px; }
+  .after { margin-top: 18px; display: flex; gap: 14px; align-items: center; flex-wrap: wrap; font-size: 17px; }
+  .foot { margin-top: 44px; padding-top: 14px; border-top: 1px solid var(--rule); display: flex; gap: 24px; flex-wrap: wrap; font-size: 16px; font-weight: 600; }
+  @media (max-width: 860px) {
+    .paths { grid-template-columns: 1fr; gap: 36px; }
+    .steps li { grid-template-columns: 36px minmax(0, 1fr); }
+    .steps li .btn { grid-column: 2; justify-self: start; }
   }
 </style>
 </head>
 <body>
 <div class="wrap">
-  <header class="mast"><span class="name">Chart Reader <span>· CHI 2023 · Demo</span></span></header>
+  <header class="mast"><span class="name">Chart Reader <span>CHI 2023 demo</span></span></header>
 
-  <div class="hero">
-    <h1>The NYT yield curve, <strong>four ways</strong></h1>
-    <div class="qrbox">
-      <div class="qr" id="qr"></div>
-      <div class="qr-cap">Quiz</div>
-    </div>
+  <div class="intro">
+    <h1>One chart, read four ways</h1>
+    <p>The New York Times yield curve, seen, read by a screen reader, explored in Chart Reader, and described in Pivot.</p>
   </div>
 
-  <nav class="list" aria-label="Modes">
-    <a class="item" href="visual.html?step=1"><span class="n">01</span>
-      <span><div class="t">Visual</div><div class="d">The original graphic, nine steps</div></span><span class="go">Open →</span></a>
-    <a class="item" href="screen-reader.html?step=2"><span class="n">02</span>
-      <span><div class="t">Screen reader</div><div class="d">What the page exposes to assistive technology</div></span><span class="go">Open →</span></a>
-    <a class="item" href="chart-reader.html?step=4"><span class="n">03</span>
-      <span><div class="t">Chart Reader</div><div class="d">The same steps in the Chart Reader engine</div></span><span class="go">Open →</span></a>
-    <a class="item" href="pivot.html?step=2"><span class="n">04</span>
-      <span><div class="t">Pivot</div><div class="d">Turns between views and puts the line into words</div></span><span class="go">Open →</span></a>
-  </nav>
+  <div class="paths">
+    <section class="path" aria-labelledby="h-aud">
+      <p class="who">Audience</p>
+      <h2 id="h-aud">Join the quiz</h2>
+      <p class="how">Scan the code with your phone and enter a name. After each demo, one question appears on your phone.</p>
+      <div class="qr" id="qr" aria-hidden="true"></div>
+      <div class="url" id="url"></div>
+      <a class="btn main cta" href="play.html">Join the quiz</a>
+    </section>
+
+    <section class="path" aria-labelledby="h-pre">
+      <p class="who">Presenter</p>
+      <h2 id="h-pre">Run the demos in order</h2>
+      <p class="how">Each demo opens on step 4 of the graphic, the step the quiz asks about. Ask the question after demos 2, 3, and 4.</p>
+      <ol class="steps">
+        <li><span class="n">1</span><span><div class="t">Visual</div><div class="d">The original graphic, rebuilt from the NYT code</div></span><a class="btn" href="visual.html?step=1">Open</a></li>
+        <li><span class="n">2</span><span><div class="t">Screen reader</div><div class="d">What the page gives a screen reader</div></span><a class="btn" href="screen-reader.html?step=4">Open</a></li>
+        <li><span class="n">3</span><span><div class="t">Chart Reader</div><div class="d">The same data in the Chart Reader engine</div></span><a class="btn" href="chart-reader.html?step=4">Open</a></li>
+        <li><span class="n">4</span><span><div class="t">Pivot</div><div class="d">Turns between views and describes the line in words and sound</div></span><a class="btn" href="pivot.html?step=4">Open</a></li>
+      </ol>
+      <div class="after"><a class="btn" href="host.html">Open the quiz host screen</a><span>Shows the join code and the answers.</span></div>
+    </section>
+  </div>
 
   <div class="foot">
-    <a href="play.html">Join quiz</a>
-    <a href="host.html">Host</a>
-    <a href="https://www.nytimes.com/interactive/2015/03/19/upshot/3d-yield-curve-economic-growth.html" target="_blank" rel="noopener">NYT original ↗</a>
-    <a href="https://doi.org/10.1145/3544548.3581186" target="_blank" rel="noopener">Paper ↗</a>
-    <a href="https://github.com/microsoft/chart-reader" target="_blank" rel="noopener">Engine ↗</a>
+    <a href="https://www.nytimes.com/interactive/2015/03/19/upshot/3d-yield-curve-economic-growth.html" target="_blank" rel="noopener">NYT original graphic</a>
+    <a href="https://doi.org/10.1145/3544548.3581186" target="_blank" rel="noopener">Chart Reader paper</a>
+    <a href="https://github.com/microsoft/chart-reader" target="_blank" rel="noopener">Chart Reader engine</a>
   </div>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
 <script>
+const joinURL = new URL('play.html', location.href).href;
+document.getElementById('url').textContent = joinURL.replace(/^https?:\/\//, '');
 try {
-  const url = new URL('play.html', location.href).href;
-  const qr = qrcode(0, 'M'); qr.addData(url); qr.make();
+  const qr = qrcode(0, 'M'); qr.addData(joinURL); qr.make();
   document.getElementById('qr').innerHTML = qr.createSvgTag({ cellSize: 6, margin: 0, scalable: true });
 } catch (e) {}
 </script>

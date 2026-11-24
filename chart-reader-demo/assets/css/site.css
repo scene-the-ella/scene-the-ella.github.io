@@ -20,7 +20,7 @@
   --bad: #d0021b;
   --r: 3px;
   --sans: "Libre Franklin", "Franklin Gothic Medium", "Helvetica Neue", Arial, sans-serif;
-  --mono: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+  --mono: var(--sans);   /* one type family across the site; figures stay tabular */
 }
 
 * { box-sizing: border-box; }
@@ -29,6 +29,7 @@ body {
   font-family: var(--sans);
   font-size: 18px;
   line-height: 1.5;
+  font-variant-numeric: tabular-nums;
   -webkit-font-smoothing: antialiased;
 }
 a { color: var(--ink); text-underline-offset: 3px; }
@@ -116,7 +117,7 @@ kbd {
 .keys td { padding: 7px 12px 7px 0; border-top: 1px solid var(--rule); vertical-align: top; }
 .keys td:first-child { white-space: nowrap; width: 1%; }
 
-.mono { font-family: var(--mono); }
+.mono { font-family: var(--mono); font-variant-numeric: tabular-nums; }
 
 /* Screen-off curtain: hides the picture, leaves focus and sound alone */
 .curtain {

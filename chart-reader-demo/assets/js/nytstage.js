@@ -6,7 +6,7 @@
       <div class="g-stepper"><div class="g-steps"></div>
         <div><span class="g-button g-back">Back</span><span class="g-button g-next active">Next</span></div></div>
       <div class="g-hed"></div><div class="g-text"></div></div>
-      <div class="g-loading">Loading the NYT data…</div>`;
+      <div class="g-loading">Loading the NYT data</div>`;
   }
   function fit(box, maxH) {
     const top = box.getBoundingClientRect().top + window.scrollY;

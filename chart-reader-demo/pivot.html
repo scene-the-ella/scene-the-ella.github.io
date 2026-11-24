@@ -7,7 +7,7 @@
 <link rel="icon" href="data:,">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@300;400;600;700;800&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@300;400;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="assets/css/site.css">
 <link rel="stylesheet" href="assets/css/nytcurve.css">
 <style>
@@ -36,6 +36,12 @@
   .feel dt { font-weight: 800; font-size: 15px; margin-top: 10px; }
   .feel dt small { font-weight: 400; font-size: 14px; margin-left: 4px; }
   .feel dd { margin: 2px 0 0; font-size: 16px; line-height: 1.4; }
+  .feel .cl { border-radius: 2px; transition: background .15s; }
+  .feel .cl.first { font-weight: 800; }
+  .feel .cl.now { background: var(--mark); box-shadow: 0 0 0 1px var(--ink); }
+  .nyt svg.hl { position: absolute; left: 0; top: 0; pointer-events: none; z-index: 2; overflow: visible; }
+  .nyt svg.hl polyline { fill: none; stroke: #f5b700; stroke-opacity: .6; stroke-width: 10; stroke-linecap: round; stroke-linejoin: round; }
+  .nyt svg.hl circle { fill: #f5b700; fill-opacity: .6; stroke: #121212; stroke-width: 1.5; }
   @media (max-width: 1100px) { .body { grid-template-columns: 1fr; } }
   .axisnote b { font-weight: 800; }
   #stage:focus-visible { outline: 3px solid var(--blue-5); outline-offset: 4px; }
@@ -52,16 +58,16 @@
   <header id="mast" data-page="pivot" data-screen="yes" data-voice="yes"></header>
   <div id="stage" tabindex="0" role="application" aria-roledescription="yield surface" aria-label="Yield surface. Left and right arrows move along the line. P switches between one maturity over time and one date across maturities. Space plays the line. D describes it in words. Enter reads the value.">
     <div class="now">
-      <h1 id="nowLine" aria-hidden="true">—</h1>
+      <h1 id="nowLine" aria-hidden="true">Pivot</h1>
       <div class="ctl">
         <div class="dirs" role="group" aria-label="Direction">
           <button id="dTime" aria-pressed="true">One maturity over time<small>1990 to 2015</small></button>
           <button id="dCurve" aria-pressed="false">One date across maturities<small>1 month to 30 years</small></button>
         </div>
         <div class="cells" aria-hidden="true">
-          <div><div class="k">Date</div><div class="v" id="rMonth">—</div></div>
-          <div><div class="k">Maturity</div><div class="v" id="rMat">—</div></div>
-          <div><div class="k">Yield</div><div class="v" id="rVal">—</div></div>
+          <div><div class="k">Date</div><div class="v" id="rMonth"></div></div>
+          <div><div class="k">Maturity</div><div class="v" id="rMat"></div></div>
+          <div><div class="k">Yield</div><div class="v" id="rVal"></div></div>
         </div>
         <div class="pad" role="group" aria-label="Controls">
           <button class="btn" id="bPrev" aria-label="Previous">◀</button><button class="btn" id="bNext" aria-label="Next">▶</button>
@@ -74,9 +80,9 @@
       <aside class="feel" aria-hidden="true">
         <h2>Without the picture <span class="k">press <kbd>D</kbd></span></h2>
         <dl>
-          <dt>Pattern <small>a shape you can trace</small></dt><dd><b id="fPattern">—</b> <span id="fTrend"></span></dd>
-          <dt>Relation <small>no mental math</small></dt><dd id="fRel">—</dd>
-          <dt>Outliers <small>called out as you pass</small></dt><dd id="fOut">—</dd>
+          <dt>Pattern <small>the terrain, part by part</small></dt><dd id="fPattern"></dd>
+          <dt>Relation <small>no mental math</small></dt><dd id="fRel"></dd>
+          <dt>Outliers <small>called out as you pass</small></dt><dd id="fOut"></dd>
         </dl>
       </aside>
     </div>
@@ -87,10 +93,11 @@
       <h2>Keys</h2>
       <table class="keys">
         <tr><td><kbd>P</kbd></td><td>Switch direction</td></tr>
-        <tr><td><kbd>←</kbd> <kbd>→</kbd></td><td>Move along the black line</td></tr>
-        <tr><td><kbd>Shift</kbd> + <kbd>←</kbd> <kbd>→</kbd></td><td>Move one year (over time)</td></tr>
+        <tr><td><kbd>Left</kbd> <kbd>Right</kbd></td><td>Move along the black line</td></tr>
+        <tr><td><kbd>Shift</kbd> + <kbd>Left</kbd> <kbd>Right</kbd></td><td>Move one year (over time)</td></tr>
         <tr><td><kbd>Space</kbd></td><td>Play the line, or stop</td></tr>
-        <tr><td><kbd>D</kbd></td><td>Describe the line in words</td></tr>
+        <tr><td><kbd>Esc</kbd></td><td>Stop speech and sound</td></tr>
+        <tr><td><kbd>D</kbd></td><td>Describe the line, each part with its sound</td></tr>
         <tr><td><kbd>Enter</kbd></td><td>Read the exact value</td></tr>
         <tr><td><kbd>Z</kbd></td><td>Stretch the pitch to one date’s range</td></tr>
         <tr><td><kbd>V</kbd></td><td>Screen off or on</td></tr>
@@ -103,7 +110,8 @@
         <tr><td>Left to right</td><td>Stereo, left ear to right ear</td></tr>
         <tr><td>A new year</td><td>Click</td></tr>
         <tr><td>End of the line</td><td>Bonk</td></tr>
-        <tr><td>Shape</td><td>Words: hills, valleys, cliffs, a rope</td></tr>
+        <tr><td>Shape</td><td>Words: a canyon, hills, valleys, cliffs, a rope</td></tr>
+        <tr><td>Part being described</td><td>Its tones play with the words</td></tr>
       </table>
       <div class="jump"><label for="jYear">Go to</label><select id="jMonth" aria-label="Month"></select><select id="jYear" aria-label="Year"></select><select id="jMat" aria-label="Maturity"></select></div>
     </div>
@@ -176,11 +184,13 @@ const FIXED = v => v / 9.5;
 const rangeOf = arr => { const a = arr.filter(v => !isNaN(v)); return [Math.min(...a), Math.max(...a)]; };
 const fit = (lo, hi) => v => hi - lo < 0.05 ? 0.5 : 0.12 + 0.76 * (v - lo) / (hi - lo);
 const curveScale = () => { if (!stretch) return FIXED; const [lo, hi] = rangeOf(D.values[m]); return fit(lo, hi); };
-function stopPlay() { if (playing) { playing.stop(); playing = null; document.body.classList.remove('sounding'); } }
-function playSeq(vals, { scale, step = 0.16, dur = 0.13, ticks = null, onStep, onEnd }) {
-  stopPlay();
+function stopSound() { if (playing) { playing.stop(); playing = null; document.body.classList.remove('sounding'); } }
+// Any user action cancels a running description, its sound and its highlight
+function stopPlay() { descRun++; stopSound(); endDescription(false); }
+function playSeq(vals, { scale, step = 0.16, dur = 0.13, ticks = null, pans = null, gain = 0.22, onStep, onEnd }) {
+  stopSound();
   const c = audio(), t0 = c.currentTime + 0.08, n = vals.length;
-  vals.forEach((v, i) => { const pan = n > 1 ? -0.8 + 1.6 * i / (n - 1) : 0; tone(scale(v), t0 + i * step, dur, pan); if (ticks && ticks[i]) click(t0 + i * step, pan); });
+  vals.forEach((v, i) => { const pan = pans ? pans[i] : n > 1 ? -0.8 + 1.6 * i / (n - 1) : 0; tone(scale(v), t0 + i * step, dur, pan, gain); if (ticks && ticks[i]) click(t0 + i * step, pan); });
   document.body.classList.add('sounding');
   let cancelled = false, last = -1;
   const timer = setInterval(() => {
@@ -205,7 +215,7 @@ function show(animate = true) {
 function draw() {
   $('rMonth').textContent = fmtMonth(m);
   $('rMat').textContent = MATS[k];
-  $('rVal').textContent = has(m, k) ? val(m, k).toFixed(2) + '%' : '—';
+  $('rVal').textContent = has(m, k) ? val(m, k).toFixed(2) + '%' : 'No data';
   $('nowLine').innerHTML = dir === 'time'
     ? `Listening to the <em>${MATS[k]}</em> yield over time, 1990 to 2015`
     : `Listening to every maturity on <em>${fmtMonth(m)}</em>`;
@@ -258,48 +268,62 @@ function timeModel(kk) {
   jumps.forEach(o => { marks[ids[o.i]] = (marks[ids[o.i]] ? marks[ids[o.i]] + ' ' : '') + (o.x < 0 ? 'Sudden drop.' : 'Sudden jump.'); });
   return TCACHE[kk] = { ids, v, piv, jumps, marks };
 }
+// A description is a list of clauses. Each clause can point at part of the line:
+// seg = [from, to] along the line, pt = one point, pair = two maturities on the current date.
+// Along the line means month indices over time, maturity indices across the curve.
 function describeTime() {
   const { ids, v, piv, jumps } = timeModel(k);
+  const n = v.length, iEnd = ids[n - 1], SH = shortRef();
   const peaks = piv.filter((p, j) => j > 0 && j < piv.length - 1 && v[p] > v[piv[j - 1]]);
-  // flat ending: the last stretch barely moves
-  const last = piv[piv.length - 2];
-  let tail = v.slice(last);
   // the floor: the final stretch that stays within half a point of where the line ends
-  let fs = v.length - 1; while (fs > 0 && Math.abs(v[fs - 1] - v[v.length - 1]) < 0.5) fs--;
-  if (v.length - fs >= 24) tail = v.slice(fs);
-  const flatEnd = v.length - fs >= 24;
-  const peakVals = peaks.map(p => v[p]), falling = peakVals.every((x, i) => i === 0 || x < peakVals[i - 1]);
-  const hills = peaks.length === 0 ? 'one long slope' : peaks.length === 1 ? 'a single hill' : `${peaks.length} hills${falling ? ', each lower than the one before' : ''}`;
+  let fs = n - 1; while (fs > 0 && Math.abs(v[fs - 1] - v[n - 1]) < 0.5) fs--;
+  const flatEnd = n - fs >= 24, endV = v[n - 1];
+  const floorEnd = flatEnd && endV < 0.5;
+  const shEnd = has(iEnd, SH) ? val(iEnd, SH) : NaN;
+  const onWall = !floorEnd && k !== SH && shEnd < 0.5 && endV - shEnd >= 1;
+  const peakVals = peaks.map(p => v[p]), falling = peakVals.length > 1 && peakVals.every((x, i) => i === 0 || x < peakVals[i - 1]);
   const startsTop = peakVals.length && v[0] >= Math.max(...peakVals);
-  const pattern = `${startsTop ? 'Starts at the top, then ' : 'Like '}${hills}${flatEnd ? `, ending on a flat floor near ${lvl(tail[tail.length - 1])}` : ''}.`;
-  const parts = [`Starts at ${f1(v[0])} percent in ${yearOf(ids[0])}`];
+  // the terrain, in one sentence: high ground, hills, and where the line ends up
+  const first = startsTop ? 'Starts on high ground' : `Starts at ${lvl(v[0])}`;
+  const hills = peaks.length === 0 ? '' : peaks.length === 1 ? 'crosses a single hill' : `crosses ${peaks.length} hills${falling ? ', each lower than the one before' : ''}`;
+  const last = floorEnd ? `settles on the canyon floor near zero, from ${yearOf(ids[fs])} to ${yearOf(iEnd)}`
+    : onWall ? `ends on the canyon wall at ${f1(endV)} percent, above a floor near zero`
+    : flatEnd ? `ends on flat ground near ${lvl(endV)}`
+    : `ends at ${lvl(endV)} in ${yearOf(iEnd)}`;
+  const pattern = { t: `${first}, ${hills ? hills + ', then ' : 'then '}${last}.`, seg: [ids[0], iEnd] };
+  // part by part, each clause with the stretch of line it talks about
+  const trend = [{ t: `From ${f1(v[0])} percent in ${yearOf(ids[0])}`, pt: ids[0] }];
   for (let j = 1; j < piv.length; j++) {
-    const a = piv[j - 1], b = piv[j], dv = v[b] - v[a];
-    if (j === piv.length - 1 && flatEnd && Math.abs(dv) < 0.5) { parts.push(`then stays flat near ${lvl(v[b])} until ${yearOf(ids[b])}`); break; }
+    const a = piv[j - 1], b = piv[j], dv = v[b] - v[a], it = j === 1 ? 'it ' : '';
+    if (j === piv.length - 1 && flatEnd && Math.abs(dv) < 0.5) { trend.push({ t: `${it}stays flat near ${lvl(v[b])} until ${yearOf(ids[b])}`, seg: [ids[a], ids[b]] }); break; }
     // most of the move (90 percent) happens by t90; judge steepness on that stretch
     let t90 = b; for (let i = a + 1; i <= b; i++) { if ((dv < 0 && v[i] <= v[a] + 0.9 * dv) || (dv > 0 && v[i] >= v[a] + 0.9 * dv)) { t90 = i; break; } }
     const rate = 0.9 * Math.abs(dv) / (Math.max(1, ids[t90] - ids[a]) / 12);
     const when = rate < 2.5 ? '' : ` in ${yearOf(ids[t90])}`;
     const verb = dv > 0 ? (rate >= 2.5 ? 'climbs steeply' + when : 'climbs') : (rate >= 2.5 ? 'drops like a cliff' + when : rate >= 1.5 ? 'falls' : 'slides down');
-    const where = j === piv.length - 1 ? (flatEnd ? `to ${v[b] < 0.05 ? 'near zero' : lvl(v[b])}` : `to ${lvl(v[b])} by ${yearOf(ids[b])}`) : dv > 0 ? `to a peak of ${f1(v[b])} percent in ${yearOf(ids[b])}` : `into a valley of ${f1(v[b])} percent${rate >= 2.5 ? '' : ` in ${yearOf(ids[b])}`}`;
-    parts.push(`${verb} ${where}`);
-    if (j === piv.length - 1 && flatEnd) { parts.push(`then stays flat near ${lvl(tail[tail.length - 1])} until ${yearOf(ids[ids.length - 1])}`); }
+    const lastSeg = j === piv.length - 1;
+    const where = lastSeg ? (flatEnd ? `to ${v[b] < 0.05 ? 'near zero' : lvl(v[b])}` : `to ${lvl(v[b])} by ${yearOf(ids[b])}`) : dv > 0 ? `to a peak of ${f1(v[b])} percent in ${yearOf(ids[b])}` : `into a valley of ${f1(v[b])} percent${rate >= 2.5 ? '' : ` in ${yearOf(ids[b])}`}`;
+    if (lastSeg && flatEnd) {
+      // split the last move: the drop to the floor, then the floor itself
+      trend.push({ t: `${it}${verb} ${where}`, seg: [ids[a], ids[fs]] });
+      trend.push({ t: `then stays flat near ${lvl(endV)} until ${yearOf(iEnd)}`, seg: [ids[fs], iEnd] });
+    } else trend.push({ t: `${it}${verb} ${where}`, seg: [ids[a], ids[b]] });
   }
-  const trend = parts.join(', ') + '.';
   const iMax = v.indexOf(Math.max(...v)), iMin = v.indexOf(Math.min(...v));
-  let out = `Highest ${f2(v[iMax])} percent in ${fmtMonth(ids[iMax])}. Lowest ${f2(v[iMin])} percent in ${fmtMonth(ids[iMin])}.`;
-  if (jumps.length) out += ' ' + jumps.map(o => `${o.x < 0 ? 'A sudden drop' : 'A sudden jump'} of ${f1(Math.abs(o.x))} points in ${fmtMonth(ids[o.i])}.`).join(' ');
+  const out = [{ t: `Highest ${f2(v[iMax])} percent in ${fmtMonth(ids[iMax])}.`, pt: ids[iMax] }, { t: `Lowest ${f2(v[iMin])} percent in ${fmtMonth(ids[iMin])}.`, pt: ids[iMin] }];
+  jumps.forEach(o => out.push({ t: `${o.x < 0 ? 'A sudden drop' : 'A sudden jump'} of ${f1(Math.abs(o.x))} points in ${fmtMonth(ids[o.i])}.`, seg: [ids[o.i - 1], ids[o.i]] }));
   // relation to the other end of the curve, at the current date
-  const SH = shortRef(), ref = k <= 2 ? 8 : SH, here = has(m, k) && has(m, ref) ? val(m, k) - val(m, ref) : NaN;
-  let rel = isNaN(here) ? '' : `In ${fmtMonth(m)} it sits ${f2(Math.abs(here))} points ${here >= 0 ? 'above' : 'below'} the ${MATS[ref]} yield. `;
+  const ref = k <= 2 ? 8 : SH, here = has(m, k) && has(m, ref) ? val(m, k) - val(m, ref) : NaN;
+  const rel = [];
+  if (!isNaN(here)) rel.push({ t: `In ${fmtMonth(m)} it sits ${f2(Math.abs(here))} points ${here >= 0 ? 'above' : 'below'} the ${MATS[ref]} yield.`, pair: [k, ref] });
   const inv = [];
   for (let i = 0; i < D.months.length; i++) if (has(i, SH) && has(i, 8) && val(i, SH) > val(i, 8)) inv.push(i);
   const spans = []; inv.forEach(i => { const s0 = spans[spans.length - 1]; if (s0 && i - s0[1] <= 2) s0[1] = i; else spans.push([i, i]); });
   const times = spans.length === 1 ? 'once' : spans.length === 2 ? 'twice' : `${spans.length} times`;
   const list = spans.map(([a, b]) => a === b ? fmtMonth(a) : `${fmtMonth(a)} to ${fmtMonth(b)}`).join(', and ');
-  if (k === SH) rel += spans.length ? `It rose above the 10-year ${times}: ${list}.` : 'It stayed below the 10-year throughout.';
-  else if (k === 8) rel += spans.length ? `The ${MATS[SH]} rose above it ${times}: ${list}.` : `The ${MATS[SH]} stayed below it throughout.`;
-  return { pattern, trend, out, rel };
+  if (k === SH) rel.push({ t: spans.length ? `It rose above the 10-year ${times}: ${list}.` : 'It stayed below the 10-year throughout.' });
+  else if (k === 8) rel.push({ t: spans.length ? `The ${MATS[SH]} rose above it ${times}: ${list}.` : `The ${MATS[SH]} stayed below it throughout.` });
+  return { pattern, trend, rel, out };
 }
 function describeCurve() {
   const es = MATS.map((_, e) => e).filter(e => has(m, e)), v = es.map(e => val(m, e));
@@ -307,48 +331,143 @@ function describeCurve() {
   const vS = v[0], vL = v[n - 1], R = hi - lo, S = vL - vS;
   const piv = R < 0.3 ? [0, n - 1] : zigzag(v, Math.max(0.12, R * 0.25));
   const turns = piv.slice(1, -1);
-  let pattern;
-  if (R < 0.3) pattern = `Almost level, like a tabletop at about ${f1((hi + lo) / 2)} percent.`;
-  else if (turns.length === 0) pattern = S > 0 ? (S >= 2 ? 'A steep ramp, rising from short to long.' : 'A gentle ramp, rising from short to long.') : 'A slide, going down from short to long.';
-  else if (R < 0.6) pattern = `Nearly flat, all within ${f1(R)} points: ` + turns.map(t => (v[t] > v[piv[piv.indexOf(t) - 1]] ? `a slight bump at ${MATS[es[t]]}` : `a slight dip at ${MATS[es[t]]}`)).join(', then ') + '.';
-  else if (turns.length === 1) pattern = v[turns[0]] < vS ? 'Sags in the middle, like a rope held at both ends.' : 'Bulges in the middle, like a small hill.';
-  else pattern = 'A wave: ' + turns.map(t => (v[t] > v[piv[piv.indexOf(t) - 1]] ? `a bump at ${MATS[es[t]]}` : `a dip at ${MATS[es[t]]}`)).join(', then ') + '.';
-  let trend;
+  let p;
+  if (R < 0.3) p = `Almost level, like a tabletop at about ${f1((hi + lo) / 2)} percent.`;
+  else if (vS < 0.5 && S >= 1.5 && turns.length <= 1) p = `A cross-section of the canyon: the floor near zero at the short end, then the wall rising to ${f1(vL)} percent at ${MATS[es[n - 1]]}.`;
+  else if (turns.length === 0) p = S > 0 ? (S >= 2 ? 'A steep ramp, rising from short to long.' : 'A gentle ramp, rising from short to long.') : 'A slide, going down from short to long.';
+  else if (R < 0.6) p = `Nearly flat, all within ${f1(R)} points: ` + turns.map(t => (v[t] > v[piv[piv.indexOf(t) - 1]] ? `a slight bump at ${MATS[es[t]]}` : `a slight dip at ${MATS[es[t]]}`)).join(', then ') + '.';
+  else if (turns.length === 1) p = v[turns[0]] < vS ? 'Sags in the middle, like a rope held at both ends.' : 'Bulges in the middle, like a small hill.';
+  else p = 'A wave: ' + turns.map(t => (v[t] > v[piv[piv.indexOf(t) - 1]] ? `a bump at ${MATS[es[t]]}` : `a dip at ${MATS[es[t]]}`)).join(', then ') + '.';
+  const pattern = { t: p, seg: [es[0], es[n - 1]] };
+  const trend = [];
   if (turns.length) {
-    const seg = [`From ${MATS[es[0]]} at ${f2(vS)} percent`];
-    piv.slice(1).forEach((t, j) => { const up = v[t] > v[piv[j]]; seg.push(`${j === piv.length - 2 ? 'then ' : ''}${up ? 'rises' : 'dips'} to ${f2(v[t])} at ${MATS[es[t]]}`); });
-    trend = seg.join(', ') + '.';
+    trend.push({ t: `From ${MATS[es[0]]} at ${f2(vS)} percent`, pt: es[0] });
+    piv.slice(1).forEach((t, j) => { const up = v[t] > v[piv[j]]; trend.push({ t: `${j === piv.length - 2 ? 'then ' : ''}${up ? 'rises' : 'dips'} to ${f2(v[t])} at ${MATS[es[t]]}`, seg: [es[piv[j]], es[t]] }); });
   } else {
     let best = 1; for (let i = 1; i < n; i++) if (Math.abs(v[i] - v[i - 1]) > Math.abs(v[best] - v[best - 1])) best = i;
-    trend = `From ${MATS[es[0]]} at ${f2(vS)} percent to ${MATS[es[n - 1]]} at ${f2(vL)} percent. The ${S >= 0 ? 'climb' : 'drop'} is steepest between ${MATS[es[best - 1]]} and ${MATS[es[best]]}.`;
+    trend.push({ t: `From ${MATS[es[0]]} at ${f2(vS)} percent to ${MATS[es[n - 1]]} at ${f2(vL)} percent.`, seg: [es[0], es[n - 1]], full: true });
+    trend.push({ t: `The ${S >= 0 ? 'climb' : 'drop'} is steepest between ${MATS[es[best - 1]]} and ${MATS[es[best]]}.`, seg: [es[best - 1], es[best]], full: true });
   }
-  const out = `Lowest: ${MATS[es[iLo]]}, ${f2(lo)} percent. Highest: ${MATS[es[iHi]]}, ${f2(hi)} percent.`;
-  const sh = shortRef(), lg = 8;
-  let rel = '';
+  const out = [{ t: `Lowest: ${MATS[es[iLo]]}, ${f2(lo)} percent.`, pt: es[iLo] }, { t: `Highest: ${MATS[es[iHi]]}, ${f2(hi)} percent.`, pt: es[iHi] }];
+  const sh = shortRef(), lg = 8, rel = [];
   if (has(m, sh) && has(m, lg)) {
     const dlt = val(m, sh) - val(m, lg);
-    rel = Math.abs(dlt) < 0.05 ? `The ${MATS[sh]} and the 10-year are about the same, ${f2(val(m, sh))} percent.`
-      : dlt > 0 ? `The ${MATS[sh]} (${f2(val(m, sh))}) is ${f2(dlt)} points above the 10-year (${f2(val(m, lg))}). Short-term borrowing costs more than long-term: the curve is inverted.`
-      : `The 10-year (${f2(val(m, lg))}) is ${f2(-dlt)} points above the ${MATS[sh]} (${f2(val(m, sh))}), the usual order.`;
+    if (Math.abs(dlt) < 0.05) rel.push({ t: `The ${MATS[sh]} and the 10-year are about the same, ${f2(val(m, sh))} percent.`, pair: [sh, lg] });
+    else if (dlt > 0) {
+      rel.push({ t: `The ${MATS[sh]} (${f2(val(m, sh))}) is ${f2(dlt)} points above the 10-year (${f2(val(m, lg))}).`, pair: [sh, lg] });
+      rel.push({ t: 'Short-term borrowing costs more than long-term: the curve is inverted.' });
+    } else rel.push({ t: `The 10-year (${f2(val(m, lg))}) is ${f2(-dlt)} points above the ${MATS[sh]} (${f2(val(m, sh))}), the usual order.`, pair: [sh, lg] });
   }
-  return { pattern, trend, out, rel };
+  return { pattern, trend, rel, out };
 }
 // the shortest maturity this country reports (3-month for the U.S. and Japan, 6-month for Germany)
 function shortRef() { const c = [1, 2, 3].find(e => D.values.some((r, i) => has(i, e))); return c === undefined ? 1 : c; }
 const describe = () => dir === 'time' ? describeTime() : describeCurve();
+// clauses in reading order, numbered for the card
+function clauseList(d) {
+  const all = [d.pattern, ...d.trend, ...d.rel, ...d.out];
+  all.forEach((c, i) => { c.i = i; });
+  return all;
+}
+const esc = s => String(s).replace(/[&<>]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]));
+const span = c => `<span class="cl${c === lastDesc.pattern ? ' first' : ''}" data-c="${c.i}">${esc(c.t)}</span>`;
+let lastDesc = null;
 function fillFeel() {
-  const d = describe();
-  $('fPattern').textContent = d.pattern; $('fTrend').textContent = d.trend; $('fOut').textContent = d.out; $('fRel').textContent = d.rel;
+  const d = describe(); clauseList(d); lastDesc = d;
+  const trendJoined = d.trend.map(c => span(c)).join(d.trend.length && /\.$/.test(d.trend[0].t) ? ' ' : ', ');
+  $('fPattern').innerHTML = span(d.pattern) + ' ' + trendJoined + (d.trend.length && !/\.$/.test(d.trend[d.trend.length - 1].t) ? '.' : '');
+  $('fRel').innerHTML = d.rel.map(span).join(' ');
+  $('fOut').innerHTML = d.out.map(span).join(' ');
   return d;
 }
-function speakDescription() {
+function lightClause(i) { document.querySelectorAll('.feel .cl').forEach(s => s.classList.toggle('now', +s.dataset.c === i)); }
+
+// ---------- highlighter on the surface: the part of the line being described ----------
+let hlPts = null, hlSvg = null, hlRAF = 0;
+function hlLayer() {
+  if (!g) return null;
+  if (!hlSvg || !g.el.contains(hlSvg)) { hlSvg = document.createElementNS('http://www.w3.org/2000/svg', 'svg'); hlSvg.setAttribute('class', 'hl'); g.el.appendChild(hlSvg); }
+  return hlSvg;
+}
+function project(mi, e) { const r = g.rows[D.rowOf[mi]]; return g.project(new THREE.Vector3(g.S(r.date), g.T(val(mi, e)), g.X(e))); }
+function drawHL() {
+  const svg = hlLayer(); if (!svg) return;
+  const w = g.el.clientWidth, h = g.el.clientHeight;
+  svg.setAttribute('width', w); svg.setAttribute('height', h); svg.setAttribute('viewBox', `0 0 ${w} ${h}`);
+  if (!hlPts) { svg.innerHTML = ''; return; }
+  const p = hlPts.filter(([mi, e]) => has(mi, e)).map(([mi, e]) => project(mi, e));
+  svg.innerHTML = p.length > 1 ? `<polyline points="${p.map(q => q.x.toFixed(1) + ',' + q.y.toFixed(1)).join(' ')}"/>`
+    : p.length ? `<circle cx="${p[0].x.toFixed(1)}" cy="${p[0].y.toFixed(1)}" r="11"/>` : '';
+}
+// keep it on the line while the camera turns
+function setHL(pts) { hlPts = pts; cancelAnimationFrame(hlRAF); const loop = () => { drawHL(); if (hlPts) hlRAF = requestAnimationFrame(loop); }; loop(); }
+// points of the current line between two positions along it
+function linePts(a, b) {
+  const out = [];
+  if (dir === 'time') { for (let i = Math.min(a, b); i <= Math.max(a, b); i++) if (has(i, k)) out.push([i, k]); }
+  else { for (let e = Math.min(a, b); e <= Math.max(a, b); e++) if (has(m, e)) out.push([m, e]); }
+  return out;
+}
+// the play head: marker and readouts follow the sound without moving the reader's place
+function head(mi, e) {
+  if (g) g.setMarker(D.rowOf[mi], e);
+  $('rMonth').textContent = fmtMonth(mi); $('rMat').textContent = MATS[e];
+  $('rVal').textContent = has(mi, e) ? val(mi, e).toFixed(2) + '%' : 'No data';
+}
+
+// ---------- speaking a description, each clause with its own sound ----------
+let descRun = 0, describing = false;
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+const panOf = (mi, e) => dir === 'time' ? -0.8 + 1.6 * mi / (D.months.length - 1) : -0.8 + 1.6 * e / (MATS.length - 1);
+function soundFor(c, secs) {
+  const scale = dir === 'time' ? FIXED : curveScale();
+  let pts = null;
+  if (c.seg) pts = linePts(c.seg[0], c.seg[1]);
+  else if (c.pt !== undefined) pts = dir === 'time' ? [[c.pt, k]] : [[m, c.pt]];
+  else if (c.pair) pts = c.pair.filter(e => has(m, e)).map(e => [m, e]);
+  if (!pts || !pts.length) return Promise.resolve();
+  // spread the tones over about the time the words take; thin out long stretches
+  let step = Math.min(c.pair || c.pt !== undefined ? 0.45 : 0.35, secs / pts.length), every = 1;
+  if (step < 0.03) { every = Math.ceil(0.03 / step); step = secs / Math.ceil(pts.length / every); }
+  const play = pts.filter((_, i) => i % every === 0 || i === pts.length - 1);
+  setHL(c.pair ? null : pts);
+  if (c.pair) setHL([play[0]]);
+  const years = play.map((q, i) => dir === 'time' && i > 0 && D.months[q[0]].slice(0, 4) !== D.months[play[i - 1][0]].slice(0, 4) && step >= 0.025);
+  return new Promise(resolve => {
+    playSeq(play.map(([mi, e]) => val(mi, e)), {
+      scale, step, dur: Math.min(0.3, Math.max(0.06, step * 1.4)), gain: 0.17, ticks: years, pans: play.map(([mi, e]) => panOf(mi, e)),
+      onStep: i => { const [mi, e] = play[i]; head(mi, e); if (c.pair) setHL([play[i]]); },
+      onEnd: () => resolve(),
+    });
+  });
+}
+async function runClauses(list) {
   stopPlay();
+  const run = descRun;
+  describing = true;
+  for (const c of list) {
+    if (run !== descRun) return;
+    if (c.i !== undefined) lightClause(c.i);
+    $('said').textContent = c.t;
+    const secs = Math.max(0.9, c.t.split(/\s+/).length * 0.36);
+    const words = Voice.enabled ? Promise.race([Voice.speak(c.t), sleep(secs * 2500 + 2000)]) : sleep(secs * 1000);
+    await Promise.all([words, soundFor(c, secs)]);
+  }
+  if (run === descRun) endDescription(true);
+}
+function endDescription(finished) {
+  if (!describing) return;
+  describing = false;
+  setHL(null); lightClause(-1);
+  if (D) draw();
+}
+function speakDescription() {
   const d = fillFeel();
-  say(`${lineLabel()}. ${d.pattern} ${d.trend} ${d.rel} ${d.out}`);
+  runClauses([{ t: `${lineLabel()}.` }, ...clauseList(d)]);
 }
 
 const lineLabel = () => dir === 'time' ? `The ${MATS[k]} yield over time` : `Every maturity on ${fmtMonth(m)}`;
-function value() { say(has(m, k) ? `${MATS[k]}, ${fmtMonth(m)}: ${pct(val(m, k))}.` : `${MATS[k]}, ${fmtMonth(m)}: no data.`); }
+function value() { if (describing) stopPlay(); say(has(m, k) ? `${MATS[k]}, ${fmtMonth(m)}: ${pct(val(m, k))}.` : `${MATS[k]}, ${fmtMonth(m)}: no data.`); }
 function move(delta) {
   stopPlay();
   if (dir === 'time') {
@@ -373,10 +492,11 @@ function turn() {
   dir = dir === 'time' ? 'curve' : 'time';
   if (dir === 'curve' && !has(m, k)) { const e = MATS.findIndex((_, e) => has(m, e)); if (e >= 0) k = e; }
   show(true);
-  say(`${lineLabel()}. ${describe().pattern}`);
+  const d = fillFeel();
+  runClauses([{ t: `${lineLabel()}.` }, d.pattern]);
 }
 async function play() {
-  if (playing) { stopPlay(); return; }
+  if (playing || describing) { stopPlay(); Voice.stop(); return; }
   if (dir === 'curve') {
     const idx = MATS.map((_, e) => e).filter(e => has(m, e)), vals = idx.map(e => val(m, e));
     if (stretch) { const [lo, hi] = rangeOf(vals); await Voice.speak(`${fmtMonth(m)}. ${lo.toFixed(2)} to ${hi.toFixed(2)} percent.`); }
@@ -404,7 +524,7 @@ stage.addEventListener('keydown', e => {
   else if (key === ' ') { e.preventDefault(); play(); }
   else if (key === 'Enter') { e.preventDefault(); value(); }
   else if (key === 'd' || key === 'D') { e.preventDefault(); speakDescription(); }
-  else if (key === 'z' || key === 'Z') { e.preventDefault(); stretch = !stretch; say(stretch ? 'Pitch stretched to this date’s range.' : 'Pitch on the fixed scale.'); }
+  else if (key === 'z' || key === 'Z') { e.preventDefault(); stopPlay(); stretch = !stretch; say(stretch ? 'Pitch stretched to this date’s range.' : 'Pitch on the fixed scale.'); }
   else if (key === 'Home' || key === 'End') { e.preventDefault(); edge(key === 'End'); }
   else if (key === 'Escape') { stopPlay(); Voice.stop(); }
 });
