@@ -12,15 +12,9 @@
 <style>
   .intro h1 { font-size: clamp(36px, 5vw, 60px); max-width: 20ch; margin: 0 0 8px; }
   .intro p { font-size: clamp(18px, 1.8vw, 21px); margin: 0 0 30px; max-width: 60ch; }
-  .paths { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: 48px; align-items: start; }
-  .path { border-top: 3px solid var(--ink); padding-top: 14px; }
-  .who { font-weight: 700; font-size: 16px; letter-spacing: .02em; text-transform: uppercase; margin: 0 0 4px; }
+  .path { border-top: 3px solid var(--ink); padding-top: 14px; max-width: 900px; }
   .path h2 { font-size: clamp(28px, 3vw, 36px); margin: 0 0 8px; }
   .path .how { font-size: 18px; margin: 0 0 18px; }
-  .qr { width: min(240px, 70%); }
-  .qr svg { width: 100%; height: auto; display: block; }
-  .url { font-weight: 700; font-size: 16px; word-break: break-all; margin: 10px 0 18px; }
-  .cta { font-size: 20px; padding: 14px 22px; }
   .steps { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--ink); }
   .steps li { display: grid; grid-template-columns: 44px minmax(0, 1fr) auto; gap: 16px; align-items: center; padding: 16px 0; border-bottom: 1px solid var(--rule); }
   .steps .n { font-size: 28px; font-weight: 800; line-height: 1; }
@@ -29,7 +23,6 @@
   .after { margin-top: 18px; display: flex; gap: 14px; align-items: center; flex-wrap: wrap; font-size: 17px; }
   .foot { margin-top: 44px; padding-top: 14px; border-top: 1px solid var(--rule); display: flex; gap: 24px; flex-wrap: wrap; font-size: 16px; font-weight: 600; }
   @media (max-width: 860px) {
-    .paths { grid-template-columns: 1fr; gap: 36px; }
     .steps li { grid-template-columns: 36px minmax(0, 1fr); }
     .steps li .btn { grid-column: 2; justify-self: start; }
   }
@@ -44,30 +37,16 @@
     <p>The New York Times yield curve, seen, read by a screen reader, explored in Chart Reader, and described in Pivot.</p>
   </div>
 
-  <div class="paths">
-    <section class="path" aria-labelledby="h-aud">
-      <p class="who">Audience</p>
-      <h2 id="h-aud">Join the quiz</h2>
-      <p class="how">Scan the code with your phone and enter a name. After each demo, one question appears on your phone.</p>
-      <div class="qr" id="qr" aria-hidden="true"></div>
-      <div class="url" id="url"></div>
-      <a class="btn main cta" href="play.html">Join the quiz</a>
-    </section>
-
-    <section class="path" aria-labelledby="h-pre">
-      <p class="who">Presenter</p>
-      <h2 id="h-pre">Run the demos in order</h2>
-      <p class="how">Each demo opens on step 4 of the graphic, the step the quiz asks about. Ask the question after demos 2, 3, and 4.</p>
-      <ol class="steps">
-        <li><span class="n">1</span><span><div class="t">Visual</div><div class="d">The original graphic, rebuilt from the NYT code</div></span><a class="btn" href="visual.html?step=1">Open</a></li>
-        <li><span class="n">2</span><span><div class="t">Screen reader</div><div class="d">What the page gives a screen reader</div></span><a class="btn" href="screen-reader.html?step=4">Open</a></li>
-        <li><span class="n">3</span><span><div class="t">Chart Reader</div><div class="d">The same data in the Chart Reader engine</div></span><a class="btn" href="chart-reader.html?step=4">Open</a></li>
-        <li><span class="n">4</span><span><div class="t">Pivot</div><div class="d">Turns between views and describes the line in words and sound</div></span><a class="btn" href="pivot.html?step=4">Open</a></li>
-      </ol>
-      <div class="after"><a class="btn" href="host.html">Open the quiz host screen</a><span>Shows the join code and the answers.</span></div>
-    </section>
-  </div>
-
+  <section class="path" aria-labelledby="h-pre">
+    <h2 id="h-pre">Four demos, in order</h2>
+    <p class="how">Demos 2 to 4 open on step 4 of the graphic. In each one, look for one thing: in January 2007, which yield was higher, the 3-month or the 10-year?</p>
+    <ol class="steps">
+      <li><span class="n">1</span><span><div class="t">Visual</div><div class="d">The original graphic, rebuilt from the NYT code. Use Back and Next to step through it.</div></span><a class="btn" href="visual.html?step=1">Open</a></li>
+      <li><span class="n">2</span><span><div class="t">Screen reader</div><div class="d">What a screen reader reads from the original page. Press Read. Only labels and the caption, no values.</div></span><a class="btn" href="screen-reader.html?step=4">Open</a></li>
+      <li><span class="n">3</span><span><div class="t">Chart Reader</div><div class="d">The same data in the Chart Reader engine. Press Start, then X, Enter, and the arrow keys.</div></span><a class="btn" href="chart-reader.html?step=4">Open</a></li>
+      <li><span class="n">4</span><span><div class="t">Pivot</div><div class="d">Our extension. D describes the line in picture words, each part with its sound. P turns the view.</div></span><a class="btn" href="pivot.html?step=4">Open</a></li>
+    </ol>
+  </section>
   <div class="foot">
     <a href="https://www.nytimes.com/interactive/2015/03/19/upshot/3d-yield-curve-economic-growth.html" target="_blank" rel="noopener">NYT original graphic</a>
     <a href="https://doi.org/10.1145/3544548.3581186" target="_blank" rel="noopener">Chart Reader paper</a>
@@ -75,14 +54,6 @@
   </div>
 </div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
-<script>
-const joinURL = new URL('play.html', location.href).href;
-document.getElementById('url').textContent = joinURL.replace(/^https?:\/\//, '');
-try {
-  const qr = qrcode(0, 'M'); qr.addData(joinURL); qr.make();
-  document.getElementById('qr').innerHTML = qr.createSvgTag({ cellSize: 6, margin: 0, scalable: true });
-} catch (e) {}
-</script>
+
 </body>
 </html>
