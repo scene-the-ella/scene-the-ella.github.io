@@ -12,110 +12,129 @@
 <link rel="stylesheet" href="assets/css/nytcurve.css">
 <style>
   .wrap.full { max-width: none; padding-left: 24px; padding-right: 24px; }
-  .wrap.full .mast2, .bar, .lower { max-width: 1280px; margin-left: auto; margin-right: auto; }
-  .now { max-width: 1280px; margin: 0 auto 8px; }
-  .now h1 { font-size: clamp(24px, 3vw, 36px); font-weight: 800; line-height: 1.15; margin: 0 0 12px; }
+  .wrap.full .mast2, .now, .body, .more { max-width: 1280px; margin-left: auto; margin-right: auto; }
+  .now h1 { font-size: clamp(24px, 2.5vw, 32px); font-weight: 800; line-height: 1.15; margin: 0 0 4px; max-width: none; }
   .now h1 em { font-style: normal; color: var(--blue-7); }
-  .ctl { display: flex; gap: 18px; align-items: center; flex-wrap: wrap; padding: 10px 0; border-top: 1px solid var(--ink); border-bottom: 1px solid var(--ink); }
+  .try { font-size: 17px; margin: 0 0 10px; }
+  .ctl { display: flex; gap: 14px 28px; align-items: center; flex-wrap: wrap; padding: 10px 0; border-top: 1px solid var(--ink); border-bottom: 1px solid var(--ink); }
   .dirs { display: inline-flex; border: 1px solid var(--ink); border-radius: var(--r); overflow: hidden; }
   .dirs button { font: inherit; font-size: 16px; font-weight: 700; padding: 9px 14px; background: #fff; color: var(--ink); border: 0; cursor: pointer; text-align: left; line-height: 1.2; }
   .dirs button + button { border-left: 1px solid var(--ink); }
   .dirs button small { display: block; font-size: 14px; font-weight: 400; }
   .dirs button[aria-pressed="true"] { background: var(--ink); color: #fff; }
-  .cells { display: flex; gap: 22px; }
-  .cells .k { font-size: 14px; font-weight: 700; }
-  .cells .v { font-size: 24px; font-weight: 800; line-height: 1.1; white-space: nowrap; }
-  .pad { display: flex; gap: 6px; margin-left: auto; }
-  .pad .btn { padding: 8px 12px; font-size: 15px; }
-  .axisnote { margin: 6px 0 0; font-size: 17px; }
-  .body { max-width: 1280px; margin: 0 auto; display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 24px; align-items: start; }
-  .feel { border-top: 1px solid var(--ink); padding-top: 8px; }
-  .feel h2 { font-size: 18px; margin: 0 0 6px; display: flex; justify-content: space-between; align-items: baseline; }
-  .feel h2 .k { font-size: 14px; font-weight: 400; }
+  .dirs button:focus-visible { outline: 3px solid var(--blue-5); outline-offset: -3px; }
+  .cells { display: flex; gap: 16px; margin: 0 0 4px; padding: 6px 0 10px; border-bottom: 1px solid var(--rule); }
+  .cells div { margin: 0; }
+  .cells dt { font-size: 14px; font-weight: 700; }
+  .feel .cells dd { margin: 0; font-size: 20px; font-weight: 800; line-height: 1.15; white-space: nowrap; font-variant-numeric: tabular-nums; }
+  .actions { display: flex; gap: 6px; flex-wrap: wrap; margin-left: auto; }
+  .actions .btn { padding: 8px 12px; font-size: 16px; display: inline-flex; gap: 8px; align-items: center; }
+  .actions .btn kbd { font-size: 13px; padding: 1px 5px; background: transparent; color: inherit; border-color: currentColor; }
+  .body { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 28px; align-items: start; margin-top: 6px; }
+  #stage:focus-visible { outline: 3px solid var(--blue-5); outline-offset: 4px; }
+  .said { margin: 6px 0 0; font-size: 19px; font-weight: 700; min-height: 1.5em; }
+  .axisnote { margin: 4px 0 0; font-size: 16px; }
+  .axisnote b { font-weight: 800; }
+  .feel h2 { font-size: 19px; margin: 6px 0 4px; }
   .feel dl { margin: 0; }
-  .feel dt { font-weight: 800; font-size: 15px; margin-top: 10px; }
-  .feel dt small { font-weight: 400; font-size: 14px; margin-left: 4px; }
-  .feel dd { margin: 2px 0 0; font-size: 16px; line-height: 1.4; }
+  .feel dt { font-weight: 800; font-size: 15px; margin-top: 12px; }
+  .feel dd { margin: 2px 0 0; font-size: 16px; line-height: 1.45; }
   .feel .cl { border-radius: 2px; transition: background .15s; }
   .feel .cl.first { font-weight: 800; }
   .feel .cl.now { background: var(--mark); box-shadow: 0 0 0 1px var(--ink); }
   .nyt svg.hl { position: absolute; left: 0; top: 0; pointer-events: none; z-index: 2; overflow: visible; }
   .nyt svg.hl polyline { fill: none; stroke: #f5b700; stroke-opacity: .6; stroke-width: 10; stroke-linecap: round; stroke-linejoin: round; }
   .nyt svg.hl circle { fill: #f5b700; fill-opacity: .6; stroke: #121212; stroke-width: 1.5; }
-  @media (max-width: 1100px) { .body { grid-template-columns: 1fr; } }
-  .axisnote b { font-weight: 800; }
-  #stage:focus-visible { outline: 3px solid var(--blue-5); outline-offset: 4px; }
-  .said { max-width: 1280px; margin: 8px auto 0; font-size: 18px; font-weight: 600; min-height: 1.6em; }
-  .lower { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-top: 10px; }
-  .lower h2 { font-size: 17px; margin: 0 0 4px; }
-  .keys td { font-size: 14px; padding: 4px 10px 4px 0; }
-  .jump { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; font-size: 15px; font-weight: 600; margin-top: 8px; }
+  .nyt .g-yield-curve .label.lo { margin-top: 1.3em; }
+  .more { margin-top: 18px; }
+  .more summary { cursor: pointer; font-size: 17px; font-weight: 700; padding: 6px 0; width: fit-content; }
+  .more summary:focus-visible { outline: 3px solid var(--blue-5); outline-offset: 2px; }
+  .more .cols { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-top: 6px; }
+  .more h2 { font-size: 16px; margin: 0 0 4px; }
+  .keys td { font-size: 15px; padding: 4px 10px 4px 0; }
+  .jump { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; font-size: 15px; font-weight: 600; margin-top: 10px; }
   .jump select { font: inherit; font-size: 15px; padding: 5px; border: 1px solid var(--ink); border-radius: var(--r); background: #fff; }
+  @media (max-width: 1100px) { .body, .more .cols { grid-template-columns: 1fr; } .actions { margin-left: 0; } }
 </style>
 </head>
 <body>
 <div class="wrap full">
-  <header id="mast" data-page="pivot" data-screen="yes" data-voice="yes"></header>
-  <div id="stage" tabindex="0" role="application" aria-roledescription="yield surface" aria-label="Yield surface. Left and right arrows move along the line. P switches between one maturity over time and one date across maturities. Space plays the line. D describes it in words. Enter reads the value.">
+  <header id="mast" data-page="pivot" data-screen="yes" data-voice="yes" data-steps="no"></header>
+  <main>
+    <p class="sr-only">This page speaks with its own voice. If you use a screen reader, turn that voice off with the Voice button at the top. Then press Tab until you reach the chart, and use the keys described there.</p>
     <div class="now">
-      <h1 id="nowLine" aria-hidden="true">Pivot</h1>
+      <h1 id="nowLine">Pivot</h1>
+      <p class="try">Press <kbd>D</kbd> to hear this line described, <kbd>Left</kbd> and <kbd>Right</kbd> to move along it, and <kbd>P</kbd> to turn to the other view.</p>
       <div class="ctl">
-        <div class="dirs" role="group" aria-label="Direction">
+        <div class="dirs" role="group" aria-label="View">
           <button id="dTime" aria-pressed="true">One maturity over time<small>1990 to 2015</small></button>
           <button id="dCurve" aria-pressed="false">One date across maturities<small>1 month to 30 years</small></button>
         </div>
-        <div class="cells" aria-hidden="true">
-          <div><div class="k">Date</div><div class="v" id="rMonth"></div></div>
-          <div><div class="k">Maturity</div><div class="v" id="rMat"></div></div>
-          <div><div class="k">Yield</div><div class="v" id="rVal"></div></div>
-        </div>
-        <div class="pad" role="group" aria-label="Controls">
-          <button class="btn" id="bPrev" aria-label="Previous">◀</button><button class="btn" id="bNext" aria-label="Next">▶</button>
-          <button class="btn main" id="bPlay">Play</button><button class="btn" id="bDesc">Describe</button><button class="btn" id="bValue">Value</button>
+        <div class="actions" role="group" aria-label="Actions">
+          <button class="btn main" id="bDesc">Describe <kbd>D</kbd></button>
+          <button class="btn" id="bPlay">Play <kbd>Space</kbd></button>
+          <button class="btn" id="bPrev">Previous <kbd>Left</kbd></button>
+          <button class="btn" id="bNext">Next <kbd>Right</kbd></button>
+          <button class="btn" id="bValue">Value <kbd>Enter</kbd></button>
         </div>
       </div>
     </div>
     <div class="body">
-      <div><div id="nyt"></div><p class="axisnote" id="axisNote" aria-hidden="true"></p></div>
-      <aside class="feel" aria-hidden="true">
-        <h2>Without the picture <span class="k">press <kbd>D</kbd></span></h2>
-        <dl>
-          <dt>Pattern <small>the terrain, part by part</small></dt><dd id="fPattern"></dd>
-          <dt>Relation <small>no mental math</small></dt><dd id="fRel"></dd>
-          <dt>Outliers <small>called out as you pass</small></dt><dd id="fOut"></dd>
+      <div>
+        <div id="stage" tabindex="0" role="application" aria-roledescription="chart" aria-label="Pivot chart" aria-describedby="keyHelp"><div id="nyt"></div></div>
+        <p class="said" id="said" aria-hidden="true"></p>
+        <p class="axisnote" id="axisNote"></p>
+      </div>
+      <section class="feel" aria-labelledby="feelH">
+        <dl class="cells">
+          <div><dt>Date</dt><dd id="rMonth"></dd></div>
+          <div><dt>Maturity</dt><dd id="rMat"></dd></div>
+          <div><dt>Yield</dt><dd id="rVal"></dd></div>
         </dl>
-      </aside>
+        <h2 id="feelH">Without the picture</h2>
+        <dl>
+          <dt>Pattern</dt><dd id="fPattern"></dd>
+          <dt>Relation</dt><dd id="fRel"></dd>
+          <dt>Outliers</dt><dd id="fOut"></dd>
+        </dl>
+      </section>
     </div>
-  </div>
-  <p class="said" id="said" aria-live="polite"></p>
-  <div class="lower">
-    <div>
-      <h2>Keys</h2>
-      <table class="keys">
-        <tr><td><kbd>P</kbd></td><td>Switch direction</td></tr>
-        <tr><td><kbd>Left</kbd> <kbd>Right</kbd></td><td>Move along the black line</td></tr>
-        <tr><td><kbd>Shift</kbd> + <kbd>Left</kbd> <kbd>Right</kbd></td><td>Move one year (over time)</td></tr>
-        <tr><td><kbd>Space</kbd></td><td>Play the line, or stop</td></tr>
-        <tr><td><kbd>Esc</kbd></td><td>Stop speech and sound</td></tr>
-        <tr><td><kbd>D</kbd></td><td>Describe the line, each part with its sound</td></tr>
-        <tr><td><kbd>Enter</kbd></td><td>Read the exact value</td></tr>
-        <tr><td><kbd>Z</kbd></td><td>Stretch the pitch to one date’s range</td></tr>
-        <tr><td><kbd>V</kbd></td><td>Screen off or on</td></tr>
-      </table>
-    </div>
-    <div>
-      <h2>Instead of seeing</h2>
-      <table class="keys">
-        <tr><td>Height</td><td>Pitch, 0 to 9.5 percent, Chart Reader’s scale</td></tr>
-        <tr><td>Left to right</td><td>Stereo, left ear to right ear</td></tr>
-        <tr><td>A new year</td><td>Click</td></tr>
-        <tr><td>End of the line</td><td>Bonk</td></tr>
-        <tr><td>Shape</td><td>Words: a canyon, hills, valleys, cliffs, a rope</td></tr>
-        <tr><td>Part being described</td><td>Its tones play with the words</td></tr>
-      </table>
-      <div class="jump"><label for="jYear">Go to</label><select id="jMonth" aria-label="Month"></select><select id="jYear" aria-label="Year"></select><select id="jMat" aria-label="Maturity"></select></div>
-    </div>
-  </div>
+    <details class="more">
+      <summary>All keys and sounds</summary>
+      <div class="cols">
+        <div>
+          <h2>Keys</h2>
+          <table class="keys">
+            <tr><td><kbd>D</kbd></td><td>Describe the line, each part with its sound</td></tr>
+            <tr><td><kbd>Left</kbd> <kbd>Right</kbd></td><td>Move along the black line</td></tr>
+            <tr><td><kbd>P</kbd></td><td>Turn to the other view at the same point</td></tr>
+            <tr><td><kbd>Space</kbd></td><td>Play the whole line, or stop</td></tr>
+            <tr><td><kbd>Enter</kbd></td><td>Read the exact value</td></tr>
+            <tr><td><kbd>Esc</kbd></td><td>Stop speech and sound</td></tr>
+            <tr><td><kbd>Shift</kbd> + <kbd>Left</kbd> <kbd>Right</kbd></td><td>Move one year (over time)</td></tr>
+            <tr><td><kbd>Home</kbd> <kbd>End</kbd></td><td>Go to the start or the end of the line</td></tr>
+            <tr><td><kbd>Z</kbd></td><td>Stretch the pitch to one date’s range</td></tr>
+            <tr><td><kbd>V</kbd></td><td>Screen off or on</td></tr>
+          </table>
+        </div>
+        <div>
+          <h2>Instead of seeing</h2>
+          <table class="keys">
+            <tr><td>Height</td><td>Pitch, 0 to 9.5 percent, Chart Reader’s scale</td></tr>
+            <tr><td>Left to right</td><td>Stereo, left ear to right ear</td></tr>
+            <tr><td>A new year</td><td>Click</td></tr>
+            <tr><td>End of the line</td><td>Bonk</td></tr>
+            <tr><td>Shape</td><td>Words: a canyon, hills, valleys, cliffs, a rope</td></tr>
+            <tr><td>Part being described</td><td>Its tones play with the words</td></tr>
+          </table>
+          <div class="jump"><label for="jMonth">Go to</label><select id="jMonth" aria-label="Month"></select><select id="jYear" aria-label="Year"></select><select id="jMat" aria-label="Maturity"></select></div>
+        </div>
+      </div>
+    </details>
+    <div id="live" class="sr-only" aria-live="assertive" aria-atomic="true"></div>
+    <div id="liveDesc" class="sr-only" aria-live="polite"></div>
+    <p class="sr-only" id="keyHelp">Left and Right move along the line. D describes it in words with its sound. P turns to the other view at the same point. Space plays the whole line. Enter reads the value. Escape stops.</p>
+  </main>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
@@ -129,12 +148,12 @@ const MONTHS = ['January','February','March','April','May','June','July','August
 const MATS = ['1-month','3-month','6-month','1-year','2-year','3-year','5-year','7-year','10-year','20-year','30-year'];
 // The two views are the NYT's own cameras: step 2 (front) and step 5 (side), widened to all 25 years.
 const VIEW = {
-  front: { cam: { azi: 1.57061, phi: 0, fov: 0.5, width: 35, lookat_x: 0, lookat_y: 7.97333, lookat_z: 0.21667 }, grid: ['front'], labels: ['x'] },
+  front: { cam: { azi: 1.57061, phi: 0, fov: 0.5, width: 41, lookat_x: 0, lookat_y: 9.2, lookat_z: 0.21667 }, grid: ['front'], labels: ['x'] },
   side: { cam: { azi: Math.PI / 2, phi: Math.PI / 2, fov: 0.1, width: 50, lookat_x: 2.6, lookat_y: 14, lookat_z: 0 }, grid: ['product', 'date', 'front'], labels: ['y'] },
 };
 const PRESET = {
   1: ['2015-03', '10-year', 'time'], 2: ['2015-03', '3-month', 'curve'], 3: ['2008-01', '3-month', 'time'],
-  4: ['2004-06', '3-month', 'time'], 5: ['2012-07', '10-year', 'time'], 6: ['2015-03', '10-year', 'time'],
+  4: ['2007-01', '3-month', 'time'], 5: ['2012-07', '10-year', 'time'], 6: ['2015-03', '10-year', 'time'],
   7: ['2015-02', '10-year', 'time'], 8: ['2015-02', '10-year', 'time'], 9: ['2015-02', '10-year', 'time'],
 };
 let app = null, g = null, D = null, m = 0, k = 8, dir = 'time', stretch = false;
@@ -167,49 +186,71 @@ function audio() {
   return ctx;
 }
 const freq = t => 220 * Math.pow(2, 2.6 * Math.max(0, Math.min(1, t)));
-function tone(t, when, dur = 0.12, pan = 0, gain = 0.22) {
+function tone(t, when, dur = 0.12, pan = 0, gain = 0.22, out = null) {
   const c = audio(), o = c.createOscillator(), gn = c.createGain(), p = c.createStereoPanner();
   o.type = 'triangle'; o.frequency.value = freq(t); p.pan.value = pan;
   gn.gain.setValueAtTime(0, when); gn.gain.linearRampToValueAtTime(gain, when + 0.008); gn.gain.exponentialRampToValueAtTime(0.001, when + dur);
-  o.connect(gn).connect(p).connect(c.destination); o.start(when); o.stop(when + dur + 0.02);
+  o.connect(gn).connect(p).connect(out || c.destination); o.start(when); o.stop(when + dur + 0.02);
 }
-function click(when, pan = 0) {
+function click(when, pan = 0, out = null) {
   const c = audio(), n = c.createBufferSource(), b = c.createBuffer(1, 600, c.sampleRate), d = b.getChannelData(0);
   for (let i = 0; i < d.length; i++) d[i] = (Math.random() * 2 - 1) * Math.exp(-i / 70);
   const gn = c.createGain(), p = c.createStereoPanner(); gn.gain.value = 0.35; p.pan.value = pan;
-  n.buffer = b; n.connect(gn).connect(p).connect(c.destination); n.start(when);
+  n.buffer = b; n.connect(gn).connect(p).connect(out || c.destination); n.start(when);
 }
 function bonk() { const c = audio(); if (!bonkBuf) { tone(0, c.currentTime, 0.2, 0, 0.3); return; } const s = c.createBufferSource(); s.buffer = bonkBuf; s.connect(c.destination); s.start(); }
 const FIXED = v => v / 9.5;
 const rangeOf = arr => { const a = arr.filter(v => !isNaN(v)); return [Math.min(...a), Math.max(...a)]; };
 const fit = (lo, hi) => v => hi - lo < 0.05 ? 0.5 : 0.12 + 0.76 * (v - lo) / (hi - lo);
 const curveScale = () => { if (!stretch) return FIXED; const [lo, hi] = rangeOf(D.values[m]); return fit(lo, hi); };
-function stopSound() { if (playing) { playing.stop(); playing = null; document.body.classList.remove('sounding'); } }
+function stopSound() { if (playing) { const p = playing; playing = null; p.stop(); document.body.classList.remove('sounding'); } busy(); }
 // Any user action cancels a running description, its sound and its highlight
 function stopPlay() { descRun++; stopSound(); endDescription(false); }
 function playSeq(vals, { scale, step = 0.16, dur = 0.13, ticks = null, pans = null, gain = 0.22, onStep, onEnd }) {
   stopSound();
-  const c = audio(), t0 = c.currentTime + 0.08, n = vals.length;
-  vals.forEach((v, i) => { const pan = pans ? pans[i] : n > 1 ? -0.8 + 1.6 * i / (n - 1) : 0; tone(scale(v), t0 + i * step, dur, pan, gain); if (ticks && ticks[i]) click(t0 + i * step, pan); });
+  const c = audio(), t0 = c.currentTime + 0.08, n = vals.length, bus = c.createGain();
+  bus.connect(c.destination);
+  vals.forEach((v, i) => { const pan = pans ? pans[i] : n > 1 ? -0.8 + 1.6 * i / (n - 1) : 0; tone(scale(v), t0 + i * step, dur, pan, gain, bus); if (ticks && ticks[i]) click(t0 + i * step, pan, bus); });
   document.body.classList.add('sounding');
   let cancelled = false, last = -1;
+  setTimeout(busy, 0);
   const timer = setInterval(() => {
     const i = Math.min(n - 1, Math.floor((c.currentTime - t0) / step));
     if (i !== last && i >= 0) { last = i; onStep && onStep(i); }
     if (c.currentTime > t0 + n * step + 0.1) done();
   }, 30);
-  function done() { if (cancelled) return; cancelled = true; clearInterval(timer); playing = null; document.body.classList.remove('sounding'); onEnd && onEnd(last); }
-  return playing = { stop() { cancelled = true; clearInterval(timer); try { ctx.close(); } catch (e) {} ctx = null; bonkBuf = null; audio(); onEnd && onEnd(last, true); } };
+  function done() { if (cancelled) return; cancelled = true; clearInterval(timer); playing = null; document.body.classList.remove('sounding'); busy(); onEnd && onEnd(last); }
+  return playing = { stop() {
+    cancelled = true; clearInterval(timer);
+    try { const now = c.currentTime; bus.gain.cancelScheduledValues(now); bus.gain.setValueAtTime(bus.gain.value, now); bus.gain.linearRampToValueAtTime(0, now + 0.03); setTimeout(() => bus.disconnect(), 80); } catch (e) {}
+    onEnd && onEnd(last, true);
+  } };
 }
 
 // ---------- view + speech ----------
-function say(t) { $('said').textContent = t; Voice.speak(t); }
+const live = $('live');
+let liveFlip = false;
+function announce(t) { liveFlip = !liveFlip; live.textContent = t + (liveFlip ? '' : '\u00a0'); }   // a changed string is announced again
+// description clauses queue politely, so a screen reader finishes one before the next
+function announceClause(t, first) { const n = $('liveDesc'); if (first) n.textContent = ''; const s = document.createElement('span'); s.textContent = t + ' '; n.appendChild(s); }
+function say(t) { $('said').textContent = t; announce(t); Voice.speak(t); }
+// Describe and Play show Stop while they run
+function busy() {
+  $('bDesc').innerHTML = describing ? 'Stop <kbd>Esc</kbd>' : 'Describe <kbd>D</kbd>';
+  $('bPlay').innerHTML = playing && !describing ? 'Stop <kbd>Space</kbd>' : 'Play <kbd>Space</kbd>';
+}
+// the maturity labels crowd at the short end in the front view: alternate them on two rows
+function tidyLabels() {
+  if (!g || !g.labels || !g.labels.y) return;
+  g.labels.y.forEach((l, i) => { if (i === 0) l.el.textContent = '1-month'; l.el.classList.toggle('lo', dir === 'curve' && i % 2 === 1); });
+}
 function show(animate = true) {
   if (!g) return;
   const v = VIEW[dir === 'time' ? 'side' : 'front'];
   g.newScene();
   v.grid.forEach(g.hideGridLines); v.labels.forEach(g.hideLabels);
   g.animateTo(v.cam, animate ? 1500 : 1);
+  tidyLabels();
   draw();
 }
 function draw() {
@@ -444,11 +485,11 @@ function soundFor(c, secs) {
 async function runClauses(list) {
   stopPlay();
   const run = descRun;
-  describing = true;
+  describing = true; busy();
   for (const c of list) {
     if (run !== descRun) return;
     if (c.i !== undefined) lightClause(c.i);
-    $('said').textContent = c.t;
+    $('said').textContent = c.t; announceClause(c.t, c === list[0]);
     const secs = Math.max(0.9, c.t.split(/\s+/).length * 0.36);
     const words = Voice.enabled ? Promise.race([Voice.speak(c.t), sleep(secs * 2500 + 2000)]) : sleep(secs * 1000);
     await Promise.all([words, soundFor(c, secs)]);
@@ -457,7 +498,7 @@ async function runClauses(list) {
 }
 function endDescription(finished) {
   if (!describing) return;
-  describing = false;
+  describing = false; busy();
   setHL(null); lightClause(-1);
   if (D) draw();
 }
@@ -517,8 +558,11 @@ function edge(toEnd) {
 
 // ---------- input ----------
 const stage = $('stage');
-stage.addEventListener('keydown', e => {
-  const key = e.key;
+document.addEventListener('keydown', e => {
+  if (e.metaKey || e.ctrlKey || e.altKey || !D) return;
+  const t = e.target, tag = t && t.tagName, key = e.key;
+  if (tag === 'INPUT' || tag === 'SELECT' || tag === 'TEXTAREA') return;
+  if ((tag === 'BUTTON' || tag === 'A' || tag === 'SUMMARY') && (key === 'Enter' || key === ' ')) return;
   if (key === 'ArrowLeft' || key === 'ArrowRight') { e.preventDefault(); const d = key === 'ArrowLeft' ? -1 : 1; move(e.shiftKey && dir === 'time' ? 12 * d : d); }
   else if (/^[pPtT]$/.test(key)) { e.preventDefault(); turn(); }
   else if (key === ' ') { e.preventDefault(); play(); }
@@ -528,8 +572,12 @@ stage.addEventListener('keydown', e => {
   else if (key === 'Home' || key === 'End') { e.preventDefault(); edge(key === 'End'); }
   else if (key === 'Escape') { stopPlay(); Voice.stop(); }
 });
+document.addEventListener('pointerdown', () => { if (ctx && ctx.state === 'suspended') ctx.resume(); });
+// after a mouse click on any button, the keys go back to the chart, so Space plays instead of pressing that button again
+document.addEventListener('click', e => { if (e.detail > 0 && e.target.closest && e.target.closest('button')) setTimeout(() => stage.focus({ preventScroll: true }), 0); });
 $('bPrev').onclick = () => move(-1); $('bNext').onclick = () => move(1);
-$('bPlay').onclick = play; $('bValue').onclick = value; $('bDesc').onclick = speakDescription;
+$('bPlay').onclick = play; $('bValue').onclick = value;
+$('bDesc').onclick = () => { if (describing) { stopPlay(); Voice.stop(); } else speakDescription(); };
 $('dTime').onclick = () => { if (dir !== 'time') turn(); };
 $('dCurve').onclick = () => { if (dir !== 'curve') turn(); };
 ['jYear', 'jMonth', 'jMat'].forEach(id => $(id).addEventListener('change', () => {

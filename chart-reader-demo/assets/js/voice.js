@@ -27,26 +27,47 @@
     synth.onvoiceschanged = pickVoice;
   }
 
-  // Speak one utterance. Returns a promise that resolves when it ends (or is cancelled).
+  // Speak one utterance. Returns a promise that resolves when it ends, is cancelled, or stalls.
+  // Chrome can drop an utterance queued in the same tick as cancel(), can skip the end event,
+  // and stops network voices after about 15 seconds; each case is handled below.
+  let epoch = 0, lastCancel = 0;
   function speak(text, opts = {}) {
     return new Promise(resolve => {
       if (!synth || !enabled || !text) { resolve(); return; }
-      if (opts.interrupt !== false) synth.cancel();
+      if (opts.interrupt !== false) { epoch++; synth.cancel(); lastCancel = performance.now(); }
+      const mine = epoch;
       const u = new SpeechSynthesisUtterance(String(text));
       if (voice) u.voice = voice;
       u.lang = (voice && voice.lang) || 'en-US';
       u.rate = opts.rate || rate;
-      const done = () => { document.body.classList.remove('speaking'); resolve(); };
+      const words = String(text).split(/\s+/).length;
+      const limit = 2000 + words * 700 / u.rate;
+      let settled = false, watchdog = null, keep = null;
+      const done = () => {
+        if (settled) return;
+        settled = true; clearTimeout(watchdog); clearInterval(keep);
+        document.body.classList.remove('speaking'); resolve();
+      };
       speak.current = u;   // keep a reference so the browser does not drop the end event
       u.onstart = () => document.body.classList.add('speaking');
       u.onend = done;
       u.onerror = done;
-      synth.speak(u);
+      const go = () => {
+        if (mine !== epoch) { done(); return; }   // stopped or replaced before it started
+        synth.speak(u);
+        if (synth.paused) synth.resume();
+        watchdog = setTimeout(done, limit);
+        if (voice && voice.localService === false) keep = setInterval(() => { if (synth.speaking) { synth.pause(); synth.resume(); } }, 10000);
+      };
+      const wait = 80 - (performance.now() - lastCancel);
+      if (wait > 0) setTimeout(go, wait); else go();
     });
   }
 
   function stop() {
+    epoch++;
     if (synth) synth.cancel();
+    lastCancel = performance.now();
     document.body.classList.remove('speaking');
   }
 

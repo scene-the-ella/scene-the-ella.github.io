@@ -180,3 +180,5 @@ svg text { font-family: var(--sans); }
   body { font-size: 17px; }
   .wrap { padding: 16px 16px 56px; }
 }
+
+.stepper[hidden] { display: none; }

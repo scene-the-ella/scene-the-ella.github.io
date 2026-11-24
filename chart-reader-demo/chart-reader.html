@@ -40,7 +40,7 @@
   <div id="nyt"></div>
   <div class="lower">
     <div>
-      <div class="startrow"><button class="btn main" id="startCR">Start Chart Reader</button><span>then <kbd>Enter</kbd> to go in, arrows to move</span></div>
+      <div class="startrow"><button class="btn main" id="startCR">Start Chart Reader</button><span>then <kbd>Enter</kbd> to go in, the arrow keys to move, and <kbd>Shift</kbd> with an arrow to hear the values</span></div>
       <figure style="margin:0" class="cr" id="fig"><div id="chart" class="chart-box"></div></figure>
       <p class="said" id="said" aria-hidden="true"></p>
     </div>
@@ -159,6 +159,13 @@ function linkToGraphic(el) {
 function focusChart() { const a = host.querySelector('[role=application]'); if (a && document.activeElement !== a && !host.contains(document.activeElement)) a.focus(); }
 document.getElementById('startCR').addEventListener('click', () => { const a = host.querySelector('[role=application]'); if (a) a.focus(); });
 host.addEventListener('mousedown', () => setTimeout(focusChart, 0));
+// After a mouse click on a page button (Voice, Screen off, Start), keys go back to where the reader was in the chart
+let lastInChart = null;
+host.addEventListener('focusin', e => { lastInChart = e.target; });
+document.addEventListener('click', e => {
+  if (e.detail === 0 || !e.target.closest || !e.target.closest('button') || host.contains(e.target) || e.target.id === 'startCR') return;
+  setTimeout(() => { if (lastInChart && document.contains(lastInChart)) lastInChart.focus({ preventScroll: true }); }, 0);
+});
 
 // Self-voicing: speak what a screen reader would announce. Turn Voice off when VoiceOver or NVDA is on.
 const said = document.getElementById('said');
